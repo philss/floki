@@ -24,7 +24,7 @@ defmodule Floki do
     |> get_attribute_values(attribute_name)
   end
 
-  def class_match?(attributes, class) do
+  defp class_match?(attributes, class) do
     attribute_match?(attributes, "class", class)
   end
 
@@ -52,7 +52,7 @@ defmodule Floki do
     find_by_class(class, child_node, acc)
   end
 
-  def get_attribute_values(elements, attr_name) do
+  defp get_attribute_values(elements, attr_name) do
     Enum.map(elements, fn(el) ->
       { _name, attributes, _childs } = el
 

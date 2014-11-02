@@ -65,27 +65,6 @@ defmodule FlokiTest do
     assert Floki.find(@html, class_selector) == []
   end
 
-  test "matching a class by a given name" do
-    class_name = "a-class"
-    attributes = [{"class", class_name}, {"title", "a title"}]
-
-    assert Floki.class_match?(attributes, class_name)
-  end
-
-  test "does not match by class name" do
-    class_name = "a-class"
-    attributes = [{"class", "another-class"}, {"title", "a title"}]
-
-    refute Floki.class_match?(attributes, class_name)
-  end
-
-  test "does not match when attributes list is empty" do
-    class_name = "a-class"
-    attributes = []
-
-    refute Floki.class_match?(attributes, class_name)
-  end
-
   test "get attribute values from elements with a given class" do
     class_selector = ".js-cool"
     expected_hrefs = ["http://google.com", "http://elixir-lang.org"]
