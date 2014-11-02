@@ -5,6 +5,9 @@ defmodule Floki.Mixfile do
     [app: :floki,
      version: "0.0.1",
      elixir: "~> 1.0.0",
+     package: package,
+     description: description,
+     docs: [readme: true, main: "README.md"],
      deps: deps]
   end
 
@@ -37,10 +40,10 @@ defmodule Floki.Mixfile do
   end
 
   defp package do
-    [
+    %{
       contributors: ["Philip Sampaio Silva"],
       licenses: ["MIT"],
       links: %{"GitHub" => "https://github.com/philss/floki"}
-    ]
+    }
   end
 end
