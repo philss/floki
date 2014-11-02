@@ -7,11 +7,23 @@ defmodule FlokiTest do
   <title>Test</title>
   </head>
   <body>
-    <div class='content'>
-      <a href='http://google.com' class='js-google js-cool'>Google</a>
-      <a href='http://elixir-lang.org' class='js-elixir js-cool'>Elixir lang</a>
-      <a href='http://java.com' class='js-java'>Java</a>
+    <div class="content">
+      <a href="http://google.com" class="js-google js-cool">Google</a>
+      <a href="http://elixir-lang.org" class="js-elixir js-cool">Elixir lang</a>
+      <a href="http://java.com" class="js-java">Java</a>
     </div>
+  </body>
+  </html>
+  """
+
+  @html_with_img """
+  <html>
+  <body>
+  <a href="http://twitter.com">
+    <img src="http://twitter.com/logo.png" class="js-twitter-logo" />
+  </a>
+  <!-- this is a comment -->
+  <img src="http://twitter.com/logo.png" class="img-without-closing-tag">
   </body>
   </html>
   """
@@ -33,6 +45,18 @@ defmodule FlokiTest do
 
     assert Floki.find(@html, class_selector) == [{"a", [{"href", "http://google.com"}, {"class", "js-google js-cool"}], ["Google"]},
       {"a", [{"href", "http://elixir-lang.org"}, {"class", "js-elixir js-cool"}], ["Elixir lang"]}]
+  end
+
+  test "find element that does not have child node" do
+    class_selector = ".js-twitter-logo"
+
+    assert Floki.find(@html_with_img, class_selector) == [{"img", [{"src", "http://twitter.com/logo.png"}, {"class", "js-twitter-logo"}], []}]
+  end
+
+  test "find element that does close the tag" do
+    class_selector = ".img-without-closing-tag"
+
+    assert Floki.find(@html_with_img, class_selector) == [{"img", [{"src", "http://twitter.com/logo.png"}, {"class", "img-without-closing-tag"}], []}]
   end
 
   test "does not find elements" do

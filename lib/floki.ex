@@ -43,6 +43,7 @@ defmodule Floki do
     acc = find_by_class(class, h, acc)
     find_by_class(class, t, acc)
   end
+  defp find_by_class(_class, { :comment, _comment }, acc), do: acc
   defp find_by_class(class, { name, attributes, child_node }, acc) do
     if class_match?(attributes, class) do
       acc = [{name, attributes, child_node}|acc]
