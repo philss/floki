@@ -29,4 +29,18 @@ defmodule Floki.Mixfile do
       {:mochiweb, git: "https://github.com/mochi/mochiweb.git", tag: "v2.9.2"}
     ]
   end
+
+  defp description do
+    """
+    Floki is useful to search elements inside HTML documents using query selectors (like jQuery).
+    """
+  end
+
+  defp package do
+    [
+      contributors: ["Philip Sampaio Silva"],
+      licenses: ["MIT"],
+      links: %{"GitHub" => "https://github.com/philss/floki"}
+    ]
+  end
 end
