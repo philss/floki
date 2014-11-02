@@ -25,6 +25,8 @@ defmodule Floki.Mixfile do
   #
   # Type `mix help deps` for more examples and options
   defp deps do
-    []
+    [
+      {:mochiweb, git: "https://github.com/mochi/mochiweb.git", tag: "v2.9.2"}
+    ]
   end
 end
