@@ -3,7 +3,7 @@ defmodule Floki.Mixfile do
 
   def project do
     [app: :floki,
-     version: "0.0.1",
+     version: "0.0.2",
      elixir: "~> 1.0.0",
      package: package,
      description: description,
@@ -28,9 +28,7 @@ defmodule Floki.Mixfile do
   #
   # Type `mix help deps` for more examples and options
   defp deps do
-    [
-      {:mochiweb, git: "https://github.com/mochi/mochiweb.git", tag: "v2.9.2"}
-    ]
+    []
   end
 
   defp description do
@@ -43,6 +41,7 @@ defmodule Floki.Mixfile do
     %{
       contributors: ["Philip Sampaio Silva"],
       licenses: ["MIT"],
+      files: ["lib", "priv", "mix.exs", "README*", "readme*", "LICENSE*", "license*", "src"],
       links: %{"GitHub" => "https://github.com/philss/floki"}
     }
   end
