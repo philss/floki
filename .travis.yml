@@ -11,6 +11,3 @@ before_script:
   - mix deps.get
 script:
   - MIX_ENV=all mix test
-notifications:
-  recipients:
-    - philip.sampaio@gmail.com
