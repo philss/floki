@@ -1,6 +1,8 @@
 Floki
 =====
 
+[![Build Status](https://travis-ci.org/philss/floki.svg?branch=master)](https://travis-ci.org/philss/floki)
+
 Floki is useful to search inside HTML documents using query selectors (like jQuery).
 Under the hood, it uses the [Mochiweb](https://github.com/mochi/mochiweb) HTML parser.
 
