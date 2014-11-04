@@ -9,7 +9,12 @@ defmodule Floki do
   end
 
   def find(html_tree, "." <> class) do
-    find_by_class(class, html_tree, [])
+    find_by_selector(class, html_tree, &class_matcher/3, [])
+    |> Enum.reverse
+  end
+
+  def find(html_tree, tag_name) do
+    find_by_selector(tag_name, html_tree, &tag_matcher/3, [])
     |> Enum.reverse
   end
 
@@ -36,20 +41,20 @@ defmodule Floki do
     end)
   end
 
-  defp find_by_class(_class, {}, acc), do: acc
-  defp find_by_class(_class, [], acc), do: acc
-  defp find_by_class(_class, tree, acc) when is_binary(tree), do: acc
-  defp find_by_class(class, [h|t], acc) do
-    acc = find_by_class(class, h, acc)
-    find_by_class(class, t, acc)
+  defp find_by_selector(_selector, {}, _, acc), do: acc
+  defp find_by_selector(_selector, [], _, acc), do: acc
+  defp find_by_selector(_selector, tree, _, acc) when is_binary(tree), do: acc
+  defp find_by_selector(selector, [h|t], matcher, acc) do
+    acc = find_by_selector(selector, h, matcher, acc)
+    find_by_selector(selector, t, matcher, acc)
   end
-  defp find_by_class(_class, { :comment, _comment }, acc), do: acc
-  defp find_by_class(class, { name, attributes, child_node }, acc) do
-    if class_match?(attributes, class) do
-      acc = [{name, attributes, child_node}|acc]
-    end
+  defp find_by_selector(_selector, { :comment, _comment }, _, acc), do: acc
+  defp find_by_selector(selector, node, matcher, acc) when is_tuple(node) do
+    { _, _, child_node } = node
 
-    find_by_class(class, child_node, acc)
+    acc = matcher.(selector, node, acc)
+
+    find_by_selector(selector, child_node, matcher, acc)
   end
 
   defp get_attribute_values(elements, attr_name) do
@@ -60,5 +65,25 @@ defmodule Floki do
     end)
     |> Enum.reject(fn(x) -> is_nil(x) end)
     |> Enum.map(fn({_attr_name, value}) -> value end)
+  end
+
+  defp class_matcher(selector, node, acc) do
+    { _, attributes, _ } = node
+
+    if class_match?(attributes, selector) do
+      acc = [node|acc]
+    end
+
+    acc
+  end
+
+  defp tag_matcher(tag_name, node, acc) do
+    { tag, _, _ } = node
+
+    if tag == tag_name do
+     acc = [node|acc]
+    end
+
+    acc
   end
 end

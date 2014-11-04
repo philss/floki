@@ -86,4 +86,12 @@ defmodule FlokiTest do
 
     assert Floki.attribute(elements, "title") == []
   end
+
+
+  test "select elements by tag name" do
+    tag_name = "a"
+    elements = Floki.find(@html_with_img, tag_name)
+
+    assert elements == [{"a", [{"href", "http://twitter.com"}], [{"img", [{"src", "http://twitter.com/logo.png"}, {"class", "js-twitter-logo"}], []}]}]
+  end
 end
