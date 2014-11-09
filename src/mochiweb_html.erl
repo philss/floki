@@ -1,7 +1,7 @@
 %% @author Bob Ippolito <bob@mochimedia.com>
 %% @copyright 2007 Mochi Media, Inc.
 
-%% This file was extracted from `https://github.com/mochi/mochiweb/blob/master/src/mochiweb_html.erl`
+%% This module was extracted from `https://github.com/mochi/mochiweb/blob/master/src/mochiweb_html.erl`
 %% and is under the MIT license as described below.
 
 %% This is the MIT license.
