@@ -13,6 +13,11 @@ defmodule Floki do
     |> Enum.reverse
   end
 
+  def find(html_tree, "#" <> id) do
+    find_by_selector(id, html_tree, &id_matcher/3, [])
+    |> List.first
+  end
+
   def find(html_tree, tag_name) do
     find_by_selector(tag_name, html_tree, &tag_matcher/3, [])
     |> Enum.reverse
@@ -82,6 +87,16 @@ defmodule Floki do
 
     if tag == tag_name do
      acc = [node|acc]
+    end
+
+    acc
+  end
+
+  defp id_matcher(id, node, acc) do
+    { _, attributes, _ } = node
+
+    if attribute_match?(attributes, "id", id) do
+      acc = [node|acc]
     end
 
     acc

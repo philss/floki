@@ -24,6 +24,7 @@ defmodule FlokiTest do
   </a>
   <!-- this is a comment -->
   <img src="http://twitter.com/logo.png" class="img-without-closing-tag">
+  <img src="logo.png" id="logo" />
   </body>
   </html>
   """
@@ -93,5 +94,11 @@ defmodule FlokiTest do
     elements = Floki.find(@html_with_img, tag_name)
 
     assert elements == [{"a", [{"href", "http://twitter.com"}], [{"img", [{"src", "http://twitter.com/logo.png"}, {"class", "js-twitter-logo"}], []}]}]
+  end
+
+  test "find element by id" do
+    id = "#logo"
+
+    assert Floki.find(@html_with_img, id) == { "img", [{"src", "logo.png"}, {"id", "logo"}], [] }
   end
 end
