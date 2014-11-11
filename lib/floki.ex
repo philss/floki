@@ -1,6 +1,6 @@
 defmodule Floki do
   @moduledoc """
-  Floki - A HTML parser and seeker.
+  A HTML parser and seeker.
 
   This is a simple HTML parser that enables searching using CSS like selectors.
 

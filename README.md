@@ -1,17 +1,60 @@
-Floki - search inside HTML documents
+Floki
 =====
 
 [![Build Status](https://travis-ci.org/philss/floki.svg?branch=master)](https://travis-ci.org/philss/floki)
 
-Floki is useful to search inside HTML documents using query selectors (like jQuery).
-Under the hood, it uses the [Mochiweb](https://github.com/mochi/mochiweb) HTML parser.
+A HTML parser and seeker.
 
-This version works with simple CSS selectors (without nesting or group).
-List of selectors:
+This is a simple HTML parser that enables searching using CSS like selectors.
 
-  * class selectors - Ex.: `.class-name`
-  * id selectors - Ex.: `#element-id`
-  * tag selectors - Ex.: `img`
+You can search elements by class, tag name and id.
+
+[Check the documentation](http://hexdocs.pm/floki).
+
+## Example
+
+Assuming that you have the following HTML:
+
+```html
+<!doctype html>
+<html>
+<body>
+<section id="content">
+  <p class="headline">Floki</p>
+  <a href="http://github.com/philss/floki">Github page</a>
+</section>
+</body>
+</html>
+```
+
+You can perform the following queries:
+
+  * Floki.find(html, "#content") : returns the section with all children;
+  * Floki.find(html, ".headline") : returns a list with the `p` element;
+  * Floki.find(html, "a") : returns a list with the `a` element.
+
+Each HTML node is represented by a tuple like:
+
+    {tag_name, attributes, chidren_nodes}
+
+Example of node:
+
+    {"p", [{"class", "headline"}], ["Floki"]}
+
+So even if the only child node is the element text, it is represented
+inside a list.
+
+You can write a simple HTML crawler (with support of [HTTPoison](https://github.com/edgurgel/httpoison)) with a few lines of code:
+
+```elixir
+html
+  |> Floki.find(".pages")
+  |> Floki.find("a")
+  |> Floki.attribute("href")
+  |> Enum.map(fn(url) -> HTTPoison.get!(url) end)
+```
+
+It is simple as that!
 
 ## API
 

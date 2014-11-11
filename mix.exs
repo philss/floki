@@ -3,7 +3,7 @@ defmodule Floki.Mixfile do
 
   def project do
     [app: :floki,
-     version: "0.0.3",
+     version: "0.0.4",
      elixir: "~> 1.0.0",
      package: package,
      description: description,
@@ -34,7 +34,9 @@ defmodule Floki.Mixfile do
 
   defp description do
     """
-    Floki is useful to search elements inside HTML documents using query selectors (like jQuery).
+    A HTML parser and seeker.
+
+    You can search inside HTML documents using CSS like selectors.
     """
   end
 
@@ -43,7 +45,10 @@ defmodule Floki.Mixfile do
       contributors: ["Philip Sampaio Silva"],
       licenses: ["MIT"],
       files: ["lib", "priv", "mix.exs", "README*", "readme*", "LICENSE*", "license*", "src"],
-      links: %{"GitHub" => "https://github.com/philss/floki"}
+      links: %{
+        "GitHub" => "https://github.com/philss/floki",
+        "Docs"   => "http://hexdocs.pm/floki"
+      }
     }
   end
 end
