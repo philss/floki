@@ -81,13 +81,20 @@ defmodule FlokiTest do
     assert Floki.attribute(elements, "href") == expected_hrefs
   end
 
+  test "get attributes from an element found by id" do
+    html = "<div id=important-el></div>"
+
+    attrs = Floki.find(html, "#important-el") |> Floki.attribute("id")
+
+    assert attrs == ["important-el"]
+  end
+
   test "get attributes that does not exist" do
     class_selector = ".js-cool"
     elements = Floki.find(@html, class_selector)
 
     assert Floki.attribute(elements, "title") == []
   end
-
 
   test "select elements by tag name" do
     tag_name = "a"
@@ -101,4 +108,5 @@ defmodule FlokiTest do
 
     assert Floki.find(@html_with_img, id) == { "img", [{"src", "logo.png"}, {"id", "logo"}], [] }
   end
+
 end

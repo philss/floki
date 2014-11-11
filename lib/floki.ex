@@ -1,7 +1,92 @@
 defmodule Floki do
+  @moduledoc """
+  Floki - A HTML parser and seeker.
+
+  This is a simple HTML parser that enables searching using CSS like selectors.
+
+  You can search elements by class, tag name and id.
+
+  ## Example
+
+  Assuming that you have the following HTML:
+
+      <!doctype html>
+      <html>
+      <body>
+        <section id="content">
+          <p class="headline">Floki</p>
+          <a href="http://github.com/philss/floki">Github page</a>
+        </section>
+      </body>
+      </html>
+
+  You can perform the following queries:
+
+    * Floki.find(html, "#content") : returns the section with all children;
+    * Floki.find(html, ".headline") : returns a list with the `p` element;
+    * Floki.find(html, "a") : returns a list with the `a` element.
+
+  Each HTML node is represented by a tuple like:
+
+      {tag_name, attributes, chidren_nodes}
+
+  Example of node:
+
+      {"p", [{"class", "headline"}], ["Floki"]}
+
+  So even if the only child node is the element text, it is represented
+  inside a list.
+
+  You can write a simple HTML crawler (with support of [HTTPoison](https://github.com/edgurgel/httpoison)) with a few lines of code:
+
+      html
+        |> Floki.find(".pages")
+        |> Floki.find("a")
+        |> Floki.attribute("href")
+        |> Enum.map(fn(url) -> HTTPoison.get!(url) end)
+
+  It is simple as that!
+  """
+
+  @type html_tree :: tuple | list
+
+  @doc """
+  Parses a HTML string.
+
+  ## Examples
+
+      iex> Floki.parse("<div class=js-action>hello world</div>")
+      {"div", [{"class", "js-action" }], ["hello world"]}
+
+  """
+  @spec parse(binary) :: html_tree
   def parse(html) do
     :mochiweb_html.parse(html)
   end
+
+  @doc """
+  Finds elements inside a HTML tree or string.
+  You can search by class, tag name or id.
+
+  It is possible to compose searches:
+
+      Floki.find(html_string, ".class")
+       |> Floki.find(".another-class-inside-small-scope"
+
+  ## Examples
+
+      iex> Floki.find("<p><span class=hint>hello</span></p>", ".hint")
+      [{"span", [{ "class", "hint" }], ["hello"]}]
+
+      iex> "<body><div id=important><div>Content</div></div></body>" |> Floki.find("#important")
+      {"div", [{"id", "important"}], [{"div", [], ["Content"]}]}
+
+      iex> Floki.find("<p><a href='https://google.com'>Google</a></p>", "a")
+      [{"a", [{"href", "https://google.com"}], ["Google"]}]
+
+  """
+
+  @spec find(binary | html_tree, binary) :: html_tree
 
   def find(html, selector) when is_binary(html) do
     parse(html)
@@ -23,19 +108,46 @@ defmodule Floki do
     |> Enum.reverse
   end
 
+  @doc """
+  Returns a list with attribute values for a given selector.
+
+  ## Examples
+
+      iex> Floki.attribute("<a href='https://google.com'>Google</a>", "a", "href")
+      ["https://google.com"]
+
+  """
+
+  @spec attribute(binary | html_tree, binary, binary) :: list
+
   def attribute(html, selector, attribute_name) do
     html
     |> find(selector)
     |> get_attribute_values(attribute_name)
   end
 
+  @doc """
+  Returns a list with attribute values from elements.
+
+  ## Examples
+
+      iex> Floki.attribute("<a href='https://google.com'>Google</a>", "href")
+      ["https://google.com"]
+
+  """
+
+  @spec attribute(binary | html_tree, binary) :: list
+
   def attribute(elements, attribute_name) do
     elements
     |> get_attribute_values(attribute_name)
   end
 
-  defp class_match?(attributes, class) do
-    attribute_match?(attributes, "class", class)
+
+  defp attribute_match?(attributes, attribute_name) do
+    attributes |> Enum.find(fn({attr_name, _}) ->
+      attr_name == attribute_name
+    end)
   end
 
   defp attribute_match?(attributes, attribute_name, value) do
@@ -62,20 +174,24 @@ defmodule Floki do
     find_by_selector(selector, child_node, matcher, acc)
   end
 
+
+  defp get_attribute_values(element, attr_name) when is_tuple(element) do
+    get_attribute_values([element], attr_name)
+  end
   defp get_attribute_values(elements, attr_name) do
     Enum.map(elements, fn(el) ->
       { _name, attributes, _childs } = el
 
-      attribute_match?(attributes, attr_name, "")
+      attribute_match?(attributes, attr_name)
     end)
     |> Enum.reject(fn(x) -> is_nil(x) end)
     |> Enum.map(fn({_attr_name, value}) -> value end)
   end
 
-  defp class_matcher(selector, node, acc) do
+  defp class_matcher(class_name, node, acc) do
     { _, attributes, _ } = node
 
-    if class_match?(attributes, selector) do
+    if attribute_match?(attributes, "class", class_name) do
       acc = [node|acc]
     end
 
