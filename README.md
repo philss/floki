@@ -16,7 +16,6 @@ You can search elements by class, tag name and id.
 Assuming that you have the following HTML:
 
 ```html
-<!doctype html>
 <html>
 <body>
 <section id="content">

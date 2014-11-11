@@ -7,7 +7,7 @@ defmodule Floki.Mixfile do
      elixir: "~> 1.0.0",
      package: package,
      description: description,
-     docs: [readme: true, main: "README.md"],
+     docs: [readme: true, main: "README"],
      deps: deps]
   end
 
