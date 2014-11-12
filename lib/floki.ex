@@ -145,16 +145,16 @@ defmodule Floki do
 
 
   defp attribute_match?(attributes, attribute_name) do
-    attributes |> Enum.find(fn({attr_name, _}) ->
+    Enum.find(attributes, fn({ attr_name, _ }) ->
       attr_name == attribute_name
     end)
   end
 
-  defp attribute_match?(attributes, attribute_name, value) do
+  defp attribute_match?(attributes, attribute_name, selector_value) do
     Enum.find(attributes, fn(attribute) ->
       { attr_name, attr_value } = attribute
 
-      attr_name == attribute_name && String.contains?(attr_value, value)
+      attr_name == attribute_name && value_match?(attr_value, selector_value)
     end)
   end
 
@@ -216,5 +216,11 @@ defmodule Floki do
     end
 
     acc
+  end
+
+  defp value_match?(attribute_value, selector_value) do
+    attribute_value
+      |> String.split
+      |> Enum.any?(fn(x) -> x == selector_value end)
   end
 end
