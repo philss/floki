@@ -109,4 +109,27 @@ defmodule FlokiTest do
     assert Floki.find(@html_with_img, id) == { "img", [{"src", "logo.png"}, {"id", "logo"}], [] }
   end
 
+  test "get text from element" do
+    class_selector = ".js-google"
+    text = Floki.find(@html, class_selector) |> Floki.text
+
+    assert text == "Google"
+  end
+
+  test "get text from elements" do
+    class_selector = ".js-cool"
+    text = Floki.find(@html, class_selector) |> Floki.text
+
+    assert text == "Google Elixir lang"
+  end
+
+  test "get text from the element (id selector)" do
+    id_selector = "#with-text"
+    html = """
+      <div><p id="with-text"><span>something else</span>the answer</p></div>
+    """
+    text = Floki.find(html, id_selector) |> Floki.text
+
+    assert text == "the answer"
+  end
 end

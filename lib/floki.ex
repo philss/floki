@@ -71,7 +71,7 @@ defmodule Floki do
   It is possible to compose searches:
 
       Floki.find(html_string, ".class")
-       |> Floki.find(".another-class-inside-small-scope"
+       |> Floki.find(".another-class-inside-small-scope")
 
   ## Examples
 
@@ -90,22 +90,22 @@ defmodule Floki do
 
   def find(html, selector) when is_binary(html) do
     parse(html)
-    |> find(selector)
+      |> find(selector)
   end
 
   def find(html_tree, "." <> class) do
     find_by_selector(class, html_tree, &class_matcher/3, [])
-    |> Enum.reverse
+      |> Enum.reverse
   end
 
   def find(html_tree, "#" <> id) do
     find_by_selector(id, html_tree, &id_matcher/3, [])
-    |> List.first
+      |> List.first
   end
 
   def find(html_tree, tag_name) do
     find_by_selector(tag_name, html_tree, &tag_matcher/3, [])
-    |> Enum.reverse
+      |> Enum.reverse
   end
 
   @doc """
@@ -122,8 +122,8 @@ defmodule Floki do
 
   def attribute(html, selector, attribute_name) do
     html
-    |> find(selector)
-    |> get_attribute_values(attribute_name)
+      |> find(selector)
+      |> get_attribute_values(attribute_name)
   end
 
   @doc """
@@ -140,7 +140,38 @@ defmodule Floki do
 
   def attribute(elements, attribute_name) do
     elements
-    |> get_attribute_values(attribute_name)
+      |> get_attribute_values(attribute_name)
+  end
+
+
+  @doc """
+  Returns the text nodes from a html tree.
+
+  ## Examples
+
+    iex> Floki.find("<p><span>something else</span>hello world</p>", "p") |>
+          Floki.text
+    "hello world"
+
+  """
+
+  @spec text(html_tree) :: binary
+
+  def text(element) when is_tuple(element), do: text(element, "")
+  def text(elements) do
+    Enum.reduce elements, "", fn(element, str) ->
+      text(element, str)
+    end
+  end
+
+  defp text({_, _, children}, acc) do
+    Enum.reduce children, acc, fn(child, istr) ->
+      if is_binary(child) do
+        (istr <> "\s" <> child) |> String.strip
+      else
+        istr
+      end
+    end
   end
 
 
@@ -165,6 +196,7 @@ defmodule Floki do
     acc = find_by_selector(selector, h, matcher, acc)
     find_by_selector(selector, t, matcher, acc)
   end
+  # Ignores comments
   defp find_by_selector(_selector, { :comment, _comment }, _, acc), do: acc
   defp find_by_selector(selector, node, matcher, acc) when is_tuple(node) do
     { _, _, child_node } = node
@@ -184,8 +216,8 @@ defmodule Floki do
 
       attribute_match?(attributes, attr_name)
     end)
-    |> Enum.reject(fn(x) -> is_nil(x) end)
-    |> Enum.map(fn({_attr_name, value}) -> value end)
+      |> Enum.reject(fn(x) -> is_nil(x) end)
+      |> Enum.map(fn({_attr_name, value}) -> value end)
   end
 
   defp class_matcher(class_name, node, acc) do
