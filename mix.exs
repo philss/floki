@@ -3,11 +3,11 @@ defmodule Floki.Mixfile do
 
   def project do
     [app: :floki,
-     version: "0.0.4",
+     version: "0.0.5",
      elixir: ">= 1.0.0",
      package: package,
      description: description,
-     docs: [readme: true, main: "README"],
+     docs: [readme: "README.md"],
      deps: deps]
   end
 
