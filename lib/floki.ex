@@ -149,8 +149,8 @@ defmodule Floki do
 
   ## Examples
 
-    iex> Floki.text("<div><span>something else</span>hello world</div>")
-    "hello world"
+      iex> Floki.text("<div><span>something else</span>hello world</div>")
+      "hello world"
 
   """
 

@@ -3,8 +3,6 @@ Floki
 
 [![Build Status](https://travis-ci.org/philss/floki.svg?branch=master)](https://travis-ci.org/philss/floki)
 
-A HTML parser and seeker.
-
 This is a simple HTML parser that enables searching using CSS like selectors.
 
 You can search elements by class, tag name and id.
@@ -16,6 +14,7 @@ You can search elements by class, tag name and id.
 Assuming that you have the following HTML:
 
 ```html
+<!doctype html>
 <html>
 <body>
 <section id="content">
@@ -90,8 +89,17 @@ You can also get attributes from elements that you already have:
 
 ```elixir
 Floki.find(html, ".example")
-|> Floki.attribute("class")
+  |> Floki.attribute("class")
 # => ["example"]
+```
+
+If you want to get the text from an element, try:
+
+```elixir
+Floki.find(html, ".headline")
+  |> Floki.text
+
+# => "Floki"
 ```
 
 ## License
