@@ -132,4 +132,8 @@ defmodule FlokiTest do
 
     assert text == "the answer"
   end
+
+  test "get text from a html string" do
+    assert Floki.text("<p><span>something else</span>hello world</p>") == "hello world"
+  end
 end

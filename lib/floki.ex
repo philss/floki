@@ -149,14 +149,14 @@ defmodule Floki do
 
   ## Examples
 
-    iex> Floki.find("<p><span>something else</span>hello world</p>", "p") |>
-          Floki.text
+    iex> Floki.text("<div><span>something else</span>hello world</div>")
     "hello world"
 
   """
 
-  @spec text(html_tree) :: binary
+  @spec text(html_tree | binary) :: binary
 
+  def text(html) when is_binary(html), do: parse(html) |> text
   def text(element) when is_tuple(element), do: text(element, "")
   def text(elements) do
     Enum.reduce elements, "", fn(element, str) ->
