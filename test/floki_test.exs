@@ -106,7 +106,7 @@ defmodule FlokiTest do
   test "find element by id" do
     id = "#logo"
 
-    assert Floki.find(@html_with_img, id) == { "img", [{"src", "logo.png"}, {"id", "logo"}], [] }
+    assert Floki.find(@html_with_img, id) == {"img", [{"src", "logo.png"}, {"id", "logo"}], []}
   end
 
   test "get text from element" do

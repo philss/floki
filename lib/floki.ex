@@ -56,7 +56,7 @@ defmodule Floki do
   ## Examples
 
       iex> Floki.parse("<div class=js-action>hello world</div>")
-      {"div", [{"class", "js-action" }], ["hello world"]}
+      {"div", [{"class", "js-action"}], ["hello world"]}
 
   """
   @spec parse(binary) :: html_tree
@@ -76,7 +76,7 @@ defmodule Floki do
   ## Examples
 
       iex> Floki.find("<p><span class=hint>hello</span></p>", ".hint")
-      [{"span", [{ "class", "hint" }], ["hello"]}]
+      [{"span", [{"class", "hint"}], ["hello"]}]
 
       iex> "<body><div id=important><div>Content</div></div></body>" |> Floki.find("#important")
       {"div", [{"id", "important"}], [{"div", [], ["Content"]}]}
@@ -94,19 +94,19 @@ defmodule Floki do
   end
 
   def find(html_tree, "." <> class) do
-    {:ok, nodes } = find_by_selector(class, html_tree, &class_matcher/3, { :ok, [] })
+    {:ok, nodes} = find_by_selector(class, html_tree, &class_matcher/3, {:ok, []})
     nodes
       |> Enum.reverse
   end
 
   def find(html_tree, "#" <> id) do
-    { _status, nodes } = find_by_selector(id, html_tree, &id_matcher/3, { :ok, [] })
+    {_status, nodes} = find_by_selector(id, html_tree, &id_matcher/3, {:ok, []})
     nodes
       |> List.first
   end
 
   def find(html_tree, tag_name) do
-    {:ok, nodes} = find_by_selector(tag_name, html_tree, &tag_matcher/3, {:ok, [] })
+    {:ok, nodes} = find_by_selector(tag_name, html_tree, &tag_matcher/3, {:ok, []})
     nodes
       |> Enum.reverse
   end
@@ -179,14 +179,14 @@ defmodule Floki do
 
 
   defp attribute_match?(attributes, attribute_name) do
-    Enum.find(attributes, fn({ attr_name, _ }) ->
+    Enum.find(attributes, fn({attr_name, _}) ->
       attr_name == attribute_name
     end)
   end
 
   defp attribute_match?(attributes, attribute_name, selector_value) do
     Enum.find(attributes, fn(attribute) ->
-      { attr_name, attr_value } = attribute
+      {attr_name, attr_value} = attribute
 
       attr_name == attribute_name && value_match?(attr_value, selector_value)
     end)
@@ -201,9 +201,9 @@ defmodule Floki do
     find_by_selector(selector, t, matcher, acc)
   end
   # Ignores comments
-  defp find_by_selector(_selector, { :comment, _comment }, _, acc), do: acc
+  defp find_by_selector(_selector, {:comment, _comment}, _, acc), do: acc
   defp find_by_selector(selector, node, matcher, acc) when is_tuple(node) do
-    { _, _, child_node } = node
+    {_, _, child_node} = node
 
     acc = matcher.(selector, node, acc)
 
@@ -216,7 +216,7 @@ defmodule Floki do
   end
   defp get_attribute_values(elements, attr_name) do
     Enum.map(elements, fn(el) ->
-      { _name, attributes, _childs } = el
+      {_name, attributes, _childs} = el
 
       attribute_match?(attributes, attr_name)
     end)
@@ -225,33 +225,33 @@ defmodule Floki do
   end
 
   defp class_matcher(class_name, node, acc) do
-    { _, attributes, _ } = node
-    { :ok, acc_nodes } = acc
+    {_, attributes, _} = node
+    {:ok, acc_nodes} = acc
 
     if attribute_match?(attributes, "class", class_name) do
-      acc = {:ok, [node|acc_nodes] }
+      acc = {:ok, [node|acc_nodes]}
     end
 
     acc
   end
 
   defp tag_matcher(tag_name, node, acc) do
-    { tag, _, _ } = node
-    { :ok, acc_nodes } = acc
+    {tag, _, _} = node
+    {:ok, acc_nodes} = acc
 
     if tag == tag_name do
-      acc = {:ok, [node|acc_nodes] }
+      acc = {:ok, [node|acc_nodes]}
     end
 
     acc
   end
 
   defp id_matcher(id, node, acc) do
-    { _, attributes, _ } = node
-    { :ok, acc_nodes } = acc
+    {_, attributes, _} = node
+    {:ok, acc_nodes} = acc
 
     if attribute_match?(attributes, "id", id) do
-      acc = {:done, [node|acc_nodes] }
+      acc = {:done, [node|acc_nodes]}
     end
 
     acc
