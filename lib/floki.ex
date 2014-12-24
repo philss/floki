@@ -94,17 +94,20 @@ defmodule Floki do
   end
 
   def find(html_tree, "." <> class) do
-    find_by_selector(class, html_tree, &class_matcher/3, [])
+    {:ok, nodes } = find_by_selector(class, html_tree, &class_matcher/3, { :ok, [] })
+    nodes
       |> Enum.reverse
   end
 
   def find(html_tree, "#" <> id) do
-    find_by_selector(id, html_tree, &id_matcher/3, [])
+    { _status, nodes } = find_by_selector(id, html_tree, &id_matcher/3, { :ok, [] })
+    nodes
       |> List.first
   end
 
   def find(html_tree, tag_name) do
-    find_by_selector(tag_name, html_tree, &tag_matcher/3, [])
+    {:ok, nodes} = find_by_selector(tag_name, html_tree, &tag_matcher/3, {:ok, [] })
+    nodes
       |> Enum.reverse
   end
 
@@ -191,6 +194,7 @@ defmodule Floki do
 
   defp find_by_selector(_selector, {}, _, acc), do: acc
   defp find_by_selector(_selector, [], _, acc), do: acc
+  defp find_by_selector(_selector, _, _, {:done, nodes}), do: {:done, nodes}
   defp find_by_selector(_selector, tree, _, acc) when is_binary(tree), do: acc
   defp find_by_selector(selector, [h|t], matcher, acc) do
     acc = find_by_selector(selector, h, matcher, acc)
@@ -222,9 +226,10 @@ defmodule Floki do
 
   defp class_matcher(class_name, node, acc) do
     { _, attributes, _ } = node
+    { :ok, acc_nodes } = acc
 
     if attribute_match?(attributes, "class", class_name) do
-      acc = [node|acc]
+      acc = {:ok, [node|acc_nodes] }
     end
 
     acc
@@ -232,9 +237,10 @@ defmodule Floki do
 
   defp tag_matcher(tag_name, node, acc) do
     { tag, _, _ } = node
+    { :ok, acc_nodes } = acc
 
     if tag == tag_name do
-     acc = [node|acc]
+      acc = {:ok, [node|acc_nodes] }
     end
 
     acc
@@ -242,9 +248,10 @@ defmodule Floki do
 
   defp id_matcher(id, node, acc) do
     { _, attributes, _ } = node
+    { :ok, acc_nodes } = acc
 
     if attribute_match?(attributes, "id", id) do
-      acc = [node|acc]
+      acc = {:done, [node|acc_nodes] }
     end
 
     acc
