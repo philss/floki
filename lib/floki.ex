@@ -99,6 +99,12 @@ defmodule Floki do
       |> Enum.reverse
   end
 
+  def find(html_tree, selector) when is_tuple(selector) do
+    {:ok, nodes} = find_by_selector(selector, html_tree, &attr_matcher/3, {:ok, []})
+    nodes
+      |> Enum.reverse
+  end
+
   def find(html_tree, "#" <> id) do
     {_status, nodes} = find_by_selector(id, html_tree, &id_matcher/3, {:ok, []})
     nodes
@@ -222,6 +228,27 @@ defmodule Floki do
     end)
       |> Enum.reject(fn(x) -> is_nil(x) end)
       |> Enum.map(fn({_attr_name, value}) -> value end)
+  end
+
+  defp attr_matcher({attr, value}, node, acc) do
+    {_, attributes, _} = node
+    {:ok, acc_nodes} = acc
+
+    if attribute_match?(attributes, attr, value) do
+      acc = {:ok, [node|acc_nodes]}
+    end
+
+    acc
+  end
+  defp attr_matcher({tag_name, attr, value}, node, acc) do
+    {tag, attributes, _} = node
+    {:ok, acc_nodes} = acc
+
+    if tag == tag_name and attribute_match?(attributes, attr, value) do
+      acc = {:ok, [node|acc_nodes]}
+    end
+
+    acc
   end
 
   defp class_matcher(class_name, node, acc) do

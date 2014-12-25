@@ -16,6 +16,21 @@ defmodule FlokiTest do
   </html>
   """
 
+  @html_with_data_attributes """
+  <html>
+  <head>
+  <title>Test</title>
+  </head>
+  <body>
+    <div class="content">
+      <a href="http://google.com" class="js-google js-cool" data-action="lolcats">Google</a>
+      <a href="http://elixir-lang.org" class="js-elixir js-cool">Elixir lang</a>
+      <a href="http://java.com" class="js-java">Java</a>
+    </div>
+  </body>
+  </html>
+  """
+
   @html_with_img """
   <html>
   <body>
@@ -39,6 +54,18 @@ defmodule FlokiTest do
                                 [{"a", [{"href", "http://google.com"}, {"class", "js-google js-cool"}], ["Google"]},
                                   {"a", [{"href", "http://elixir-lang.org"}, {"class", "js-elixir js-cool"}], ["Elixir lang"]},
                                   {"a", [{"href", "http://java.com"}, {"class", "js-java"}], ["Java"]}]}]}]}
+  end
+
+  test "find elements with a tag and a given attribute value" do
+    attribute_selector = {"a", "data-action", "lolcats"}
+
+    assert Floki.find(@html_with_data_attributes, attribute_selector) == [{"a", [{"href", "http://google.com"}, {"class", "js-google js-cool"}, {"data-action", "lolcats"}], ["Google"]}]
+  end
+
+  test "find elements only by given attribute value" do
+    attribute_selector = {"data-action", "lolcats"}
+
+    assert Floki.find(@html_with_data_attributes, attribute_selector) == [{"a", [{"href", "http://google.com"}, {"class", "js-google js-cool"}, {"data-action", "lolcats"}], ["Google"]}]
   end
 
   test "find elements with a given class" do
