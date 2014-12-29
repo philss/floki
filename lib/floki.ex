@@ -160,14 +160,14 @@ defmodule Floki do
   @spec text(html_tree | binary) :: binary
 
   def text(html) when is_binary(html), do: parse(html) |> text
-  def text(element) when is_tuple(element), do: text(element, "")
+  def text(element) when is_tuple(element), do: _text(element, "")
   def text(elements) do
     Enum.reduce elements, "", fn(element, str) ->
-      text(element, str)
+      _text(element, str)
     end
   end
 
-  defp text({_, _, children}, acc) do
+  defp _text({_, _, children}, acc) do
     Enum.reduce children, acc, fn(child, istr) ->
       if is_binary(child) do
         (istr <> "\s" <> child) |> String.strip
@@ -177,11 +177,10 @@ defmodule Floki do
     end
   end
 
-
   defp attribute_match?(attributes, attribute_name) do
-    Enum.find(attributes, fn({attr_name, _}) ->
+    Enum.find attributes, fn({attr_name, _}) ->
       attr_name == attribute_name
-    end)
+    end
   end
 
   defp attribute_match?(attributes, attribute_name, selector_value) do
@@ -209,7 +208,6 @@ defmodule Floki do
 
     find_by_selector(selector, child_node, matcher, acc)
   end
-
 
   defp get_attribute_values(element, attr_name) when is_tuple(element) do
     get_attribute_values([element], attr_name)
