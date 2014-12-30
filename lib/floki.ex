@@ -59,10 +59,13 @@ defmodule Floki do
       {"div", [{"class", "js-action"}], ["hello world"]}
 
   """
+
   @spec parse(binary) :: html_tree
+
   def parse(html) do
     :mochiweb_html.parse(html)
   end
+
 
   @doc """
   Finds elements inside a HTML tree or string.
@@ -111,6 +114,7 @@ defmodule Floki do
       |> Enum.reverse
   end
 
+
   @doc """
   Returns a list with attribute values for a given selector.
 
@@ -126,7 +130,7 @@ defmodule Floki do
   def attribute(html, selector, attribute_name) do
     html
       |> find(selector)
-      |> get_attribute_values(attribute_name)
+      |> attribute_values(attribute_name)
   end
 
   @doc """
@@ -143,7 +147,7 @@ defmodule Floki do
 
   def attribute(elements, attribute_name) do
     elements
-      |> get_attribute_values(attribute_name)
+      |> attribute_values(attribute_name)
   end
 
 
@@ -177,6 +181,7 @@ defmodule Floki do
     end
   end
 
+
   defp attribute_match?(attributes, attribute_name) do
     Enum.find attributes, fn({attr_name, _}) ->
       attr_name == attribute_name
@@ -184,12 +189,13 @@ defmodule Floki do
   end
 
   defp attribute_match?(attributes, attribute_name, selector_value) do
-    Enum.find(attributes, fn(attribute) ->
+    Enum.find attributes, fn(attribute) ->
       {attr_name, attr_value} = attribute
 
       attr_name == attribute_name && value_match?(attr_value, selector_value)
-    end)
+    end
   end
+
 
   defp find_by_selector(_selector, {}, _, acc), do: acc
   defp find_by_selector(_selector, [], _, acc), do: acc
@@ -201,7 +207,7 @@ defmodule Floki do
   end
   # Ignores comments
   defp find_by_selector(_selector, {:comment, _comment}, _, acc), do: acc
-  defp find_by_selector(selector, node, matcher, acc) when is_tuple(node) do
+  defp find_by_selector(selector, node, matcher, acc) do
     {_, _, child_node} = node
 
     acc = matcher.(selector, node, acc)
@@ -209,18 +215,23 @@ defmodule Floki do
     find_by_selector(selector, child_node, matcher, acc)
   end
 
-  defp get_attribute_values(element, attr_name) when is_tuple(element) do
-    get_attribute_values([element], attr_name)
-  end
-  defp get_attribute_values(elements, attr_name) do
-    Enum.map(elements, fn(el) ->
-      {_name, attributes, _childs} = el
 
-      attribute_match?(attributes, attr_name)
-    end)
-      |> Enum.reject(fn(x) -> is_nil(x) end)
-      |> Enum.map(fn({_attr_name, value}) -> value end)
+  defp attribute_values(element, attr_name) when is_tuple(element) do
+    attribute_values([element], attr_name)
   end
+  defp attribute_values(elements, attr_name) do
+    values = Enum.reduce elements, [], fn({_, attributes, _}, acc) ->
+      case attribute_match?(attributes, attr_name) do
+        {_attr_name, value} ->
+          [value|acc]
+        _ ->
+          acc
+      end
+    end
+
+    Enum.reverse values
+  end
+
 
   defp class_matcher(class_name, node, acc) do
     {_, attributes, _} = node
@@ -233,6 +244,7 @@ defmodule Floki do
     acc
   end
 
+
   defp tag_matcher(tag_name, node, acc) do
     {tag, _, _} = node
     {:ok, acc_nodes} = acc
@@ -244,6 +256,7 @@ defmodule Floki do
     acc
   end
 
+
   defp id_matcher(id, node, acc) do
     {_, attributes, _} = node
     {:ok, acc_nodes} = acc
@@ -254,6 +267,7 @@ defmodule Floki do
 
     acc
   end
+
 
   defp value_match?(attribute_value, selector_value) do
     attribute_value
