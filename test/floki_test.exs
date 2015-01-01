@@ -32,32 +32,77 @@ defmodule FlokiTest do
   test "parse simple html" do
     parsed = Floki.parse(@html)
 
-    assert parsed == {"html", [],
-                        [{"head", [], [{"title", [], ["Test"]}]},
-                          {"body", [],
-                            [{"div", [{"class", "content"}],
-                                [{"a", [{"href", "http://google.com"}, {"class", "js-google js-cool"}], ["Google"]},
-                                  {"a", [{"href", "http://elixir-lang.org"}, {"class", "js-elixir js-cool"}], ["Elixir lang"]},
-                                  {"a", [{"href", "http://java.com"}, {"class", "js-java"}], ["Java"]}]}]}]}
+    assert parsed == {
+      "html", [],
+      [{"head", [], [{"title", [], ["Test"]}]},
+        {"body", [],
+          [{"div", [{"class", "content"}],
+            [
+              {
+                "a",
+                [
+                  {"href", "http://google.com"},
+                  {"class", "js-google js-cool"}
+                ],
+                ["Google"]
+              },
+              {
+                "a",
+                [
+                  {"href", "http://elixir-lang.org"},
+                  {"class", "js-elixir js-cool"}
+                ],
+                ["Elixir lang"]
+              },
+              {
+                "a",
+                [
+                  {"href", "http://java.com"},
+                  {"class", "js-java"}
+                ],
+                ["Java"]
+              }
+            ]
+          }]
+        }
+       ]
+      }
   end
 
   test "find elements with a given class" do
     class_selector = ".js-cool"
 
-    assert Floki.find(@html, class_selector) == [{"a", [{"href", "http://google.com"}, {"class", "js-google js-cool"}], ["Google"]},
-      {"a", [{"href", "http://elixir-lang.org"}, {"class", "js-elixir js-cool"}], ["Elixir lang"]}]
+    assert Floki.find(@html, class_selector) == [
+      {"a", [
+          {"href", "http://google.com"},
+          {"class", "js-google js-cool"}
+        ], ["Google"]},
+      {"a", [
+          {"href", "http://elixir-lang.org"},
+          {"class", "js-elixir js-cool"}],
+        ["Elixir lang"]}
+    ]
   end
 
   test "find element that does not have child node" do
     class_selector = ".js-twitter-logo"
 
-    assert Floki.find(@html_with_img, class_selector) == [{"img", [{"src", "http://twitter.com/logo.png"}, {"class", "js-twitter-logo"}], []}]
+    assert Floki.find(@html_with_img, class_selector) == [{
+      "img", [
+          {"src", "http://twitter.com/logo.png"},
+          {"class", "js-twitter-logo"}], []
+      }]
   end
 
   test "find element that does close the tag" do
     class_selector = ".img-without-closing-tag"
 
-    assert Floki.find(@html_with_img, class_selector) == [{"img", [{"src", "http://twitter.com/logo.png"}, {"class", "img-without-closing-tag"}], []}]
+    assert Floki.find(@html_with_img, class_selector) == [{
+        "img", [
+          {"src", "http://twitter.com/logo.png"},
+          {"class", "img-without-closing-tag"}
+        ], []
+      }]
   end
 
   test "does not find elements" do
@@ -100,13 +145,22 @@ defmodule FlokiTest do
     tag_name = "a"
     elements = Floki.find(@html_with_img, tag_name)
 
-    assert elements == [{"a", [{"href", "http://twitter.com"}], [{"img", [{"src", "http://twitter.com/logo.png"}, {"class", "js-twitter-logo"}], []}]}]
+    assert elements == [{
+        "a",
+        [{"href", "http://twitter.com"}],
+        [{"img", [{"src", "http://twitter.com/logo.png"},
+                  {"class", "js-twitter-logo"}], []}]
+      }]
   end
 
   test "find element by id" do
     id = "#logo"
 
-    assert Floki.find(@html_with_img, id) == {"img", [{"src", "logo.png"}, {"id", "logo"}], []}
+    assert Floki.find(@html_with_img, id) == {
+      "img",
+      [{"src", "logo.png"}, {"id", "logo"}],
+      []
+    }
   end
 
   test "get text from element" do
@@ -125,15 +179,21 @@ defmodule FlokiTest do
 
   test "get text from the element (id selector)" do
     id_selector = "#with-text"
+
     html = """
       <div><p id="with-text"><span>something else</span>the answer</p></div>
     """
+
     text = Floki.find(html, id_selector) |> Floki.text
 
     assert text == "the answer"
   end
 
   test "get text from a html string" do
-    assert Floki.text("<p><span>something else</span>hello world</p>") == "hello world"
+    html = """
+      <p><span>something else</span>hello world</p>
+    """
+
+    assert Floki.text(html) == "hello world"
   end
 end
