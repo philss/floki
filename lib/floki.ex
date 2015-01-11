@@ -40,10 +40,10 @@ defmodule Floki do
   You can write a simple HTML crawler (with support of [HTTPoison](https://github.com/edgurgel/httpoison)) with a few lines of code:
 
       html
-        |> Floki.find(".pages")
-        |> Floki.find("a")
-        |> Floki.attribute("href")
-        |> Enum.map(fn(url) -> HTTPoison.get!(url) end)
+      |> Floki.find(".pages")
+      |> Floki.find("a")
+      |> Floki.attribute("href")
+      |> Enum.map(fn(url) -> HTTPoison.get!(url) end)
 
   It is simple as that!
   """
@@ -74,7 +74,7 @@ defmodule Floki do
   It is possible to compose searches:
 
       Floki.find(html_string, ".class")
-       |> Floki.find(".another-class-inside-small-scope")
+      |> Floki.find(".another-class-inside-small-scope")
 
   ## Examples
 
@@ -92,26 +92,27 @@ defmodule Floki do
   @spec find(binary | html_tree, binary) :: html_tree
 
   def find(html, selector) when is_binary(html) do
-    parse(html)
-      |> find(selector)
+    html
+    |> parse
+    |> find(selector)
   end
 
   def find(html_tree, "." <> class) do
     {:ok, nodes} = find_by_selector(class, html_tree, &class_matcher/3, {:ok, []})
-    nodes
-      |> Enum.reverse
+
+    Enum.reverse(nodes)
   end
 
   def find(html_tree, "#" <> id) do
     {_status, nodes} = find_by_selector(id, html_tree, &id_matcher/3, {:ok, []})
-    nodes
-      |> List.first
+
+    List.first(nodes)
   end
 
   def find(html_tree, tag_name) do
     {:ok, nodes} = find_by_selector(tag_name, html_tree, &tag_matcher/3, {:ok, []})
-    nodes
-      |> Enum.reverse
+
+    Enum.reverse(nodes)
   end
 
 
@@ -129,8 +130,8 @@ defmodule Floki do
 
   def attribute(html, selector, attribute_name) do
     html
-      |> find(selector)
-      |> attribute_values(attribute_name)
+    |> find(selector)
+    |> attribute_values(attribute_name)
   end
 
   @doc """
@@ -147,7 +148,7 @@ defmodule Floki do
 
   def attribute(elements, attribute_name) do
     elements
-      |> attribute_values(attribute_name)
+    |> attribute_values(attribute_name)
   end
 
 
@@ -271,7 +272,7 @@ defmodule Floki do
 
   defp value_match?(attribute_value, selector_value) do
     attribute_value
-      |> String.split
-      |> Enum.any?(fn(x) -> x == selector_value end)
+    |> String.split
+    |> Enum.any?(fn(x) -> x == selector_value end)
   end
 end

@@ -46,10 +46,10 @@ You can write a simple HTML crawler (with support of [HTTPoison](https://github.
 
 ```elixir
 html
-  |> Floki.find(".pages")
-  |> Floki.find("a")
-  |> Floki.attribute("href")
-  |> Enum.map(fn(url) -> HTTPoison.get!(url) end)
+|> Floki.find(".pages")
+|> Floki.find("a")
+|> Floki.attribute("href")
+|> Enum.map(fn(url) -> HTTPoison.get!(url) end)
 ```
 
 It is simple as that!
@@ -89,7 +89,7 @@ You can also get attributes from elements that you already have:
 
 ```elixir
 Floki.find(html, ".example")
-  |> Floki.attribute("class")
+|> Floki.attribute("class")
 # => ["example"]
 ```
 
@@ -97,7 +97,7 @@ If you want to get the text from an element, try:
 
 ```elixir
 Floki.find(html, ".headline")
-  |> Floki.text
+|> Floki.text
 
 # => "Floki"
 ```
