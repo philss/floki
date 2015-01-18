@@ -92,9 +92,12 @@ defmodule Floki do
   @spec find(binary | html_tree, binary) :: html_tree
 
   def find(html, selector) when is_binary(html) do
-    html
-    |> parse
-    |> find(selector)
+    html_tree = parse(html)
+    descendant_selector = String.split(selector)
+
+    Enum.reduce descendant_selector, html_tree, fn(selector, tree) ->
+      find(tree, selector)
+    end
   end
 
   def find(html_tree, "." <> class) do

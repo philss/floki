@@ -196,4 +196,15 @@ defmodule FlokiTest do
 
     assert Floki.text(html) == "hello world"
   end
+
+  test "get elements descending the parent" do
+    expected = [
+      {"img", [
+          {"src", "http://twitter.com/logo.png"},
+          {"class", "js-twitter-logo"}],
+        []}
+    ]
+
+    assert Floki.find(@html_with_img, "a img") == expected
+  end
 end
