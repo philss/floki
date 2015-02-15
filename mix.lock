@@ -1,3 +1,2 @@
-%{"earmark": {:hex, :earmark, "0.1.12"},
-  "ex_doc": {:hex, :ex_doc, "0.6.2"},
-  "mochiweb": {:git, "https://github.com/mochi/mochiweb.git", "66a6535692da7b8830bd141eee26025af4928b8a", [tag: "v2.9.2"]}}
+%{"earmark": {:hex, :earmark, "0.1.13"},
+  "ex_doc": {:hex, :ex_doc, "0.7.1"}}

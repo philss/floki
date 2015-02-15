@@ -24,7 +24,9 @@ defmodule Floki do
 
     * Floki.find(html, "#content") : returns the section with all children;
     * Floki.find(html, ".headline") : returns a list with the `p` element;
-    * Floki.find(html, "a") : returns a list with the `a` element.
+    * Floki.find(html, "a") : returns a list with the `a` element;
+    * Floki.find(html, "#content a") # returns all links inside content section;
+    * Floki.find(html, ".headline, a") # returns the .headline elements and links.
 
   Each HTML node is represented by a tuple like:
 
