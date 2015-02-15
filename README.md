@@ -27,9 +27,13 @@ Assuming that you have the following HTML:
 
 You can perform the following queries:
 
-  * Floki.find(html, "#content") : returns the section with all children;
-  * Floki.find(html, ".headline") : returns a list with the `p` element;
-  * Floki.find(html, "a") : returns a list with the `a` element.
+```elixir
+Floki.find(html, "#content") # returns the section with all children
+Floki.find(html, ".headline") # returns a list with the `p` element
+Floki.find(html, "a") # returns a list with the `a` element
+Floki.find(html, "#content a") # returns all links inside content section
+Floki.find(html, ".headline, a") # returns the .headline elements and links
+```
 
 Each HTML node is represented by a tuple like:
 
@@ -46,8 +50,7 @@ You can write a simple HTML crawler (with support of [HTTPoison](https://github.
 
 ```elixir
 html
-|> Floki.find(".pages")
-|> Floki.find("a")
+|> Floki.find(".pages a")
 |> Floki.attribute("href")
 |> Enum.map(fn(url) -> HTTPoison.get!(url) end)
 ```
