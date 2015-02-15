@@ -93,31 +93,34 @@ defmodule Floki do
 
   def find(html, selector) when is_binary(html) do
     html_tree = parse(html)
-    descendant_selector = String.split(selector)
 
-    Enum.reduce descendant_selector, html_tree, fn(selector, tree) ->
-      find(tree, selector)
+    find(html_tree, selector)
+  end
+
+  def find(html_tree, selector) do
+    cond do
+      String.contains?(selector, "\s") ->
+        descendent_selector = String.split(selector)
+
+        Enum.reduce descendent_selector, html_tree, fn(selector, tree) ->
+          find(tree, selector)
+        end
+      String.starts_with?(selector, ".") ->
+        "." <> class = selector
+        {:ok, nodes} = find_by_selector(class, html_tree, &class_matcher/3, {:ok, []})
+
+        Enum.reverse(nodes)
+      String.starts_with?(selector, "#") ->
+        "#" <> id = selector
+        {_status, nodes} = find_by_selector(id, html_tree, &id_matcher/3, {:ok, []})
+
+        List.first(nodes)
+      true ->
+        {:ok, nodes} = find_by_selector(selector, html_tree, &tag_matcher/3, {:ok, []})
+
+        Enum.reverse(nodes)
     end
   end
-
-  def find(html_tree, "." <> class) do
-    {:ok, nodes} = find_by_selector(class, html_tree, &class_matcher/3, {:ok, []})
-
-    Enum.reverse(nodes)
-  end
-
-  def find(html_tree, "#" <> id) do
-    {_status, nodes} = find_by_selector(id, html_tree, &id_matcher/3, {:ok, []})
-
-    List.first(nodes)
-  end
-
-  def find(html_tree, tag_name) do
-    {:ok, nodes} = find_by_selector(tag_name, html_tree, &tag_matcher/3, {:ok, []})
-
-    Enum.reverse(nodes)
-  end
-
 
   @doc """
   Returns a list with attribute values for a given selector.
@@ -154,7 +157,6 @@ defmodule Floki do
     |> attribute_values(attribute_name)
   end
 
-
   @doc """
   Returns the text nodes from a html tree.
 
@@ -185,7 +187,6 @@ defmodule Floki do
     end
   end
 
-
   defp attribute_match?(attributes, attribute_name) do
     Enum.find attributes, fn({attr_name, _}) ->
       attr_name == attribute_name
@@ -199,7 +200,6 @@ defmodule Floki do
       attr_name == attribute_name && value_match?(attr_value, selector_value)
     end
   end
-
 
   defp find_by_selector(_selector, {}, _, acc), do: acc
   defp find_by_selector(_selector, [], _, acc), do: acc
@@ -219,7 +219,6 @@ defmodule Floki do
     find_by_selector(selector, child_node, matcher, acc)
   end
 
-
   defp attribute_values(element, attr_name) when is_tuple(element) do
     attribute_values([element], attr_name)
   end
@@ -236,7 +235,6 @@ defmodule Floki do
     Enum.reverse values
   end
 
-
   defp class_matcher(class_name, node, acc) do
     {_, attributes, _} = node
     {:ok, acc_nodes} = acc
@@ -247,7 +245,6 @@ defmodule Floki do
 
     acc
   end
-
 
   defp tag_matcher(tag_name, node, acc) do
     {tag, _, _} = node
@@ -260,7 +257,6 @@ defmodule Floki do
     acc
   end
 
-
   defp id_matcher(id, node, acc) do
     {_, attributes, _} = node
     {:ok, acc_nodes} = acc
@@ -271,7 +267,6 @@ defmodule Floki do
 
     acc
   end
-
 
   defp value_match?(attribute_value, selector_value) do
     attribute_value
