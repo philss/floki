@@ -1,9 +1,10 @@
 Floki
 =====
 
-[![Build Status](https://travis-ci.org/philss/floki.svg?branch=master)](https://travis-ci.org/philss/floki)
+[![Build status](https://travis-ci.org/philss/floki.svg?branch=master)](https://travis-ci.org/philss/floki)
+[![Floki version](https://img.shields.io/hexpm/v/floki.svg)](https://hex.pm/packages/floki)
 
-This is a simple HTML parser that enables searching using CSS like selectors.
+This is a simple HTML parser that enables search using CSS like selectors.
 
 You can search elements by class, tag name and id.
 

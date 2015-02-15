@@ -3,7 +3,7 @@ defmodule Floki.Mixfile do
 
   def project do
     [app: :floki,
-     version: "0.0.5",
+     version: "0.1.0",
      elixir: ">= 1.0.0",
      package: package,
      description: description,
@@ -15,7 +15,7 @@ defmodule Floki.Mixfile do
   #
   # Type `mix help compile.app` for more information
   def application do
-    [applications: [:logger]]
+    []
   end
 
   # Dependencies can be Hex packages:
@@ -34,7 +34,7 @@ defmodule Floki.Mixfile do
 
   defp description do
     """
-    A HTML parser and seeker.
+    A HTML parser and searcher.
 
     You can search inside HTML documents using CSS like selectors.
     """
