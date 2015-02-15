@@ -99,6 +99,18 @@ defmodule Floki do
 
   def find(html_tree, selector) do
     cond do
+      String.contains?(selector, ",") ->
+        selectors = String.split(selector, ",")
+
+        Enum.reduce selectors, [], fn(selector, acc) ->
+          selector = String.strip(selector)
+
+          nodes = find(html_tree, selector)
+
+          unless is_list(nodes), do: nodes = [nodes]
+
+          Enum.concat(acc, nodes)
+        end
       String.contains?(selector, "\s") ->
         descendent_selector = String.split(selector)
 

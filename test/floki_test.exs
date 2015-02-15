@@ -207,4 +207,23 @@ defmodule FlokiTest do
 
     assert Floki.find(@html_with_img, "a img") == expected
   end
+
+  test "get multiple elements using comma" do
+    expected = [
+      {"img", [
+          {"src", "http://twitter.com/logo.png"},
+          {"class", "js-twitter-logo"}], []},
+      {"img", [
+          {"src", "logo.png"},
+          {"id", "logo"}], []}
+    ]
+
+    assert Floki.find(@html_with_img, ".js-twitter-logo, #logo") == expected
+  end
+
+  test "get one elements when search for multiple and just one exist" do
+    expected = [ {"img", [ {"src", "logo.png"}, {"id", "logo"}], []} ]
+
+    assert Floki.find(@html_with_img, ".js-x-logo, #logo") == expected
+  end
 end
