@@ -5,9 +5,16 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 
+## [0.1.1] - 2015-03-25
+
 ### Added
 
-- Added CHANGELOG.md following the http://keepachangelog.com/
+- Added CHANGELOG.md following the [Keep a changelog](http://keepachangelog.com/).
+
+### Changed
+
+- Using MochiWeb as a hex dependency instead of embedded code.
+It closes the [issue #5](https://github.com/philss/floki/issues/5)
 
 ## [0.1.0] - 2015-02-15
 
@@ -27,6 +34,7 @@ of the parent element inside HTML.
 
 - Elixir version requirement from "~> 1.0.0" to ">= 1.0.0".
 
-[unreleased]: https://github.com/philss/floki/compare/v0.1.0...HEAD
+[unreleased]: https://github.com/philss/floki/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/philss/floki/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/philss/floki/compare/v0.0.5...v0.1.0
 [0.0.5]: https://github.com/philss/floki/compare/v0.0.3...v0.0.5
