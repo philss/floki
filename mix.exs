@@ -28,8 +28,11 @@ defmodule Floki.Mixfile do
   #
   # Type `mix help deps` for more examples and options
   defp deps do
-    [{:earmark, "~> 0.1", only: :dev},
-      {:ex_doc, "~> 0.6", only: :dev}]
+    [
+      {:mochiweb, "~> 2.12.2"},
+      {:earmark, "~> 0.1", only: :dev},
+      {:ex_doc, "~> 0.6", only: :dev}
+    ]
   end
 
   defp description do
@@ -44,7 +47,7 @@ defmodule Floki.Mixfile do
     %{
       contributors: ["Philip Sampaio Silva"],
       licenses: ["MIT"],
-      files: ["lib", "priv", "mix.exs", "README*", "readme*", "LICENSE*", "license*", "src"],
+      files: ["lib", "priv", "mix.exs", "README*", "readme*", "LICENSE*", "license*"],
       links: %{
         "GitHub" => "https://github.com/philss/floki",
         "Docs"   => "http://hexdocs.pm/floki"
