@@ -30,7 +30,7 @@ defmodule Floki do
 
   Each HTML node is represented by a tuple like:
 
-      {tag_name, attributes, chidren_nodes}
+      {tag_name, attributes, children_nodes}
 
   Example of node:
 

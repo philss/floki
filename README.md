@@ -38,7 +38,7 @@ Floki.find(html, ".headline, a") # returns the .headline elements and links
 
 Each HTML node is represented by a tuple like:
 
-    {tag_name, attributes, chidren_nodes}
+    {tag_name, attributes, children_nodes}
 
 Example of node:
 
