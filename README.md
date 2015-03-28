@@ -1,10 +1,6 @@
-Floki
-=====
+# Floki [![Build status](https://travis-ci.org/philss/floki.svg?branch=master)](https://travis-ci.org/philss/floki) [![Floki version](https://img.shields.io/hexpm/v/floki.svg)](https://hex.pm/packages/floki)
 
-[![Build status](https://travis-ci.org/philss/floki.svg?branch=master)](https://travis-ci.org/philss/floki)
-[![Floki version](https://img.shields.io/hexpm/v/floki.svg)](https://hex.pm/packages/floki)
-
-This is a simple HTML parser that enables search using CSS like selectors.
+Floki is a simple HTML parser that enables search using CSS like selectors.
 
 You can search elements by class, tag name and id.
 
@@ -18,22 +14,37 @@ Assuming that you have the following HTML:
 <!doctype html>
 <html>
 <body>
-<section id="content">
-  <p class="headline">Floki</p>
-  <a href="http://github.com/philss/floki">Github page</a>
-</section>
+  <section id="content">
+    <p class="headline">Floki</p>
+    <a href="http://github.com/philss/floki">Github page</a>
+  </section>
+  <a href="https://hex.pm/packages/floki">Hex package</a>
 </body>
 </html>
 ```
 
-You can perform the following queries:
+Here are some of the queries that you can perform (with return examples):
 
 ```elixir
-Floki.find(html, "#content") # returns the section with all children
+Floki.find(html, "#content")
+# => {"section", [{"id", "content"}],
+# =>  [{"p", [{"class", "headline"}], ["Floki"]},
+# =>   {"a", [{"href", "http://github.com/philss/floki"}], ["Github page"]}]}
+
 Floki.find(html, ".headline") # returns a list with the `p` element
-Floki.find(html, "a") # returns a list with the `a` element
-Floki.find(html, "#content a") # returns all links inside content section
-Floki.find(html, ".headline, a") # returns the .headline elements and links
+# => [{"p", [{"class", "headline"}], ["Floki"]}]
+
+Floki.find(html, "a")
+# => [{"a", [{"href", "http://github.com/philss/floki"}], ["Github page"]},
+# =>  {"a", [{"href", "https://hex.pm/packages/floki"}], ["Hex package"]}]
+
+Floki.find(html, "#content a")
+# => [{"a", [{"href", "http://github.com/philss/floki"}], ["Github page"]}]
+
+Floki.find(html, ".headline, a")
+# => [{"p", [{"class", "headline"}], ["Floki"]},
+# =>  {"a", [{"href", "http://github.com/philss/floki"}], ["Github page"]},
+# =>  {"a", [{"href", "https://hex.pm/packages/floki"}], ["Hex package"]}]
 ```
 
 Each HTML node is represented by a tuple like:
