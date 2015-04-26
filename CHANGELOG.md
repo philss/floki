@@ -5,9 +5,14 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 
+### Added
+
+- Support HTML string when searching for attributes with Floki.attribute/2
+
 ### Changed
 
 - Change Floki.text/1 to perform a deep search of text nodes.
+- Consider doctests in the test suite.
 
 ## [0.1.1] - 2015-03-25
 

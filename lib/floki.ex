@@ -159,13 +159,18 @@ defmodule Floki do
 
   ## Examples
 
-      iex> Floki.attribute("<a href='https://google.com'>Google</a>", "href")
+      iex> Floki.attribute("<a href=https://google.com>Google</a>", "href")
       ["https://google.com"]
 
   """
 
   @spec attribute(binary | html_tree, binary) :: list
 
+  def attribute(html_tree, attribute_name) when is_binary(html_tree) do
+    html_tree
+    |> parse
+    |> attribute(attribute_name)
+  end
   def attribute(elements, attribute_name) do
     elements
     |> attribute_values(attribute_name)
@@ -176,7 +181,7 @@ defmodule Floki do
 
   ## Examples
 
-      iex> Floki.text("<div><span>something else</span>hello world</div>")
+      iex> Floki.text("<div><span>hello</span> world</div>")
       "hello world"
 
   """

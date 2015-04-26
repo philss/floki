@@ -1,6 +1,8 @@
 defmodule FlokiTest do
   use ExUnit.Case
 
+  doctest Floki
+
   @html """
   <html>
   <head>
@@ -134,11 +136,17 @@ defmodule FlokiTest do
     assert Floki.attribute(elements, "id") == ["important-el"]
   end
 
-  test "get attributes that does not exist" do
+  test "returns an empty list when attribute does not exist" do
     class_selector = ".js-cool"
     elements = Floki.find(@html, class_selector)
 
     assert Floki.attribute(elements, "title") == []
+  end
+
+  test "parses the HTML before search for attributes" do
+    url = "https://google.com"
+
+    assert Floki.attribute("<a href=#{url}>Google</a>", "href") == [url]
   end
 
   test "select elements by tag name" do
