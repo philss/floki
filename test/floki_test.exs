@@ -29,7 +29,7 @@ defmodule FlokiTest do
   </html>
   """
 
-  test "parse simple html" do
+  test "parse simple HTML" do
     parsed = Floki.parse(@html)
 
     assert parsed == {
@@ -129,9 +129,9 @@ defmodule FlokiTest do
   test "get attributes from an element found by id" do
     html = "<div id=important-el></div>"
 
-    attrs = Floki.find(html, "#important-el") |> Floki.attribute("id")
+    elements = Floki.find(html, "#important-el")
 
-    assert attrs == ["important-el"]
+    assert Floki.attribute(elements, "id") == ["important-el"]
   end
 
   test "get attributes that does not exist" do
@@ -163,40 +163,6 @@ defmodule FlokiTest do
     }
   end
 
-  test "get text from element" do
-    class_selector = ".js-google"
-    text = Floki.find(@html, class_selector) |> Floki.text
-
-    assert text == "Google"
-  end
-
-  test "get text from elements" do
-    class_selector = ".js-cool"
-    text = Floki.find(@html, class_selector) |> Floki.text
-
-    assert text == "Google Elixir lang"
-  end
-
-  test "get text from the element (id selector)" do
-    id_selector = "#with-text"
-
-    html = """
-      <div><p id="with-text"><span>something else</span>the answer</p></div>
-    """
-
-    text = Floki.find(html, id_selector) |> Floki.text
-
-    assert text == "the answer"
-  end
-
-  test "get text from a html string" do
-    html = """
-      <p><span>something else</span>hello world</p>
-    """
-
-    assert Floki.text(html) == "hello world"
-  end
-
   test "get elements descending the parent" do
     expected = [
       {"img", [
@@ -225,5 +191,41 @@ defmodule FlokiTest do
     expected = [ {"img", [ {"src", "logo.png"}, {"id", "logo"}], []} ]
 
     assert Floki.find(@html_with_img, ".js-x-logo, #logo") == expected
+  end
+
+  test "get text from element" do
+    class_selector = ".js-google"
+
+    elements = Floki.find(@html, class_selector)
+
+    assert Floki.text(elements) == "Google"
+  end
+
+  test "get text from elements" do
+    class_selector = ".js-cool"
+
+    elements = Floki.find(@html, class_selector)
+
+    assert Floki.text(elements) == "GoogleElixir lang"
+  end
+
+  test "get text from the element (id selector)" do
+    id_selector = "#with-text"
+
+    html = """
+      <div><p id="with-text"><span>what is</span> the answer?</p></div>
+    """
+
+    elements = Floki.find(html, id_selector)
+
+    assert Floki.text(elements) == "what is the answer?"
+  end
+
+  test "get text from a HTML string" do
+    html = """
+      <p><span>something else</span>hello world</p>
+    """
+
+    assert Floki.text(html) == "something elsehello world"
   end
 end

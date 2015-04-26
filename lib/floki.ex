@@ -184,6 +184,7 @@ defmodule Floki do
   @spec text(html_tree | binary) :: binary
 
   def text(html) when is_binary(html), do: parse(html) |> text
+
   def text(element) when is_tuple(element), do: _text(element, "")
   def text(elements) do
     Enum.reduce elements, "", fn(element, str) ->
@@ -194,9 +195,9 @@ defmodule Floki do
   defp _text({_, _, children}, acc) do
     Enum.reduce children, acc, fn(child, istr) ->
       if is_binary(child) do
-        (istr <> "\s" <> child) |> String.strip
+        istr <> child
       else
-        istr
+        _text(child, istr)
       end
     end
   end

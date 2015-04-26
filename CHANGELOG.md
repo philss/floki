@@ -5,11 +5,15 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 
+### Changed
+
+- Change Floki.text/1 to perform a deep search of text nodes.
+
 ## [0.1.1] - 2015-03-25
 
 ### Added
 
-- Added CHANGELOG.md following the [Keep a changelog](http://keepachangelog.com/).
+- Add CHANGELOG.md following the [Keep a changelog](http://keepachangelog.com/).
 
 ### Changed
 
@@ -20,14 +24,14 @@ It closes the [issue #5](https://github.com/philss/floki/issues/5)
 
 ### Added
 
-- Added descendent selectors, like ".class tag" to Floki.find/2;
-- Added multiple selection, like ".class1, .class2" to Floki.find/2.
+- Descendent selectors, like ".class tag" to Floki.find/2.
+- Multiple selection, like ".class1, .class2" to Floki.find/2.
 
 ## [0.0.5] - 2014-12-21
 
 ### Added
 
-- Added Floki.text/1, which returns all text in the same level
+- Floki.text/1, which returns all text in the same level
 of the parent element inside HTML.
 
 ### Changed
