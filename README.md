@@ -1,4 +1,4 @@
-# Floki [![Build status](https://travis-ci.org/philss/floki.svg?branch=master)](https://travis-ci.org/philss/floki) [![Floki version](https://img.shields.io/hexpm/v/floki.svg)](https://hex.pm/packages/floki)
+# Floki [![Build status](https://travis-ci.org/philss/floki.svg?branch=master)](https://travis-ci.org/philss/floki) [![Floki version](https://img.shields.io/hexpm/v/floki.svg)](https://hex.pm/packages/floki) [![Inline docs](http://inch-ci.org/github/philss/floki.svg?branch=master)](http://inch-ci.org/github/philss/floki)
 
 Floki is a simple HTML parser that enables search using CSS like selectors.
 
