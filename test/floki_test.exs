@@ -1,5 +1,5 @@
 defmodule FlokiTest do
-  use ExUnit.Case
+  use ExUnit.Case, assyc: true
 
   doctest Floki
 
@@ -199,41 +199,5 @@ defmodule FlokiTest do
     expected = [ {"img", [ {"src", "logo.png"}, {"id", "logo"}], []} ]
 
     assert Floki.find(@html_with_img, ".js-x-logo, #logo") == expected
-  end
-
-  test "get text from element" do
-    class_selector = ".js-google"
-
-    elements = Floki.find(@html, class_selector)
-
-    assert Floki.text(elements) == "Google"
-  end
-
-  test "get text from elements" do
-    class_selector = ".js-cool"
-
-    elements = Floki.find(@html, class_selector)
-
-    assert Floki.text(elements) == "GoogleElixir lang"
-  end
-
-  test "get text from the element (id selector)" do
-    id_selector = "#with-text"
-
-    html = """
-      <div><p id="with-text"><span>what is</span> the answer?</p></div>
-    """
-
-    elements = Floki.find(html, id_selector)
-
-    assert Floki.text(elements) == "what is the answer?"
-  end
-
-  test "get text from a HTML string" do
-    html = """
-      <p><span>something else</span>hello world</p>
-    """
-
-    assert Floki.text(html) == "something elsehello world"
   end
 end

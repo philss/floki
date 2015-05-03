@@ -64,10 +64,7 @@ defmodule Floki do
 
   @spec parse(binary) :: html_tree
 
-  def parse(html) do
-    :mochiweb_html.parse(html)
-  end
-
+  def parse(html), do: :mochiweb_html.parse(html)
 
   @doc """
   Finds elements inside a HTML tree or string.
@@ -177,34 +174,36 @@ defmodule Floki do
   end
 
   @doc """
-  Returns the text nodes from a html tree.
+  Returns the text nodes from a HTML tree.
+  By default, it will perform a deep search through the HTML tree.
+  You can disable deep search with the option `deep` assigned to false.
 
   ## Examples
 
       iex> Floki.text("<div><span>hello</span> world</div>")
       "hello world"
 
+      iex> Floki.text("<div><span>hello</span> world</div>", deep: false)
+      " world"
+
   """
 
   @spec text(html_tree | binary) :: binary
 
-  def text(html) when is_binary(html), do: parse(html) |> text
-
-  def text(element) when is_tuple(element), do: _text(element, "")
-  def text(elements) do
-    Enum.reduce elements, "", fn(element, str) ->
-      _text(element, str)
-    end
-  end
-
-  defp _text({_, _, children}, acc) do
-    Enum.reduce children, acc, fn(child, istr) ->
-      if is_binary(child) do
-        istr <> child
-      else
-        _text(child, istr)
+  def text(html, opts \\ [deep: true]) do
+    html_tree =
+      case is_binary(html) do
+        true -> parse(html)
+        false -> html
       end
-    end
+
+    search_strategy =
+      case opts[:deep] do
+        true -> Floki.DeepText
+        false -> Floki.FlatText
+      end
+
+    search_strategy.get(html_tree)
   end
 
   defp attribute_match?(attributes, attribute_name) do

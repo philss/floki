@@ -7,7 +7,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
-- Support HTML string when searching for attributes with Floki.attribute/2
+- Support HTML string when searching for attributes with Floki.attribute/2.
+- Option for Floki.text/2 to disable deep search and use flat search instead.
 
 ### Changed
 
