@@ -69,6 +69,20 @@ html
 
 It is simple as that!
 
+## Installation
+
+You can install Floki by adding a dependency to your mix file (mix.exs):
+
+```elixir
+defp deps do
+  [
+    {:floki, "~> 0.2"}
+  ]
+end
+```
+
+After that, run `mix deps.get`.
+
 ## API
 
 To parse a HTML document, try:
