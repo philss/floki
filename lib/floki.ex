@@ -42,8 +42,7 @@ defmodule Floki do
   You can write a simple HTML crawler (with support of [HTTPoison](https://github.com/edgurgel/httpoison)) with a few lines of code:
 
       html
-      |> Floki.find(".pages")
-      |> Floki.find("a")
+      |> Floki.find(".pages a")
       |> Floki.attribute("href")
       |> Enum.map(fn(url) -> HTTPoison.get!(url) end)
 
