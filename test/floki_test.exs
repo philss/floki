@@ -31,6 +31,12 @@ defmodule FlokiTest do
   </html>
   """
 
+  @html_without_html_tag """
+  <h2 class="js-cool">One</h2>
+  <p>Two</p>
+  <p>Three</p>
+  """
+
   test "parse simple HTML" do
     parsed = Floki.parse(@html)
 
@@ -71,6 +77,15 @@ defmodule FlokiTest do
       }
   end
 
+  test "parse html_without_html_tag" do
+    parsed = Floki.parse(@html_without_html_tag)
+    assert parsed == [
+      {"h2", [{"class", "js-cool"}], ["One"]},
+      {"p", [], ["Two"]},
+      {"p", [], ["Three"]}
+    ]
+  end
+
   test "find elements with a given class" do
     class_selector = ".js-cool"
 
@@ -83,6 +98,14 @@ defmodule FlokiTest do
           {"href", "http://elixir-lang.org"},
           {"class", "js-elixir js-cool"}],
         ["Elixir lang"]}
+    ]
+  end
+
+  test "find elements with a given class in html_without_html_tag" do
+    class_selector = ".js-cool"
+
+    assert Floki.find(@html_without_html_tag, class_selector) == [
+      {"h2", [{"class", "js-cool"}], ["One"]}
     ]
   end
 
