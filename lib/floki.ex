@@ -59,11 +59,20 @@ defmodule Floki do
       iex> Floki.parse("<div class=js-action>hello world</div>")
       {"div", [{"class", "js-action"}], ["hello world"]}
 
+      iex> Floki.parse("<div>first</div><div>second</div>")
+      [{"div", [], ["first"]}, {"div", [], ["second"]}]
+
   """
+
+  @floki_root_node "floki"
 
   @spec parse(binary) :: html_tree
 
-  def parse(html), do: :mochiweb_html.parse(html)
+  def parse(html) do
+    html = "<#{@floki_root_node}>#{html}</#{@floki_root_node}>"
+    {@floki_root_node, [], parsed} = :mochiweb_html.parse(html)
+    if length(parsed) == 1, do: hd(parsed), else: parsed
+  end 
 
   @doc """
   Finds elements inside a HTML tree or string.
