@@ -1,9 +1,11 @@
-Floki
-=====
+# Floki
 
-[![Build Status](https://travis-ci.org/philss/floki.svg?branch=master)](https://travis-ci.org/philss/floki)
+[![Build status](https://travis-ci.org/philss/floki.svg?branch=master)](https://travis-ci.org/philss/floki)
+[![Floki version](https://img.shields.io/hexpm/v/floki.svg)](https://hex.pm/packages/floki)
+[![Hex.pm](https://img.shields.io/hexpm/dt/floki.svg)](https://hex.pm/packages/floki)
+[![Inline docs](http://inch-ci.org/github/philss/floki.svg?branch=master)](http://inch-ci.org/github/philss/floki)
 
-This is a simple HTML parser that enables searching using CSS like selectors.
+Floki is a simple HTML parser that enables search using query selectors like jQuery or CSS.
 
 You can search elements by class, tag name and id.
 
@@ -17,23 +19,46 @@ Assuming that you have the following HTML:
 <!doctype html>
 <html>
 <body>
-<section id="content">
-  <p class="headline">Floki</p>
-  <a href="http://github.com/philss/floki">Github page</a>
-</section>
+  <section id="content">
+    <p class="headline">Floki</p>
+    <a href="http://github.com/philss/floki">Github page</a>
+  </section>
+  <a href="https://hex.pm/packages/floki">Hex package</a>
 </body>
 </html>
 ```
 
-You can perform the following queries:
+Here are some queries that you can perform (with return examples):
 
-  * Floki.find(html, "#content") : returns the section with all children;
-  * Floki.find(html, ".headline") : returns a list with the `p` element;
-  * Floki.find(html, "a") : returns a list with the `a` element.
+```elixir
+Floki.find(html, "#content")
+# => {"section", [{"id", "content"}],
+# =>  [{"p", [{"class", "headline"}], ["Floki"]},
+# =>   {"a", [{"href", "http://github.com/philss/floki"}], ["Github page"]}]}
+
+
+Floki.find(html, ".headline") # returns a list with the `p` element
+# => [{"p", [{"class", "headline"}], ["Floki"]}]
+
+
+Floki.find(html, "a")
+# => [{"a", [{"href", "http://github.com/philss/floki"}], ["Github page"]},
+# =>  {"a", [{"href", "https://hex.pm/packages/floki"}], ["Hex package"]}]
+
+
+Floki.find(html, "#content a")
+# => [{"a", [{"href", "http://github.com/philss/floki"}], ["Github page"]}]
+
+
+Floki.find(html, ".headline, a")
+# => [{"p", [{"class", "headline"}], ["Floki"]},
+# =>  {"a", [{"href", "http://github.com/philss/floki"}], ["Github page"]},
+# =>  {"a", [{"href", "https://hex.pm/packages/floki"}], ["Hex package"]}]
+```
 
 Each HTML node is represented by a tuple like:
 
-    {tag_name, attributes, chidren_nodes}
+    {tag_name, attributes, children_nodes}
 
 Example of node:
 
@@ -42,17 +67,31 @@ Example of node:
 So even if the only child node is the element text, it is represented
 inside a list.
 
-You can write a simple HTML crawler (with support of [HTTPoison](https://github.com/edgurgel/httpoison)) with a few lines of code:
+You can write a simple HTML crawler with Floki and [HTTPoison](https://github.com/edgurgel/httpoison):
 
 ```elixir
 html
-  |> Floki.find(".pages")
-  |> Floki.find("a")
-  |> Floki.attribute("href")
-  |> Enum.map(fn(url) -> HTTPoison.get!(url) end)
+|> Floki.find(".pages a")
+|> Floki.attribute("href")
+|> Enum.map(fn(url) -> HTTPoison.get!(url) end)
+
 ```
 
 It is simple as that!
+
+## Installation
+
+You can install Floki by adding a dependency to your mix file (mix.exs):
+
+```elixir
+defp deps do
+  [
+    {:floki, "~> 0.2"}
+  ]
+end
+```
+
+After that, run `mix deps.get`.
 
 ## API
 
@@ -89,7 +128,7 @@ You can also get attributes from elements that you already have:
 
 ```elixir
 Floki.find(html, ".example")
-  |> Floki.attribute("class")
+|> Floki.attribute("class")
 # => ["example"]
 ```
 
@@ -97,7 +136,7 @@ If you want to get the text from an element, try:
 
 ```elixir
 Floki.find(html, ".headline")
-  |> Floki.text
+|> Floki.text
 
 # => "Floki"
 ```

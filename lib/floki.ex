@@ -24,11 +24,13 @@ defmodule Floki do
 
     * Floki.find(html, "#content") : returns the section with all children;
     * Floki.find(html, ".headline") : returns a list with the `p` element;
-    * Floki.find(html, "a") : returns a list with the `a` element.
+    * Floki.find(html, "a") : returns a list with the `a` element;
+    * Floki.find(html, "#content a") # returns all links inside content section;
+    * Floki.find(html, ".headline, a") # returns the .headline elements and links.
 
   Each HTML node is represented by a tuple like:
 
-      {tag_name, attributes, chidren_nodes}
+      {tag_name, attributes, children_nodes}
 
   Example of node:
 
@@ -40,10 +42,9 @@ defmodule Floki do
   You can write a simple HTML crawler (with support of [HTTPoison](https://github.com/edgurgel/httpoison)) with a few lines of code:
 
       html
-        |> Floki.find(".pages")
-        |> Floki.find("a")
-        |> Floki.attribute("href")
-        |> Enum.map(fn(url) -> HTTPoison.get!(url) end)
+      |> Floki.find(".pages a")
+      |> Floki.attribute("href")
+      |> Enum.map(fn(url) -> HTTPoison.get!(url) end)
 
   It is simple as that!
   """
@@ -58,11 +59,20 @@ defmodule Floki do
       iex> Floki.parse("<div class=js-action>hello world</div>")
       {"div", [{"class", "js-action"}], ["hello world"]}
 
+      iex> Floki.parse("<div>first</div><div>second</div>")
+      [{"div", [], ["first"]}, {"div", [], ["second"]}]
+
   """
+
+  @floki_root_node "floki"
+
   @spec parse(binary) :: html_tree
+
   def parse(html) do
-    :mochiweb_html.parse(html)
-  end
+    html = "<#{@floki_root_node}>#{html}</#{@floki_root_node}>"
+    {@floki_root_node, [], parsed} = :mochiweb_html.parse(html)
+    if length(parsed) == 1, do: hd(parsed), else: parsed
+  end 
 
   @doc """
   Finds elements inside a HTML tree or string.
@@ -71,7 +81,7 @@ defmodule Floki do
   It is possible to compose searches:
 
       Floki.find(html_string, ".class")
-       |> Floki.find(".another-class-inside-small-scope")
+      |> Floki.find(".another-class-inside-small-scope")
 
   ## Examples
 
@@ -89,14 +99,9 @@ defmodule Floki do
   @spec find(binary | html_tree, binary) :: html_tree
 
   def find(html, selector) when is_binary(html) do
-    parse(html)
-      |> find(selector)
-  end
+    html_tree = parse(html)
 
-  def find(html_tree, "." <> class) do
-    {:ok, nodes} = find_by_selector(class, html_tree, &class_matcher/3, {:ok, []})
-    nodes
-      |> Enum.reverse
+    find(html_tree, selector)
   end
 
   def find(html_tree, selector) when is_tuple(selector) do
@@ -105,31 +110,54 @@ defmodule Floki do
       |> Enum.reverse
   end
 
-  def find(html_tree, "#" <> id) do
-    {_status, nodes} = find_by_selector(id, html_tree, &id_matcher/3, {:ok, []})
-    nodes
-      |> List.first
-  end
-
   def find(html_tree, selector) do
     tag_attr_val_regex = ~r/(?'tag'.+)\[(?'attr'.+)=(?'val'.+)\]/
     attr_val_regex = ~r/\[(?'attr'.+)=(?'val'.+)\]/
 
     cond do
+      String.contains?(selector, ",") ->
+        selectors = String.split(selector, ",")
+
+        Enum.reduce selectors, [], fn(selector, acc) ->
+          selector = String.strip(selector)
+
+          nodes = find(html_tree, selector)
+
+          unless is_list(nodes), do: nodes = [nodes]
+
+          Enum.concat(acc, nodes)
+        end
+      String.contains?(selector, "\s") ->
+        descendent_selector = String.split(selector)
+
+        Enum.reduce descendent_selector, html_tree, fn(selector, tree) ->
+          find(tree, selector)
+        end
+      String.starts_with?(selector, ".") ->
+        "." <> class = selector
+        {:ok, nodes} = find_by_selector(class, html_tree, &class_matcher/3, {:ok, []})
+
+        Enum.reverse(nodes)
+      String.starts_with?(selector, "#") ->
+        "#" <> id = selector
+        {_status, nodes} = find_by_selector(id, html_tree, &id_matcher/3, {:ok, []})
+
+        List.first(nodes)
       Regex.match?(attr_val_regex, selector) ->
         %{"attr" => attr, "val" => val} = Regex.named_captures(attr_val_regex, selector)
         {:ok, nodes} = find_by_selector({attr, val}, html_tree, &attr_matcher/3, {:ok, []})  
-      
+
+        Enum.reverse(nodes)
       Regex.match?(tag_attr_val_regex, selector) ->
         %{"tag" => tag, "attr" => attr, "val" => val} = Regex.named_captures(attr_val_regex, selector)
-        {:ok, nodes} = find_by_selector({tag, attr, val}, html_tree, &attr_matcher/3, {:ok, []})  
-      
+        {:ok, nodes} = find_by_selector({tag, attr, val}, html_tree, &attr_matcher/3, {:ok, []}) 
+
+        Enum.reverse(nodes)
       true ->
         {:ok, nodes} = find_by_selector(selector, html_tree, &tag_matcher/3, {:ok, []})
-    end
 
-    nodes
-      |> Enum.reverse
+        Enum.reverse(nodes)
+    end
   end
 
   @doc """
@@ -146,8 +174,8 @@ defmodule Floki do
 
   def attribute(html, selector, attribute_name) do
     html
-      |> find(selector)
-      |> get_attribute_values(attribute_name)
+    |> find(selector)
+    |> attribute_values(attribute_name)
   end
 
   @doc """
@@ -155,62 +183,68 @@ defmodule Floki do
 
   ## Examples
 
-      iex> Floki.attribute("<a href='https://google.com'>Google</a>", "href")
+      iex> Floki.attribute("<a href=https://google.com>Google</a>", "href")
       ["https://google.com"]
 
   """
 
   @spec attribute(binary | html_tree, binary) :: list
 
+  def attribute(html_tree, attribute_name) when is_binary(html_tree) do
+    html_tree
+    |> parse
+    |> attribute(attribute_name)
+  end
   def attribute(elements, attribute_name) do
     elements
-      |> get_attribute_values(attribute_name)
+    |> attribute_values(attribute_name)
   end
 
-
   @doc """
-  Returns the text nodes from a html tree.
+  Returns the text nodes from a HTML tree.
+  By default, it will perform a deep search through the HTML tree.
+  You can disable deep search with the option `deep` assigned to false.
 
   ## Examples
 
-      iex> Floki.text("<div><span>something else</span>hello world</div>")
+      iex> Floki.text("<div><span>hello</span> world</div>")
       "hello world"
+
+      iex> Floki.text("<div><span>hello</span> world</div>", deep: false)
+      " world"
 
   """
 
   @spec text(html_tree | binary) :: binary
 
-  def text(html) when is_binary(html), do: parse(html) |> text
-  def text(element) when is_tuple(element), do: text(element, "")
-  def text(elements) do
-    Enum.reduce elements, "", fn(element, str) ->
-      text(element, str)
-    end
-  end
-
-  defp text({_, _, children}, acc) do
-    Enum.reduce children, acc, fn(child, istr) ->
-      if is_binary(child) do
-        (istr <> "\s" <> child) |> String.strip
-      else
-        istr
+  def text(html, opts \\ [deep: true]) do
+    html_tree =
+      case is_binary(html) do
+        true -> parse(html)
+        false -> html
       end
-    end
-  end
 
+    search_strategy =
+      case opts[:deep] do
+        true -> Floki.DeepText
+        false -> Floki.FlatText
+      end
+
+    search_strategy.get(html_tree)
+  end
 
   defp attribute_match?(attributes, attribute_name) do
-    Enum.find(attributes, fn({attr_name, _}) ->
+    Enum.find attributes, fn({attr_name, _}) ->
       attr_name == attribute_name
-    end)
+    end
   end
 
   defp attribute_match?(attributes, attribute_name, selector_value) do
-    Enum.find(attributes, fn(attribute) ->
+    Enum.find attributes, fn(attribute) ->
       {attr_name, attr_value} = attribute
 
       attr_name == attribute_name && value_match?(attr_value, selector_value)
-    end)
+    end
   end
 
   defp find_by_selector(_selector, {}, _, acc), do: acc
@@ -223,7 +257,7 @@ defmodule Floki do
   end
   # Ignores comments
   defp find_by_selector(_selector, {:comment, _comment}, _, acc), do: acc
-  defp find_by_selector(selector, node, matcher, acc) when is_tuple(node) do
+  defp find_by_selector(selector, node, matcher, acc) do
     {_, _, child_node} = node
 
     acc = matcher.(selector, node, acc)
@@ -231,18 +265,20 @@ defmodule Floki do
     find_by_selector(selector, child_node, matcher, acc)
   end
 
-
-  defp get_attribute_values(element, attr_name) when is_tuple(element) do
-    get_attribute_values([element], attr_name)
+  defp attribute_values(element, attr_name) when is_tuple(element) do
+    attribute_values([element], attr_name)
   end
-  defp get_attribute_values(elements, attr_name) do
-    Enum.map(elements, fn(el) ->
-      {_name, attributes, _childs} = el
+  defp attribute_values(elements, attr_name) do
+    values = Enum.reduce elements, [], fn({_, attributes, _}, acc) ->
+      case attribute_match?(attributes, attr_name) do
+        {_attr_name, value} ->
+          [value|acc]
+        _ ->
+          acc
+      end
+    end
 
-      attribute_match?(attributes, attr_name)
-    end)
-      |> Enum.reject(fn(x) -> is_nil(x) end)
-      |> Enum.map(fn({_attr_name, value}) -> value end)
+    Enum.reverse values
   end
 
   defp attr_matcher({attr, value}, node, acc) do
@@ -301,7 +337,7 @@ defmodule Floki do
 
   defp value_match?(attribute_value, selector_value) do
     attribute_value
-      |> String.split
-      |> Enum.any?(fn(x) -> x == selector_value end)
+    |> String.split
+    |> Enum.any?(fn(x) -> x == selector_value end)
   end
 end

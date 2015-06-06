@@ -3,7 +3,7 @@ defmodule Floki.Mixfile do
 
   def project do
     [app: :floki,
-     version: "0.0.5",
+     version: "0.2.1",
      elixir: ">= 1.0.0",
      package: package,
      description: description,
@@ -11,30 +11,22 @@ defmodule Floki.Mixfile do
      deps: deps]
   end
 
-  # Configuration for the OTP application
-  #
-  # Type `mix help compile.app` for more information
   def application do
-    [applications: [:logger]]
+    []
   end
 
-  # Dependencies can be Hex packages:
-  #
-  #   {:mydep, "~> 0.3.0"}
-  #
-  # Or git/path repositories:
-  #
-  #   {:mydep, git: "https://github.com/elixir-lang/mydep.git", tag: "0.1.0"}
-  #
-  # Type `mix help deps` for more examples and options
   defp deps do
-    [{:earmark, "~> 0.1", only: :dev},
-      {:ex_doc, "~> 0.6", only: :dev}]
+    [
+      {:mochiweb, "~> 2.12.2"},
+      {:earmark, "~> 0.1", only: :dev},
+      {:ex_doc, "~> 0.6", only: :dev},
+      {:inch_ex, only: :docs}
+    ]
   end
 
   defp description do
     """
-    A HTML parser and seeker.
+    A HTML parser and searcher.
 
     You can search inside HTML documents using CSS like selectors.
     """
@@ -44,7 +36,7 @@ defmodule Floki.Mixfile do
     %{
       contributors: ["Philip Sampaio Silva"],
       licenses: ["MIT"],
-      files: ["lib", "priv", "mix.exs", "README*", "readme*", "LICENSE*", "license*", "src"],
+      files: ["lib", "priv", "mix.exs", "README*", "readme*", "LICENSE*", "license*"],
       links: %{
         "GitHub" => "https://github.com/philss/floki",
         "Docs"   => "http://hexdocs.pm/floki"
