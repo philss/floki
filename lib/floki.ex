@@ -111,8 +111,23 @@ defmodule Floki do
       |> List.first
   end
 
-  def find(html_tree, tag_name) do
-    {:ok, nodes} = find_by_selector(tag_name, html_tree, &tag_matcher/3, {:ok, []})
+  def find(html_tree, selector) do
+    tag_attr_val_regex = ~r/(?'tag'.+)\[(?'attr'.+)=(?'val'.+)\]/
+    attr_val_regex = ~r/\[(?'attr'.+)=(?'val'.+)\]/
+
+    cond do
+      Regex.match?(attr_val_regex, selector) ->
+        %{"attr" => attr, "val" => val} = Regex.named_captures(attr_val_regex, selector)
+        {:ok, nodes} = find_by_selector({attr, val}, html_tree, &attr_matcher/3, {:ok, []})  
+      
+      Regex.match?(tag_attr_val_regex, selector) ->
+        %{"tag" => tag, "attr" => attr, "val" => val} = Regex.named_captures(attr_val_regex, selector)
+        {:ok, nodes} = find_by_selector({tag, attr, val}, html_tree, &attr_matcher/3, {:ok, []})  
+      
+      true ->
+        {:ok, nodes} = find_by_selector(selector, html_tree, &tag_matcher/3, {:ok, []})
+    end
+
     nodes
       |> Enum.reverse
   end

@@ -68,6 +68,18 @@ defmodule FlokiTest do
     assert Floki.find(@html_with_data_attributes, attribute_selector) == [{"a", [{"href", "http://google.com"}, {"class", "js-google js-cool"}, {"data-action", "lolcats"}], ["Google"]}]
   end
 
+  test "find elements with a tag and a given attribute value with shorthand syntax" do
+    attribute_selector = "a[data-action=lolcats]"
+
+    assert Floki.find(@html_with_data_attributes, attribute_selector) == [{"a", [{"href", "http://google.com"}, {"class", "js-google js-cool"}, {"data-action", "lolcats"}], ["Google"]}]
+  end
+
+  test "find elements only by given attribute value with shorthand syntax" do
+    attribute_selector = "[data-action=lolcats]"
+
+    assert Floki.find(@html_with_data_attributes, attribute_selector) == [{"a", [{"href", "http://google.com"}, {"class", "js-google js-cool"}, {"data-action", "lolcats"}], ["Google"]}]
+  end
+
   test "find elements with a given class" do
     class_selector = ".js-cool"
 
