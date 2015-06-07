@@ -16,6 +16,7 @@ defmodule Floki do
         <section id="content">
           <p class="headline">Floki</p>
           <a href="http://github.com/philss/floki">Github page</a>
+          <span data-model="user">philss</span>
         </section>
       </body>
       </html>
@@ -25,6 +26,7 @@ defmodule Floki do
     * Floki.find(html, "#content") : returns the section with all children;
     * Floki.find(html, ".headline") : returns a list with the `p` element;
     * Floki.find(html, "a") : returns a list with the `a` element;
+    * Floki.find(html, "[data-model=user]") : returns a list with elements that match that data attribute;
     * Floki.find(html, "#content a") # returns all links inside content section;
     * Floki.find(html, ".headline, a") # returns the .headline elements and links.
 

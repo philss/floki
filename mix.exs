@@ -3,7 +3,7 @@ defmodule Floki.Mixfile do
 
   def project do
     [app: :floki,
-     version: "0.2.1",
+     version: "0.3.0",
      elixir: ">= 1.0.0",
      package: package,
      description: description,

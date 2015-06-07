@@ -22,6 +22,7 @@ Assuming that you have the following HTML:
   <section id="content">
     <p class="headline">Floki</p>
     <a href="http://github.com/philss/floki">Github page</a>
+    <span data-model="user">philss</span>
   </section>
   <a href="https://hex.pm/packages/floki">Hex package</a>
 </body>
@@ -48,6 +49,10 @@ Floki.find(html, "a")
 
 Floki.find(html, "#content a")
 # => [{"a", [{"href", "http://github.com/philss/floki"}], ["Github page"]}]
+
+
+Floki.find(html, "[data-model=user]")
+# => [{"span", [{"data-model", "user"}], ["philss"]}]
 
 
 Floki.find(html, ".headline, a")
