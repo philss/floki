@@ -104,7 +104,16 @@ defmodule Floki do
     find(html_tree, selector)
   end
 
+  def find(html_tree, selector) when is_tuple(selector) do
+    {:ok, nodes} = find_by_selector(selector, html_tree, &attr_matcher/3, {:ok, []})
+    nodes
+      |> Enum.reverse
+  end
+
   def find(html_tree, selector) do
+    tag_attr_val_regex = ~r/(?'tag'.+)\[(?'attr'.+)=(?'val'.+)\]/
+    attr_val_regex = ~r/\[(?'attr'.+)=(?'val'.+)\]/
+
     cond do
       String.contains?(selector, ",") ->
         selectors = String.split(selector, ",")
@@ -134,6 +143,16 @@ defmodule Floki do
         {_status, nodes} = find_by_selector(id, html_tree, &id_matcher/3, {:ok, []})
 
         List.first(nodes)
+      Regex.match?(attr_val_regex, selector) ->
+        %{"attr" => attr, "val" => val} = Regex.named_captures(attr_val_regex, selector)
+        {:ok, nodes} = find_by_selector({attr, val}, html_tree, &attr_matcher/3, {:ok, []})  
+
+        Enum.reverse(nodes)
+      Regex.match?(tag_attr_val_regex, selector) ->
+        %{"tag" => tag, "attr" => attr, "val" => val} = Regex.named_captures(attr_val_regex, selector)
+        {:ok, nodes} = find_by_selector({tag, attr, val}, html_tree, &attr_matcher/3, {:ok, []}) 
+
+        Enum.reverse(nodes)
       true ->
         {:ok, nodes} = find_by_selector(selector, html_tree, &tag_matcher/3, {:ok, []})
 
@@ -260,6 +279,27 @@ defmodule Floki do
     end
 
     Enum.reverse values
+  end
+
+  defp attr_matcher({attr, value}, node, acc) do
+    {_, attributes, _} = node
+    {:ok, acc_nodes} = acc
+
+    if attribute_match?(attributes, attr, value) do
+      acc = {:ok, [node|acc_nodes]}
+    end
+
+    acc
+  end
+  defp attr_matcher({tag_name, attr, value}, node, acc) do
+    {tag, attributes, _} = node
+    {:ok, acc_nodes} = acc
+
+    if tag == tag_name and attribute_match?(attributes, attr, value) do
+      acc = {:ok, [node|acc_nodes]}
+    end
+
+    acc
   end
 
   defp class_matcher(class_name, node, acc) do
