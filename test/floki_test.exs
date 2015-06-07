@@ -257,7 +257,7 @@ defmodule FlokiTest do
     assert Floki.find(@html_with_img, ".js-twitter-logo, #logo") == expected
   end
 
-  test "get one elements when search for multiple and just one exist" do
+  test "get one element when search for multiple and just one exist" do
     expected = [ {"img", [ {"src", "logo.png"}, {"id", "logo"}], []} ]
 
     assert Floki.find(@html_with_img, ".js-x-logo, #logo") == expected

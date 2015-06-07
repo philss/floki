@@ -71,8 +71,9 @@ defmodule Floki do
   def parse(html) do
     html = "<#{@floki_root_node}>#{html}</#{@floki_root_node}>"
     {@floki_root_node, [], parsed} = :mochiweb_html.parse(html)
+
     if length(parsed) == 1, do: hd(parsed), else: parsed
-  end 
+  end
 
   @doc """
   Finds elements inside a HTML tree or string.
@@ -106,8 +107,8 @@ defmodule Floki do
 
   def find(html_tree, selector) when is_tuple(selector) do
     {:ok, nodes} = find_by_selector(selector, html_tree, &attr_matcher/3, {:ok, []})
-    nodes
-      |> Enum.reverse
+
+    Enum.reverse(nodes)
   end
 
   def find(html_tree, selector) do
@@ -145,12 +146,12 @@ defmodule Floki do
         List.first(nodes)
       Regex.match?(attr_val_regex, selector) ->
         %{"attr" => attr, "val" => val} = Regex.named_captures(attr_val_regex, selector)
-        {:ok, nodes} = find_by_selector({attr, val}, html_tree, &attr_matcher/3, {:ok, []})  
+        {:ok, nodes} = find_by_selector({attr, val}, html_tree, &attr_matcher/3, {:ok, []})
 
         Enum.reverse(nodes)
       Regex.match?(tag_attr_val_regex, selector) ->
         %{"tag" => tag, "attr" => attr, "val" => val} = Regex.named_captures(attr_val_regex, selector)
-        {:ok, nodes} = find_by_selector({tag, attr, val}, html_tree, &attr_matcher/3, {:ok, []}) 
+        {:ok, nodes} = find_by_selector({tag, attr, val}, html_tree, &attr_matcher/3, {:ok, []})
 
         Enum.reverse(nodes)
       true ->
@@ -278,7 +279,7 @@ defmodule Floki do
       end
     end
 
-    Enum.reverse values
+    Enum.reverse(values)
   end
 
   defp attr_matcher({attr, value}, node, acc) do
