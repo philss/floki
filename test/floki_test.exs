@@ -52,6 +52,20 @@ defmodule FlokiTest do
   <p>Three</p>
   """
 
+  @xml """
+  <?xml version="1.0" encoding="UTF-8"?>
+  <rss version="2.0">
+    <channel>
+      <title>A podcast</title>
+      <link>www.foo.bar.com</link>
+    </channel>
+    <channel>
+      <title>Another podcast</title>
+      <link>www.baz.com</link>
+    </channel>
+  </rss>
+  """
+
   test "parse simple HTML" do
     parsed = Floki.parse(@html)
 
@@ -261,5 +275,14 @@ defmodule FlokiTest do
     expected = [ {"img", [ {"src", "logo.png"}, {"id", "logo"}], []} ]
 
     assert Floki.find(@html_with_img, ".js-x-logo, #logo") == expected
+  end
+
+  test "get elements inside a XML" do
+    expected = [
+      {"title", [], ["A podcast"]},
+      {"title", [], ["Another podcast"]}
+    ]
+
+    assert Floki.find(@xml, "title") == expected
   end
 end

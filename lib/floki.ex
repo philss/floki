@@ -258,8 +258,10 @@ defmodule Floki do
     acc = find_by_selector(selector, h, matcher, acc)
     find_by_selector(selector, t, matcher, acc)
   end
-  # Ignores comments
+  # Ignore comments
   defp find_by_selector(_selector, {:comment, _comment}, _, acc), do: acc
+  # Ignore XML document version
+  defp find_by_selector(_selector, {:pi, _xml, _xml_attrs}, _, acc), do: acc
   defp find_by_selector(selector, node, matcher, acc) do
     {_, _, child_node} = node
 

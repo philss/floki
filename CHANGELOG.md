@@ -5,6 +5,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 
+### Fixed
+
+- Fix `Floki.find/2` to consider XML trees.
+
 ## [0.3.0] - 2015-06-07
 
 ### Added
