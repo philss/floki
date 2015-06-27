@@ -21,4 +21,10 @@ defmodule Floki.DeepTextTest do
 
      assert Floki.DeepText.get(nodes) == "This is a text that is divided into tiny pieces. It keeps growing... And ends."
   end
+
+  test "text when there is a comment inside the tree" do
+    nodes = [{"a", [], ["foo"]}, {:comment, "bar"}, {"b", [], ["baz"]}]
+
+    assert Floki.DeepText.get(nodes) == "foobaz"
+  end
 end

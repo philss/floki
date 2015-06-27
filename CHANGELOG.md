@@ -5,6 +5,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 
+### Fixed
+
+- Fix `Floki.DeepText` when there is a comment inside nodes.
+
 ## [0.3.1] - 2015-06-21
 
 ### Fixed
