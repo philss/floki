@@ -14,8 +14,8 @@ defmodule Floki.FlatText do
 
   ## Examples
 
-      iex> Floki.FlatText.get([{"a", [], ["The mean of life is...", {"strong", [], ["something else"]}] }])
-      "The mean of life is..."
+      iex> Floki.FlatText.get([{"a", [], ["The meaning of life is...", {"strong", [], ["something else"]}] }])
+      "The meaning of life is..."
 
   """
   def get(html_nodes) when is_list(html_nodes) do

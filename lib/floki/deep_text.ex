@@ -14,8 +14,8 @@ defmodule Floki.DeepText do
 
   ## Examples
 
-      iex> Floki.DeepText.get([{"a", [], ["The mean of life is...", {"strong", [], ["something else"]}] }])
-      "The mean of life is...something else"
+      iex> Floki.DeepText.get([{"a", [], ["The meaning of life is...", {"strong", [], ["something else"]}] }])
+      "The meaning of life is...something else"
 
   """
   def get(html_tree) do
