@@ -5,6 +5,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 
+- Fix `Floki.find/2` when there is a non-HTML input.
+It closes the [issue #17](https://github.com/philss/floki/issues/17)
+
 ## [0.3.2] - 2015-06-27
 
 ### Fixed

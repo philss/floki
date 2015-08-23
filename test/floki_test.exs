@@ -285,4 +285,12 @@ defmodule FlokiTest do
 
     assert Floki.find(@xml, "title") == expected
   end
+
+  @tag timeout: 1000
+  test "find an inexistent element inside a invalid HTML" do
+    assert Floki.find("something", "a") == []
+    assert Floki.find("", "a") == []
+    assert Floki.find("foobar", "a") == []
+    assert Floki.find("foobar<a", "a") == []
+  end
 end
