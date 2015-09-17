@@ -5,6 +5,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 
+## [0.4.0] - 2015-09-17
+
 ### Added
 
 - A robust representation of selectors in order to enable queries using a mix of selector types,
@@ -15,6 +17,7 @@ Here is a list with examples of what is possible now:
   - `Floki.find(html, ".foo.bar")`
   - `Floki.find(html, "a.foo[href$='.org']")`
 Thanks to @licyeus to point out the [issue](https://github.com/philss/floki/issues/18)!
+- Include mochiweb in the applications list at mix.exs - thanks @EricDykstra
 
 ### Changed
 
@@ -26,7 +29,6 @@ For now on, Floki should always return the results inside a list, even if it's a
 - `Floki.find/2` does not accept tuples as selectors anymore.
 This is because with the robust selectors representation, it won't be necessary to query directly using
 tuples or another data structures rather than string.
-
 
 ## [0.3.3] - 2015-08-23
 
@@ -102,7 +104,8 @@ of the parent element inside HTML.
 
 - Elixir version requirement from "~> 1.0.0" to ">= 1.0.0".
 
-[unreleased]: https://github.com/philss/floki/compare/v0.3.3...HEAD
+[unreleased]: https://github.com/philss/floki/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/philss/floki/compare/v0.3.3...v0.4.0
 [0.3.3]: https://github.com/philss/floki/compare/v0.3.2...v0.3.3
 [0.3.2]: https://github.com/philss/floki/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/philss/floki/compare/v0.3.0...v0.3.1
