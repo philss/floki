@@ -162,6 +162,17 @@ defmodule FlokiTest do
     ]
   end
 
+  test "find elements with multiple given classes" do
+    class_selector = ".js-cool.js-elixir"
+
+    assert Floki.find(@html, class_selector) == [
+      {"a", [
+          {"href", "http://elixir-lang.org"},
+          {"class", "js-elixir js-cool"}],
+        ["Elixir lang"]}
+    ]
+  end
+
   test "find element that does not have child node" do
     class_selector = ".js-twitter-logo"
 

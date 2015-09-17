@@ -57,9 +57,19 @@ defmodule Floki.Matchers do
   end
 
   def value_match?(attribute_value, selector_value) do
-    attribute_value
-    |> String.split
-    |> Enum.any?(fn(x) -> x == selector_value end)
+    selector_values = String.split(selector_value, ~r/[#.]/)
+
+    if length(selector_values) == 1 do
+      attribute_value
+      |> String.split
+      |> Enum.any?(fn(x) -> x == selector_value end)
+    else
+      attribute_value
+      |> String.split
+      |> Enum.all?(fn(x) ->
+        Enum.find(selector_values, fn(y) -> y == x end)
+      end)
+    end
   end
 
   def attribute_match?(attributes, attribute_name) do
