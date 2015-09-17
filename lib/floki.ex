@@ -81,18 +81,13 @@ defmodule Floki do
   Finds elements inside a HTML tree or string.
   You can search by class, tag name or id.
 
-  It is possible to compose searches:
-
-      Floki.find(html_string, ".class")
-      |> Floki.find(".another-class-inside-small-scope")
-
   ## Examples
 
       iex> Floki.find("<p><span class=hint>hello</span></p>", ".hint")
       [{"span", [{"class", "hint"}], ["hello"]}]
 
-      iex> "<body><div id=important><div>Content</div></div></body>" |> Floki.find("#important")
-      {"div", [{"id", "important"}], [{"div", [], ["Content"]}]}
+      iex> Floki.find("<body><div id=important><div>Content</div></div></body>", "#important")
+      [{"div", [{"id", "important"}], [{"div", [], ["Content"]}]}]
 
       iex> Floki.find("<p><a href='https://google.com'>Google</a></p>", "a")
       [{"a", [{"href", "https://google.com"}], ["Google"]}]
@@ -101,47 +96,11 @@ defmodule Floki do
 
   @spec find(binary | html_tree, binary) :: html_tree
 
+  def find(html, selector) when is_binary(html) do
+    Floki.Parser.parse(html) |> Finder.find(selector)
+  end
   def find(html, selector) do
     Finder.find(html, selector)
-  end
-
-  @doc """
-  Returns a list with attribute values for a given selector.
-
-  ## Examples
-
-      iex> Floki.attribute("<a href='https://google.com'>Google</a>", "a", "href")
-      ["https://google.com"]
-
-  """
-
-  @spec attribute(binary | html_tree, binary, binary) :: list
-
-  def attribute(html, selector, attribute_name) do
-    html
-    |> find(selector)
-    |> Finder.attribute_values(attribute_name)
-  end
-
-  @doc """
-  Returns a list with attribute values from elements.
-
-  ## Examples
-
-      iex> Floki.attribute("<a href=https://google.com>Google</a>", "href")
-      ["https://google.com"]
-
-  """
-
-  @spec attribute(binary | html_tree, binary) :: list
-
-  def attribute(html_tree, attribute_name) when is_binary(html_tree) do
-    html_tree
-    |> parse
-    |> Finder.attribute_values(attribute_name)
-  end
-  def attribute(elements, attribute_name) do
-    Finder.attribute_values(elements, attribute_name)
   end
 
   @doc """
@@ -175,5 +134,66 @@ defmodule Floki do
       end
 
     search_strategy.get(html_tree)
+  end
+
+  @doc """
+  Returns a list with attribute values for a given selector.
+
+  ## Examples
+
+      iex> Floki.attribute("<a href='https://google.com'>Google</a>", "a", "href")
+      ["https://google.com"]
+
+  """
+
+  @spec attribute(binary | html_tree, binary, binary) :: list
+
+  def attribute(html, selector, attribute_name) do
+    html
+    |> find(selector)
+    |> attribute_values(attribute_name)
+  end
+
+  @doc """
+  Returns a list with attribute values from elements.
+
+  ## Examples
+
+      iex> Floki.attribute("<a href=https://google.com>Google</a>", "href")
+      ["https://google.com"]
+
+  """
+
+  @spec attribute(binary | html_tree, binary) :: list
+
+  def attribute(html_tree, attribute_name) when is_binary(html_tree) do
+    html_tree
+    |> parse
+    |> attribute_values(attribute_name)
+  end
+  def attribute(elements, attribute_name) do
+    attribute_values(elements, attribute_name)
+  end
+
+  defp attribute_values(element, attr_name) when is_tuple(element) do
+    attribute_values([element], attr_name)
+  end
+  defp attribute_values(elements, attr_name) do
+    values = Enum.reduce elements, [], fn({_, attributes, _}, acc) ->
+      case attribute_match?(attributes, attr_name) do
+        {_attr_name, value} ->
+          [value|acc]
+        _ ->
+          acc
+      end
+    end
+
+    Enum.reverse(values)
+  end
+
+  defp attribute_match?(attributes, attribute_name) do
+    Enum.find attributes, fn({attr_name, _}) ->
+      attr_name == attribute_name
+    end
   end
 end

@@ -6,3 +6,4 @@ erl_crash.dump
 *.swp
 /doc
 *.beam
+/src/*_lexer.erl

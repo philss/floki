@@ -5,6 +5,29 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 
+### Added
+
+- A robust representation of selectors in order to enable queries using a mix of selector types,
+such as classes with attributes, attributes with types, classes with classes and so on.
+Here is a list with examples of what is possible now:
+  - `Floki.find(html, "a.foo")`
+  - `Floki.find(html, "a.foo[data-action=post]")`
+  - `Floki.find(html, ".foo.bar")`
+  - `Floki.find(html, "a.foo[href$='.org']")`
+Thanks to @licyeus to point out the [issue](https://github.com/philss/floki/issues/18)!
+
+### Changed
+
+- `Floki.find/2` will now return a list instead of tuple when searching only by IDs.
+For now on, Floki should always return the results inside a list, even if it's an ID match.
+
+### Removed
+
+- `Floki.find/2` does not accept tuples as selectors anymore.
+This is because with the robust selectors representation, it won't be necessary to query directly using
+tuples or another data structures rather than string.
+
+
 ## [0.3.3] - 2015-08-23
 
 ### Fixed
