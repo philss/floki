@@ -12,7 +12,7 @@ defmodule Floki.Mixfile do
   end
 
   def application do
-    []
+    [applications: [:mochiweb]]
   end
 
   defp deps do
