@@ -36,7 +36,7 @@ defmodule Floki.Mixfile do
     %{
       contributors: ["Philip Sampaio Silva"],
       licenses: ["MIT"],
-      files: ["lib", "priv", "src", "mix.exs", "README*", "readme*", "LICENSE*", "license*"],
+      files: ["lib", "priv", "src/*.xrl", "mix.exs", "README*", "readme*", "LICENSE*", "license*"],
       links: %{
         "GitHub" => "https://github.com/philss/floki",
         "Docs"   => "http://hexdocs.pm/floki"
