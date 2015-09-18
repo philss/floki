@@ -5,6 +5,15 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 
+## [0.4.1] - 2015-09-18
+
+### Fixed
+
+- Ignoring other files that are not lexer files (".xrl") under `src/` directory
+in Hex package. This fixes a crash when compiling using OTP 17.5 on Mac OS X.
+Huge thanks for @henrik and @licyeus that pointed the
+[issue](https://github.com/philss/floki/issues/24)!
+
 ## [0.4.0] - 2015-09-17
 
 ### Added
@@ -104,7 +113,8 @@ of the parent element inside HTML.
 
 - Elixir version requirement from "~> 1.0.0" to ">= 1.0.0".
 
-[unreleased]: https://github.com/philss/floki/compare/v0.4.0...HEAD
+[unreleased]: https://github.com/philss/floki/compare/v0.4.1...HEAD
+[0.4.1]: https://github.com/philss/floki/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/philss/floki/compare/v0.3.3...v0.4.0
 [0.3.3]: https://github.com/philss/floki/compare/v0.3.2...v0.3.3
 [0.3.2]: https://github.com/philss/floki/compare/v0.3.1...v0.3.2
