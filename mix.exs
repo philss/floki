@@ -4,10 +4,12 @@ defmodule Floki.Mixfile do
   def project do
     [app: :floki,
      version: "0.4.0",
+     name: "Floki",
      elixir: ">= 1.0.0",
      package: package,
      description: description,
-     docs: [readme: "README.md"],
+     docs: [extras: ["README.md"]],
+     source_url: "https://github.com/philss/floki",
      deps: deps]
   end
 
@@ -19,7 +21,7 @@ defmodule Floki.Mixfile do
     [
       {:mochiweb, "~> 2.12.2"},
       {:earmark, "~> 0.1", only: :dev},
-      {:ex_doc, "~> 0.6", only: :dev},
+      {:ex_doc, "~> 0.8", only: :dev},
       {:inch_ex, only: :docs}
     ]
   end
