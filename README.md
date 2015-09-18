@@ -5,13 +5,14 @@
 [![Hex.pm](https://img.shields.io/hexpm/dt/floki.svg)](https://hex.pm/packages/floki)
 [![Inline docs](http://inch-ci.org/github/philss/floki.svg?branch=master)](http://inch-ci.org/github/philss/floki)
 
-Floki is a simple HTML parser that enables search using query selectors like jQuery or CSS.
+Floki is a simple HTML parser that enables search for nodes using selectors like jQuery and CSS.
 
-You can search elements by class, tag name and id.
+You can perform searches using classes, attributes, tag names (A.K.A. types) and IDs.
+You can also combine selectors, like: `"a.foo[data-action='bar']"`.
 
 [Check the documentation](http://hexdocs.pm/floki).
 
-## Example
+## Usage
 
 Assuming that you have the following HTML:
 
@@ -21,6 +22,7 @@ Assuming that you have the following HTML:
 <body>
   <section id="content">
     <p class="headline">Floki</p>
+    <span class="headline">Enables search using CSS selectors</span>
     <a href="http://github.com/philss/floki">Github page</a>
     <span data-model="user">philss</span>
   </section>
@@ -33,16 +35,21 @@ Here are some queries that you can perform (with return examples):
 
 ```elixir
 Floki.find(html, "#content")
-# => {"section", [{"id", "content"}],
+# => [{"section", [{"id", "content"}],
 # =>  [{"p", [{"class", "headline"}], ["Floki"]},
-# =>   {"a", [{"href", "http://github.com/philss/floki"}], ["Github page"]}]}
+# =>   {"a", [{"href", "http://github.com/philss/floki"}], ["Github page"]}]}]
 
 
-Floki.find(html, ".headline") # returns a list with the `p` element
+Floki.find(html, "p.headline")
 # => [{"p", [{"class", "headline"}], ["Floki"]}]
 
 
 Floki.find(html, "a")
+# => [{"a", [{"href", "http://github.com/philss/floki"}], ["Github page"]},
+# =>  {"a", [{"href", "https://hex.pm/packages/floki"}], ["Hex package"]}]
+
+
+Floki.find(html, "a[href^=https]")
 # => [{"a", [{"href", "http://github.com/philss/floki"}], ["Github page"]},
 # =>  {"a", [{"href", "https://hex.pm/packages/floki"}], ["Hex package"]}]
 
@@ -98,7 +105,7 @@ end
 
 After that, run `mix deps.get`.
 
-## API
+## More about the API
 
 To parse a HTML document, try:
 
