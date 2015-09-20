@@ -8,7 +8,7 @@
 Floki is a simple HTML parser that enables search for nodes using selectors like jQuery and CSS.
 
 You can perform searches using classes, attributes, tag names (A.K.A. types) and IDs.
-You can also combine selectors, like: `"a.foo[data-action='bar']"`.
+You can also combine selectors and use groups, like: `"a.foo[data-action='bar'], .baz.zaz"`;
 
 [Check the documentation](http://hexdocs.pm/floki).
 
@@ -136,7 +136,7 @@ Floki.attribute(html, ".example", "class") # href or src are good possibilities 
 # => ["example"]
 ```
 
-You can also get attributes from elements that you already have:
+You can get attributes from elements that you already have:
 
 ```elixir
 Floki.find(html, ".example")
