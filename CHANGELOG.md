@@ -5,6 +5,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 
+### Added
+
+- Add the child combinator to `Floki.find/2`.
+
 ## [0.4.1] - 2015-09-18
 
 ### Fixed
