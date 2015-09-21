@@ -12,6 +12,9 @@ defmodule Floki.Selector do
     false
   end
 
+  def match?({:comment, _comment}, _selector), do: false
+  def match?({:pi, _xml, _xml_attrs}, _selector), do: false
+
   def match?(node, selector) do
     id_match?(node, selector.id) &&
     type_match?(node, selector.type) &&

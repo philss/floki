@@ -30,7 +30,7 @@ defmodule Floki.Finder do
     acc = transverse(node, head_selector, acc)
     transverse(node, tail_selectors, acc)
   end
-  defp transverse({_, _, children_nodes} = node, selector = %Selector{combinator: nil}, acc) do
+  defp transverse({_, _, children_nodes} = node, %Selector{combinator: nil} = selector, acc) do
     acc =
       case Selector.match?(node, selector) do
         true ->
@@ -41,13 +41,15 @@ defmodule Floki.Finder do
 
     transverse(children_nodes, selector, acc)
   end
-  defp transverse({_, _, children_nodes} = node, selector = %Selector{combinator: combinator}, acc) do
+  defp transverse({_, _, children_nodes} = node, %Selector{combinator: combinator} = selector, acc) do
     acc =
       case Selector.match?(node, selector) do
         true ->
           case combinator.match_type do
             :descendant ->
               transverse(children_nodes, combinator.selector, acc)
+            :child ->
+              transverse_child(children_nodes, combinator.selector, acc)
             other ->
               raise "Combinator of type \"#{other}\" not implemented yet"
           end
@@ -56,5 +58,27 @@ defmodule Floki.Finder do
       end
 
     transverse(children_nodes, selector, acc)
+  end
+
+  defp transverse_child(nodes, %Selector{combinator: nil} = selector, acc) do
+    Enum.reduce(nodes, acc, fn(n, res_acc) ->
+      case Selector.match?(n, selector) do
+        true ->
+          [n|res_acc]
+        false ->
+          res_acc
+      end
+    end)
+  end
+  defp transverse_child(nodes, %Selector{combinator: combinator} = selector, acc) do
+    Enum.reduce(nodes, acc, fn(n, res_acc) ->
+      case Selector.match?(n, selector) do
+        true ->
+          {_, _, children_nodes} = n
+          transverse(children_nodes, combinator.selector, res_acc)
+        false ->
+          res_acc
+      end
+    end)
   end
 end

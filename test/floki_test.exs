@@ -40,8 +40,10 @@ defmodule FlokiTest do
     <img src="http://twitter.com/logo.png" class="js-twitter-logo" />
   </a>
   <!-- this is a comment -->
-  <img src="http://twitter.com/logo.png" class="img-without-closing-tag">
-  <img src="logo.png" id="logo" />
+  <div class="logo-container">
+    <img src="http://twitter.com/logo.png" class="img-without-closing-tag">
+    <img src="logo.png" id="logo" />
+  </div>
   </body>
   </html>
   """
@@ -301,6 +303,30 @@ defmodule FlokiTest do
     ]
 
     assert Floki.find(@html_with_img, "a img") == expected
+  end
+
+  # Floki.find/2 - Selector with child combinator
+
+  test "find children elements" do
+    expected = [
+      {
+        "img", [
+          {"src", "http://twitter.com/logo.png"},
+          {"class", "img-without-closing-tag"}],
+        []
+      },
+      {
+        "img", [
+          {"src", "logo.png"},
+          {"id", "logo"}
+        ],
+        []
+      }
+    ]
+
+    assert Floki.find(@html_with_img, "div.logo-container > img") == expected
+    assert Floki.find(@html_with_img, "body > div.logo-container > img") == expected
+    assert Floki.find(@html_with_img, "body > img") == []
   end
 
   # Floki.find/2 - Using groups with comma
