@@ -1,26 +1,27 @@
 defmodule Floki.Selector do
+  @moduledoc """
+  Represents a CSS selector. It also have functions to match nodes with a given selector.
+  """
+
   alias Floki.Selector
   alias Floki.AttributeSelector
 
-  defstruct id: nil,
-  type: nil,
-  classes: [],
-  attributes: [],
-  combinator: nil
+  defstruct id: nil, type: nil, classes: [], attributes: [], combinator: nil
 
+  @doc """
+  Returns if a given node matches with a given selector.
+  """
   def match?(_node, %Selector{id: nil, type: nil, classes: [], attributes: []}) do
     false
   end
-
   def match?(nil, _selector), do: false
   def match?({:comment, _comment}, _selector), do: false
   def match?({:pi, _xml, _xml_attrs}, _selector), do: false
-
   def match?(node, selector) do
-    id_match?(node, selector.id) &&
-    type_match?(node, selector.type) &&
-    classes_matches?(node, selector.classes) &&
-    attributes_matches?(node, selector.attributes)
+    id_match?(node, selector.id)
+      && type_match?(node, selector.type)
+      && classes_matches?(node, selector.classes)
+      && attributes_matches?(node, selector.attributes)
   end
 
   defp id_match?(_node, nil), do: true

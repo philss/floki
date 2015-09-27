@@ -1,7 +1,16 @@
 defmodule Floki.SelectorParser do
+  @moduledoc """
+  Parses a list of tokens returned from `SelectorTokenizer` and transfor into a `Selector`.
+  """
+
   alias Floki.Selector
   alias Floki.AttributeSelector
   alias Floki.Combinator
+
+  @doc """
+  Returns a `Selector` struct with the parsed selector.
+  Note that this parser does not deal with groups of selectors.
+  """
 
   def parse(tokens) do
     parse(tokens, %Selector{})
