@@ -58,6 +58,8 @@ defmodule Floki.Finder do
                 transverse_child(children_nodes, sibling_nodes, combinator.selector, acc)
               :sibling ->
                 transverse_sibling(children_nodes, sibling_nodes, combinator.selector, acc)
+              :general_sibling ->
+                transverse_general_sibling(children_nodes, sibling_nodes, combinator.selector, acc)
               other ->
                 raise "Combinator of type \"#{other}\" not implemented"
             end
@@ -85,13 +87,7 @@ defmodule Floki.Finder do
   end
 
   defp transverse_sibling(_nodes, sibling_nodes, selector, acc) do
-    droper_fn = fn
-      {:comment, _} -> true
-      {:pi, _, _} -> true
-      _ -> false
-    end
-
-    sibling_node = Enum.drop_while(sibling_nodes, droper_fn) |> hd
+    sibling_node = Enum.drop_while(sibling_nodes, &ignore_node?/1) |> hd
 
     if Selector.match?(sibling_node, selector) do
       case selector.combinator do
@@ -104,4 +100,25 @@ defmodule Floki.Finder do
       acc
     end
   end
+
+  defp transverse_general_sibling(_nodes, sibling_nodes, selector, acc) do
+    sibling_nodes = Enum.drop_while(sibling_nodes, &ignore_node?/1)
+
+    Enum.reduce(sibling_nodes, acc, fn(sibling_node, res_acc) ->
+      if Selector.match?(sibling_node, selector) do
+        case selector.combinator do
+          nil -> [sibling_node|res_acc]
+          _ ->
+            {_, _, children_nodes} = sibling_node
+            transverse(children_nodes, sibling_nodes, selector.combinator.selector, res_acc)
+        end
+      else
+        res_acc
+      end
+    end)
+  end
+
+  defp ignore_node?({:comment, _}), do: true
+  defp ignore_node?({:pi, _, _}), do: true
+  defp ignore_node?(_), do: false
 end

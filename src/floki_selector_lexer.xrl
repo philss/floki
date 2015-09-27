@@ -21,6 +21,7 @@ Rules.
 {W}*,            : {token, {comma, TokenLine}}.
 {W}*>{W}*        : {token, {greater, TokenLine}}.
 {W}*\+{W}*       : {token, {plus, TokenLine}}.
+{W}*~{W}*        : {token, {tilde, TokenLine}}.
 {W}+             : {token, {space, TokenLine}}.
 .                : {token, {unknown, TokenLine, TokenChars}}.
 

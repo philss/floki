@@ -358,6 +358,24 @@ defmodule FlokiTest do
     assert Floki.find(@html_with_img, "a + #logo") == []
   end
 
+  # Floki.find/2 - General sibling combinator
+
+  test "find general sibling elements" do
+    expected = [
+      {"a", [
+          {"href", "http://elixir-lang.org"},
+          {"class", "js-elixir js-cool"}],
+        ["Elixir lang"]},
+      {"a", [
+          {"href", "http://java.com"},
+          {"class", "js-java"}],
+        ["Java"]}
+    ]
+
+    assert Floki.find(@html, "a.js-google ~ a") == expected
+    assert Floki.find(@html, "a.js-java ~ a") == []
+  end
+
   # Floki.find/2 - Using groups with comma
 
   test "get multiple elements using comma" do
