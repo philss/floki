@@ -44,6 +44,10 @@ defmodule Floki.SelectorParser do
           {t, combinator} = consume_combinator(t, :sibling)
 
           %{selector | combinator: combinator}
+        {:tilde, _} ->
+          {t, combinator} = consume_combinator(t, :general_sibling)
+
+          %{selector | combinator: combinator}
         {:unknown, _, unknown} ->
           # TODO: find a better way to notify unknown tokens
           IO.puts("Unknown token #{inspect unknown}. Ignoring.")
