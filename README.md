@@ -98,7 +98,7 @@ You can install Floki by adding a dependency to your mix file (mix.exs):
 ```elixir
 defp deps do
   [
-    {:floki, "~> 0.4"}
+    {:floki, "~> 0.5"}
   ]
 end
 ```

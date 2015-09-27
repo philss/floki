@@ -3,7 +3,7 @@ defmodule Floki.Mixfile do
 
   def project do
     [app: :floki,
-     version: "0.4.1",
+     version: "0.5.0",
      name: "Floki",
      elixir: ">= 1.0.0",
      package: package,
@@ -30,7 +30,7 @@ defmodule Floki.Mixfile do
     """
     A HTML parser and searcher.
 
-    You can search inside HTML documents using CSS like selectors.
+    You can search inside HTML documents using CSS selectors.
     """
   end
 

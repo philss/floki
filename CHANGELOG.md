@@ -5,10 +5,13 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 
+## [0.5.0] - 2015-09-27
+
 ### Added
 
 - Add the child combinator to `Floki.find/2`.
 - Add the adjacent sibling combinator to `Floki.find/2`.
+- Add the general adjacent sibling combinator to `Floki.find/2`.
 
 ## [0.4.1] - 2015-09-18
 
@@ -118,7 +121,8 @@ of the parent element inside HTML.
 
 - Elixir version requirement from "~> 1.0.0" to ">= 1.0.0".
 
-[unreleased]: https://github.com/philss/floki/compare/v0.4.1...HEAD
+[unreleased]: https://github.com/philss/floki/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/philss/floki/compare/v0.4.1...v0.5.0
 [0.4.1]: https://github.com/philss/floki/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/philss/floki/compare/v0.3.3...v0.4.0
 [0.3.3]: https://github.com/philss/floki/compare/v0.3.2...v0.3.3
