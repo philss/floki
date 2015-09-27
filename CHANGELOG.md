@@ -8,6 +8,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 
 - Add the child combinator to `Floki.find/2`.
+- Add the adjacent sibling combinator to `Floki.find/2`.
 
 ## [0.4.1] - 2015-09-18
 
