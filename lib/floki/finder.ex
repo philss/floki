@@ -1,84 +1,107 @@
 defmodule Floki.Finder do
-  @moduledoc false
+  @moduledoc """
+  The finder engine transverse the HTML tree searching for nodes matching
+  selectors.
+  """
 
   alias Floki.Selector
   alias Floki.SelectorParser
   alias Floki.SelectorTokenizer
 
-  def find(html_tree, selector) do
-    selectors = Enum.map String.split(selector, ","), fn(s) ->
-      SelectorTokenizer.tokenize(s)
-      |> SelectorParser.parse
-    end
+  @type html_tree :: tuple | list
+
+  @doc """
+  Find elements inside a HTML tree.
+  """
+
+  @spec find(html_tree, binary) :: html_tree
+
+  def find(html_tree, selector_as_string) do
+    selectors = get_selectors(selector_as_string)
 
     html_tree
-    |> transverse(selectors, [])
+    |> transverse([], selectors, [])
     |> Enum.reverse
   end
 
-  defp transverse(_, [], acc), do: acc
-  defp transverse({}, _, acc), do: acc
-  defp transverse([], _, acc), do: acc
-  defp transverse(string, _, acc) when is_binary(string), do: acc
-  defp transverse({:comment, _comment}, _, acc), do: acc
-  defp transverse({:pi, _xml, _xml_attrs}, _, acc), do: acc
-  defp transverse([head_node|tail_nodes], selectors, acc) do
-    acc = transverse(head_node, selectors, acc)
-    transverse(tail_nodes, selectors, acc)
+  defp get_selectors(selector_as_string) do
+    Enum.map String.split(selector_as_string, ","), fn(s) ->
+      SelectorTokenizer.tokenize(s) |> SelectorParser.parse
+    end
   end
-  defp transverse(node, [head_selector|tail_selectors], acc) do
-    acc = transverse(node, head_selector, acc)
-    transverse(node, tail_selectors, acc)
+
+  defp transverse(_, _, [], acc), do: acc
+  defp transverse({}, _, _, acc), do: acc
+  defp transverse([], _, _, acc), do: acc
+  defp transverse(string, _, _, acc) when is_binary(string), do: acc
+  defp transverse({:comment, _comment},_, _, acc), do: acc
+  defp transverse({:pi, _xml, _xml_attrs},_, _, acc), do: acc
+  defp transverse([node|sibling_nodes], _, selectors, acc) do
+    acc = transverse(node, sibling_nodes, selectors, acc)
+    transverse(sibling_nodes, [], selectors, acc)
   end
-  defp transverse({_, _, children_nodes} = node, %Selector{combinator: nil} = selector, acc) do
+  defp transverse(node, sibling_nodes, [head_selector|tail_selectors], acc) do
+    acc = transverse(node, sibling_nodes, head_selector, acc)
+    transverse(node, sibling_nodes, tail_selectors, acc)
+  end
+  defp transverse({_, _, children_nodes} = node, sibling_nodes, selector, acc) do
     acc =
-      case Selector.match?(node, selector) do
-        true ->
-          [node|acc]
-        false ->
-          acc
+      if Selector.match?(node, selector) do
+        combinator = selector.combinator
+        case combinator do
+          nil -> [node|acc]
+          _ ->
+            case combinator.match_type do
+              :descendant ->
+                transverse(children_nodes, sibling_nodes, combinator.selector, acc)
+              :child ->
+                transverse_child(children_nodes, sibling_nodes, combinator.selector, acc)
+              :sibling ->
+                transverse_sibling(children_nodes, sibling_nodes, combinator.selector, acc)
+              other ->
+                raise "Combinator of type \"#{other}\" not implemented"
+            end
+        end
+      else
+        acc
       end
 
-    transverse(children_nodes, selector, acc)
-  end
-  defp transverse({_, _, children_nodes} = node, %Selector{combinator: combinator} = selector, acc) do
-    acc =
-      case Selector.match?(node, selector) do
-        true ->
-          case combinator.match_type do
-            :descendant ->
-              transverse(children_nodes, combinator.selector, acc)
-            :child ->
-              transverse_child(children_nodes, combinator.selector, acc)
-            other ->
-              raise "Combinator of type \"#{other}\" not implemented yet"
-          end
-        false ->
-          acc
-      end
-
-    transverse(children_nodes, selector, acc)
+    transverse(children_nodes, sibling_nodes, selector, acc)
   end
 
-  defp transverse_child(nodes, %Selector{combinator: nil} = selector, acc) do
+  defp transverse_child(nodes, sibling_nodes, selector, acc) do
     Enum.reduce(nodes, acc, fn(n, res_acc) ->
-      case Selector.match?(n, selector) do
-        true ->
-          [n|res_acc]
-        false ->
-          res_acc
+      if Selector.match?(n, selector) do
+        case selector.combinator do
+          nil -> [n|res_acc]
+          _ ->
+            {_, _, children_nodes} = n
+            transverse(children_nodes, sibling_nodes, selector.combinator.selector, res_acc)
+        end
+      else
+        res_acc
       end
     end)
   end
-  defp transverse_child(nodes, %Selector{combinator: combinator} = selector, acc) do
-    Enum.reduce(nodes, acc, fn(n, res_acc) ->
-      case Selector.match?(n, selector) do
-        true ->
-          {_, _, children_nodes} = n
-          transverse(children_nodes, combinator.selector, res_acc)
-        false ->
-          res_acc
+
+  defp transverse_sibling(_nodes, sibling_nodes, selector, acc) do
+    droper_fn = fn
+      {:comment, _} -> true
+      {:pi, _, _} -> true
+      _ -> false
+    end
+
+    sibling_node = Enum.drop_while(sibling_nodes, droper_fn) |> hd
+
+    if Selector.match?(sibling_node, selector) do
+      case selector.combinator do
+        nil -> [sibling_node|acc]
+        _ ->
+          {_, _, children_nodes} = sibling_node
+          transverse(children_nodes, sibling_nodes, selector.combinator.selector, acc)
       end
-    end)
+    else
+      acc
+    end
   end
 end
