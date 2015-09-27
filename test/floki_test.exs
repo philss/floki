@@ -329,6 +329,35 @@ defmodule FlokiTest do
     assert Floki.find(@html_with_img, "body > img") == []
   end
 
+  # Floki.find/2 - Sibling combinator
+
+  test "find sibling element" do
+    expected = [
+      {
+        "div", [{"class", "logo-container"}], [
+          {
+            "img", [
+              {"src", "http://twitter.com/logo.png"},
+              {"class", "img-without-closing-tag"}],
+            []
+          },
+          {
+            "img", [
+              {"src", "logo.png"},
+              {"id", "logo"}
+            ],
+            []
+          }
+        ]
+      }
+    ]
+
+    assert Floki.find(@html_with_img, "a + div") == expected
+    assert Floki.find(@html_with_img, "a + .logo-container") == expected
+    assert Floki.find(@html_with_img, "a + div #logo") == [{"img", [{"src", "logo.png"}, {"id", "logo"}], []}]
+    assert Floki.find(@html_with_img, "a + #logo") == []
+  end
+
   # Floki.find/2 - Using groups with comma
 
   test "get multiple elements using comma" do

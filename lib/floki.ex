@@ -78,8 +78,7 @@ defmodule Floki do
   end
 
   @doc """
-  Finds elements inside a HTML tree or string.
-  You can search by class, tag name or id.
+  Find elements inside a HTML tree or string.
 
   ## Examples
 
@@ -97,10 +96,10 @@ defmodule Floki do
   @spec find(binary | html_tree, binary) :: html_tree
 
   def find(html, selector) when is_binary(html) do
-    Floki.Parser.parse(html) |> Finder.find(selector)
+    parse(html) |> Finder.find(selector)
   end
-  def find(html, selector) do
-    Finder.find(html, selector)
+  def find(html_tree, selector) do
+    Finder.find(html_tree, selector)
   end
 
   @doc """

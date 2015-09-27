@@ -27,8 +27,12 @@ defmodule Floki.SelectorParser do
           {t, combinator} = consume_combinator(t, :descendant)
 
           %{selector | combinator: combinator}
-        {:greater,_} ->
+        {:greater, _} ->
           {t, combinator} = consume_combinator(t, :child)
+
+          %{selector | combinator: combinator}
+        {:plus, _} ->
+          {t, combinator} = consume_combinator(t, :sibling)
 
           %{selector | combinator: combinator}
         {:unknown, _, unknown} ->
