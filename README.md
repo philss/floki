@@ -5,10 +5,10 @@
 [![Hex.pm](https://img.shields.io/hexpm/dt/floki.svg)](https://hex.pm/packages/floki)
 [![Inline docs](http://inch-ci.org/github/philss/floki.svg?branch=master)](http://inch-ci.org/github/philss/floki)
 
-Floki is a simple HTML parser that enables search for nodes using selectors like jQuery and CSS.
+Floki is a simple HTML parser that enables search for nodes using CSS selectors.
 
-You can perform searches using classes, attributes, tag names (A.K.A. types) and IDs.
-You can also combine selectors and use groups, like: `"a.foo[data-action='bar'], .baz.zaz"`;
+You can perform searches using classes, attributes, tag names and IDs.
+You can also combine selectors and use groups, like: `"a.foo[data-action='bar'], .baz.zaz"`.
 
 [Check the documentation](http://hexdocs.pm/floki).
 
