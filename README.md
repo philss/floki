@@ -43,6 +43,10 @@ Floki.find(html, "#content")
 Floki.find(html, "p.headline")
 # => [{"p", [{"class", "headline"}], ["Floki"]}]
 
+Floki.find(html, "p.headline") 
+|> Floki.raw_html
+# => <p class="headline">Floki</p>
+
 
 Floki.find(html, "a")
 # => [{"a", [{"href", "http://github.com/philss/floki"}], ["Github page"]},
@@ -127,6 +131,14 @@ To find elements with the class `example`, try:
 ```elixir
 Floki.find(html, ".example")
 # => [{"div", [{"class", "example"}], []}]
+```
+
+To convert your node tree back to raw HTML (spaces are ignored):
+
+```elixir
+Floki.find(html, ".example") 
+|> Flok.raw_html
+# =>  <div class="example"></div>
 ```
 
 To fetch some attribute from elements, try:

@@ -108,6 +108,19 @@ defmodule FlokiTest do
       }
   end
 
+  @basic_html """
+    <div id="content">
+      <p>
+        <a href="uol.com.br" class="bar">
+          <span>UOL</span>
+          <img src="foo.png"/>
+        </a>
+      </p>
+      <strong>ok</strong>
+      <br/>
+    </div>
+  """
+
   # Floki.parse/1
 
   test "parse html_without_html_tag" do
@@ -117,6 +130,41 @@ defmodule FlokiTest do
       {"p", [], ["Two"]},
       {"p", [], ["Three"]}
     ]
+  end
+
+  # Floki.raw_html/2
+
+  test "raw_html" do
+    raw_html = Floki.parse(@basic_html) |> Floki.raw_html
+    assert raw_html == String.split(@basic_html, "\n") |> Enum.map(&(String.strip(&1))) |> Enum.join("")
+  end
+
+  test "raw_html (html with data attributes)" do
+    raw_html = Floki.parse(@html_with_data_attributes) |> Floki.raw_html
+    assert raw_html == String.split(raw_html, "\n") |> Enum.map(&(String.strip(&1))) |> Enum.join("")
+  end
+
+  test "raw_html (after find)" do
+    raw_html = Floki.parse(@basic_html) |> Floki.find("a") |> Floki.raw_html
+    assert raw_html == ~s(<a href="uol.com.br" class="bar"><span>UOL</span><img src="foo.png"/></a>)
+  end
+
+  # Floki.tag_attrs/1
+  
+  test "tag attrs" do
+    fake = ~s(href="http://elixir-lang.org" target="_blank" class="btn")
+    assert fake == Floki.tag_attrs([{"href", "http://elixir-lang.org"}, {"target", "_blank"}, {"class", "btn"}])
+  end
+
+  test "empty tag attrs" do
+    assert "", Floki.tag_attrs([])
+  end
+  
+  # Floki.tag_for/3
+
+  test "tag_for" do
+    tag = Floki.tag_for "a", ~s(href="http://elixir-lang.org" target="_blank"), [{"img", [{"src", "foo.png"}], []}]
+    assert tag == ~s(<a href="http://elixir-lang.org" target="_blank"><img src="foo.png"/></a>)
   end
 
   # Floki.find/2 - Classes
