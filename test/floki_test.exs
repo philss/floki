@@ -108,6 +108,19 @@ defmodule FlokiTest do
       }
   end
 
+  @basic_html """
+    <div id="content">
+      <p>
+        <a href="uol.com.br" class="bar">
+          <span>UOL</span>
+          <img src="foo.png"/>
+        </a>
+      </p>
+      <strong>ok</strong>
+      <br/>
+    </div>
+  """
+
   # Floki.parse/1
 
   test "parse html_without_html_tag" do
@@ -117,6 +130,23 @@ defmodule FlokiTest do
       {"p", [], ["Two"]},
       {"p", [], ["Three"]}
     ]
+  end
+
+  # Floki.raw_html/2
+
+  test "raw_html" do
+    raw_html = Floki.parse(@basic_html) |> Floki.raw_html
+    assert raw_html == String.split(@basic_html, "\n") |> Enum.map(&(String.strip(&1))) |> Enum.join("")
+  end
+
+  test "raw_html (html with data attributes)" do
+    raw_html = Floki.parse(@html_with_data_attributes) |> Floki.raw_html
+    assert raw_html == String.split(raw_html, "\n") |> Enum.map(&(String.strip(&1))) |> Enum.join("")
+  end
+
+  test "raw_html (after find)" do
+    raw_html = Floki.parse(@basic_html) |> Floki.find("a") |> Floki.raw_html
+    assert raw_html == ~s(<a href="uol.com.br" class="bar"><span>UOL</span><img src="foo.png"/></a>)
   end
 
   # Floki.find/2 - Classes

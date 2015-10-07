@@ -77,6 +77,48 @@ defmodule Floki do
     Parser.parse(html)
   end
 
+  @self_closing_tags ["area", "base", "br", "col", "command", "embed", "hr", "img", "input", "keygen", "link", "mete", "param", "source", "track", "wbr"]
+
+  @doc """
+  Converts node tree to raw HTML (spaces are ignored).
+
+  ## Examples
+
+      iex> Floki.parse(~s(<div class="wrapper">my content</div>)) |> Floki.raw_html
+      ~s(<div class="wrapper">my content</div>)
+
+  """
+
+  def raw_html(tuple) when is_tuple(tuple), do: raw_html([tuple])
+  def raw_html([], html), do: html
+  def raw_html([value|tail], html) when is_bitstring(value), do: value
+  def raw_html([node|tail], html \\ "") do 
+    {elem, attrs, value} = node
+    raw_html(tail, html <> tag_for(elem, attrs |> tag_attrs, value))
+  end
+
+  defp tag_attrs(attr_list) do
+    attr_list
+    |> Enum.reduce("", fn(c,t) -> ~s(#{t} #{elem(c,0)}="#{elem(c,1)}") end)
+    |> String.strip
+  end
+
+  defp tag_for(elem, attrs, value) do
+    if Enum.member?(@self_closing_tags, elem) do
+      if attrs != "" do
+        "<#{elem} #{attrs}/>"
+      else
+        "<#{elem}/>"
+      end
+    else
+      if attrs != "" do
+        "<#{elem} #{attrs}>#{raw_html(value)}</#{elem}>"
+      else
+        "<#{elem}>#{raw_html(value)}</#{elem}>"
+      end
+    end
+  end
+
   @doc """
   Find elements inside a HTML tree or string.
 
