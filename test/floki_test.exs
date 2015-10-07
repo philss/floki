@@ -149,24 +149,6 @@ defmodule FlokiTest do
     assert raw_html == ~s(<a href="uol.com.br" class="bar"><span>UOL</span><img src="foo.png"/></a>)
   end
 
-  # Floki.tag_attrs/1
-  
-  test "tag attrs" do
-    fake = ~s(href="http://elixir-lang.org" target="_blank" class="btn")
-    assert fake == Floki.tag_attrs([{"href", "http://elixir-lang.org"}, {"target", "_blank"}, {"class", "btn"}])
-  end
-
-  test "empty tag attrs" do
-    assert "", Floki.tag_attrs([])
-  end
-  
-  # Floki.tag_for/3
-
-  test "tag_for" do
-    tag = Floki.tag_for "a", ~s(href="http://elixir-lang.org" target="_blank"), [{"img", [{"src", "foo.png"}], []}]
-    assert tag == ~s(<a href="http://elixir-lang.org" target="_blank"><img src="foo.png"/></a>)
-  end
-
   # Floki.find/2 - Classes
 
   test "find elements with a given class" do

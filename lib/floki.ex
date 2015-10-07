@@ -92,20 +92,18 @@ defmodule Floki do
   def raw_html(tuple) when is_tuple(tuple), do: raw_html([tuple])
   def raw_html([], html), do: html
   def raw_html([value|tail], html) when is_bitstring(value), do: value
-  def raw_html([first_dom|tail], html \\ "") do    
-    elem  = first_dom |> elem(0)
-    attrs = first_dom |> elem(1) |> tag_attrs
-    value = first_dom |> elem(2)
-    raw_html(tail, html <> tag_for(elem, attrs, value))
+  def raw_html([node|tail], html \\ "") do 
+    {elem, attrs, value} = node
+    raw_html(tail, html <> tag_for(elem, attrs |> tag_attrs, value))
   end
 
-  def tag_attrs(attr_list) do
+  defp tag_attrs(attr_list) do
     attr_list
     |> Enum.reduce("", fn(c,t) -> ~s(#{t} #{elem(c,0)}="#{elem(c,1)}") end)
     |> String.strip
   end
 
-  def tag_for(elem, attrs, value) do
+  defp tag_for(elem, attrs, value) do
     if Enum.member?(@self_closing_tags, elem) do
       if attrs != "" do
         "<#{elem} #{attrs}/>"
