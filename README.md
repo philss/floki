@@ -43,7 +43,7 @@ Floki.find(html, "#content")
 Floki.find(html, "p.headline")
 # => [{"p", [{"class", "headline"}], ["Floki"]}]
 
-Floki.find(html, "p.headline") 
+Floki.find(html, "p.headline")
 |> Floki.raw_html
 # => <p class="headline">Floki</p>
 
@@ -102,7 +102,7 @@ You can install Floki by adding a dependency to your mix file (mix.exs):
 ```elixir
 defp deps do
   [
-    {:floki, "~> 0.5"}
+    {:floki, "~> 0.6"}
   ]
 end
 ```
@@ -136,7 +136,7 @@ Floki.find(html, ".example")
 To convert your node tree back to raw HTML (spaces are ignored):
 
 ```elixir
-Floki.find(html, ".example") 
+Floki.find(html, ".example")
 |> Flok.raw_html
 # =>  <div class="example"></div>
 ```
