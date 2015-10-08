@@ -4,7 +4,7 @@ elixir:
   - 1.1.1
 otp_release:
   - 17.5
-  - 18.0
+  - 18.1
 
 after_script:
   - mix deps.get --only docs
