@@ -80,7 +80,9 @@ defmodule Floki do
   @self_closing_tags ["area", "base", "br", "col", "command", "embed", "hr", "img", "input", "keygen", "link", "mete", "param", "source", "track", "wbr"]
 
   @doc """
-  Converts node tree to raw HTML (spaces are ignored).
+  Converts HTML tree to raw HTML.
+  Note that the resultant HTML may be different from the original one.
+  Spaces after tags and doctypes are ignored.
 
   ## Examples
 
@@ -89,33 +91,30 @@ defmodule Floki do
 
   """
 
-  def raw_html(tuple) when is_tuple(tuple), do: raw_html([tuple])
-  def raw_html([], html), do: html
-  def raw_html([value|tail], html) when is_bitstring(value), do: value
-  def raw_html([node|tail], html \\ "") do 
-    {elem, attrs, value} = node
+  def raw_html(html_tree), do: raw_html(html_tree, "")
+  defp raw_html([], html), do: html
+  defp raw_html(tuple, html) when is_tuple(tuple), do: raw_html([tuple], html)
+  defp raw_html([value|tail], html) when is_binary(value), do: raw_html(tail, html <> value)
+  defp raw_html([{elem, attrs, value}|tail], html) do
     raw_html(tail, html <> tag_for(elem, attrs |> tag_attrs, value))
   end
 
   defp tag_attrs(attr_list) do
     attr_list
-    |> Enum.reduce("", fn(c,t) -> ~s(#{t} #{elem(c,0)}="#{elem(c,1)}") end)
+    |> Enum.reduce("", fn({attr, value}, t) -> ~s(#{t} #{attr}="#{value}") end)
     |> String.strip
   end
 
+  defp tag_for(elem, attrs, _value) when elem in @self_closing_tags do
+    case attrs do
+      "" -> "<#{elem}/>"
+      _ -> "<#{elem} #{attrs}/>"
+    end
+  end
   defp tag_for(elem, attrs, value) do
-    if Enum.member?(@self_closing_tags, elem) do
-      if attrs != "" do
-        "<#{elem} #{attrs}/>"
-      else
-        "<#{elem}/>"
-      end
-    else
-      if attrs != "" do
-        "<#{elem} #{attrs}>#{raw_html(value)}</#{elem}>"
-      else
-        "<#{elem}>#{raw_html(value)}</#{elem}>"
-      end
+    case attrs do
+      "" -> "<#{elem}>#{raw_html(value)}</#{elem}>"
+      _ -> "<#{elem} #{attrs}>#{raw_html(value)}</#{elem}>"
     end
   end
 
