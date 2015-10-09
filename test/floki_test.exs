@@ -47,7 +47,7 @@ defmodule FlokiTest do
   </body>
   </html>
   """
-
+  
   @html_without_html_tag """
   <h2 class="js-cool">One</h2>
   <p>Two</p>
@@ -141,6 +141,11 @@ defmodule FlokiTest do
 
   test "raw_html (html with data attributes)" do
     raw_html = Floki.parse(@html_with_data_attributes) |> Floki.raw_html
+    assert raw_html == String.split(raw_html, "\n") |> Enum.map(&(String.strip(&1))) |> Enum.join("")
+  end
+
+  test "raw_html (with comment)" do
+    raw_html = Floki.parse(@html_with_img) |> Floki.raw_html
     assert raw_html == String.split(raw_html, "\n") |> Enum.map(&(String.strip(&1))) |> Enum.join("")
   end
 
