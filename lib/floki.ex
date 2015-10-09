@@ -95,6 +95,7 @@ defmodule Floki do
   defp raw_html([], html), do: html
   defp raw_html(tuple, html) when is_tuple(tuple), do: raw_html([tuple], html)
   defp raw_html([value|tail], html) when is_binary(value), do: raw_html(tail, html <> value)
+  defp raw_html([{:comment, value}|tail], html), do: raw_html(tail, html <> "<!--#{value}-->")
   defp raw_html([{elem, attrs, value}|tail], html) do
     raw_html(tail, html <> tag_for(elem, attrs |> tag_attrs, value))
   end
