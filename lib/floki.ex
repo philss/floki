@@ -94,28 +94,28 @@ defmodule Floki do
   def raw_html(html_tree), do: raw_html(html_tree, "")
   defp raw_html([], html), do: html
   defp raw_html(tuple, html) when is_tuple(tuple), do: raw_html([tuple], html)
-  defp raw_html([value|tail], html) when is_binary(value), do: raw_html(tail, html <> value)
-  defp raw_html([{:comment, value}|tail], html), do: raw_html(tail, html <> "<!--#{value}-->")
-  defp raw_html([{elem, attrs, value}|tail], html) do
-    raw_html(tail, html <> tag_for(elem, attrs |> tag_attrs, value))
+  defp raw_html([string|tail], html) when is_binary(string), do: raw_html(tail, html <> string)
+  defp raw_html([{:comment, comment}|tail], html), do: raw_html(tail, html <> "<!--#{comment}-->")
+  defp raw_html([{type, attrs, children}|tail], html) do
+    raw_html(tail, html <> tag_for(type, tag_attrs(attrs), children))
   end
 
   defp tag_attrs(attr_list) do
     attr_list
-    |> Enum.reduce("", fn({attr, value}, t) -> ~s(#{t} #{attr}="#{value}") end)
+    |> Enum.reduce("", fn({attr, value}, attrs) -> ~s(#{attrs} #{attr}="#{value}") end)
     |> String.strip
   end
 
-  defp tag_for(elem, attrs, _value) when elem in @self_closing_tags do
+  defp tag_for(type, attrs, _children) when type in @self_closing_tags do
     case attrs do
-      "" -> "<#{elem}/>"
-      _ -> "<#{elem} #{attrs}/>"
+      "" -> "<#{type}/>"
+      _ -> "<#{type} #{attrs}/>"
     end
   end
-  defp tag_for(elem, attrs, value) do
+  defp tag_for(type, attrs, children) do
     case attrs do
-      "" -> "<#{elem}>#{raw_html(value)}</#{elem}>"
-      _ -> "<#{elem} #{attrs}>#{raw_html(value)}</#{elem}>"
+      "" -> "<#{type}>#{raw_html(children)}</#{type}>"
+      _ -> "<#{type} #{attrs}>#{raw_html(children)}</#{type}>"
     end
   end
 

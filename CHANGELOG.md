@@ -5,11 +5,15 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 
+### Fixed
+
+- Fix the `Floki.raw_html/1` to build HTML comments properly.
+
 ## [0.6.0] - 2015-10-07
 
 ### Added
 
-- Add `Floki.raw_html/2`
+- Add `Floki.raw_html/2`.
 
 ## [0.5.0] - 2015-09-27
 
