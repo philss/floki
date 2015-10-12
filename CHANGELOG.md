@@ -5,6 +5,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 
+## [0.6.1] - 2015-10-11
+
 ### Fixed
 
 - Fix the `Floki.raw_html/1` to build HTML comments properly.
@@ -131,7 +133,8 @@ of the parent element inside HTML.
 
 - Elixir version requirement from "~> 1.0.0" to ">= 1.0.0".
 
-[unreleased]: https://github.com/philss/floki/compare/v0.6.0...HEAD
+[unreleased]: https://github.com/philss/floki/compare/v0.6.1...HEAD
+[0.6.1]: https://github.com/philss/floki/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/philss/floki/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/philss/floki/compare/v0.4.1...v0.5.0
 [0.4.1]: https://github.com/philss/floki/compare/v0.4.0...v0.4.1
