@@ -1,5 +1,5 @@
 defmodule FlokiTest do
-  use ExUnit.Case, assyc: true
+  use ExUnit.Case, async: true
 
   doctest Floki
 
