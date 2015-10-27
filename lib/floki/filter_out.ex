@@ -21,12 +21,10 @@ defmodule Floki.FilterOut do
   end
 
   defp mapper(nodes, selector) when is_list(nodes) do
-    # IO.puts("mapping")
     Enum.filter_map(nodes, &filter(&1, selector), &mapper(&1, selector))
   end
 
   defp mapper({nodetext, x, y}, selector) do
-    # IO.puts("m: #{nodetext}")
     {nodetext, x, mapper(y, selector)}
   end
 
