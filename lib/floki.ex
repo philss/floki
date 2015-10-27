@@ -237,4 +237,30 @@ defmodule Floki do
       attr_name == attribute_name
     end
   end
+
+  @doc """
+  Returns the nodes from a HTML tree that don't match the filter selector.
+
+  ## Examples
+
+      iex> Floki.filter_out("<div><script>hello</script> world</div>", "script")
+      {"div", [], [" world"]}
+
+      iex> Floki.filter_out([{"body", [], [{"script", [], []},{"div", [], []}]}], "script")
+      [{"body", [], [{"div", [], []}]}]
+
+  """
+
+  @spec filter_out(binary | html_tree, binary) :: list
+
+  def filter_out(html_tree, selector) when is_binary(html_tree) do
+    html_tree
+    |> parse
+    |> Floki.FilterOut.filter_out(selector)
+  end
+  def filter_out(elements, selector) do
+    Floki.FilterOut.filter_out(elements, selector)
+  end
+
+
 end
