@@ -148,6 +148,7 @@ defmodule Floki do
   Returns the text nodes from a HTML tree.
   By default, it will perform a deep search through the HTML tree.
   You can disable deep search with the option `deep` assigned to false.
+  You can include content of script tags with the option `js` assigned to true.
 
   ## Examples
 
@@ -157,24 +158,36 @@ defmodule Floki do
       iex> Floki.text("<div><span>hello</span> world</div>", deep: false)
       " world"
 
+      iex> Floki.text("<div><script>hello</script> world</div>")
+      " world"
+
+      iex> Floki.text("<div><script>hello</script> world</div>", js: true)
+      "hello world"
+
   """
 
   @spec text(html_tree | binary) :: binary
 
-  def text(html, opts \\ [deep: true]) do
+  def text(html, opts \\ [deep: true, js: false]) do
     html_tree =
       case is_binary(html) do
         true -> parse(html)
         false -> html
       end
 
-    search_strategy =
-      case opts[:deep] do
-        true -> Floki.DeepText
-        false -> Floki.FlatText
+    cleaned_html_tree =
+      case opts[:js] do
+         true -> html_tree
+        _ -> filter_out(html_tree, "script")
       end
 
-    search_strategy.get(html_tree)
+    search_strategy =
+      case opts[:deep] do
+        false -> Floki.FlatText
+        _ -> Floki.DeepText
+      end
+
+    search_strategy.get(cleaned_html_tree)
   end
 
   @doc """
