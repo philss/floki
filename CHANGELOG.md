@@ -5,6 +5,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 
+### Added
+
+- Add support for excluding script notes in `Floki.text`.
+By default, it will exclude those nodes, but it can be enabled with
+the flag `js: true` - thanks @vikeri!
+
 ## [0.6.1] - 2015-10-11
 
 ### Fixed
