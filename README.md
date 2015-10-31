@@ -137,7 +137,7 @@ To convert your node tree back to raw HTML (spaces are ignored):
 
 ```elixir
 Floki.find(html, ".example")
-|> Flok.raw_html
+|> Floki.raw_html
 # =>  <div class="example"></div>
 ```
 
