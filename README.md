@@ -109,6 +109,15 @@ end
 
 After that, run `mix deps.get`.
 
+## Dependencies
+
+Floki needs the `leex` module in order to compile.
+Normally this module is installed with Erlang in a complete installation.
+
+If you get this [kind of error](https://github.com/philss/floki/issues/35),
+you need to install the `erlang-dev` and `erlang-parsetools` packages in order get the `leex` module.
+The packages names may be different depending on your OS.
+
 ## More about the API
 
 To parse a HTML document, try:
