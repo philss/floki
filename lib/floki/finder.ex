@@ -87,7 +87,12 @@ defmodule Floki.Finder do
   end
 
   defp traverse_sibling(_nodes, sibling_nodes, selector, acc) do
-    sibling_node = Enum.drop_while(sibling_nodes, &ignore_node?/1) |> hd
+    sibling_nodes = Enum.drop_while(sibling_nodes, &ignore_node?/1)
+
+    sibling_node = case sibling_nodes do
+                     [] -> nil
+                     _  -> hd(sibling_nodes)
+                   end
 
     if Selector.match?(sibling_node, selector) do
       case selector.combinator do

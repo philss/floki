@@ -11,6 +11,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 By default, it will exclude those nodes, but it can be enabled with
 the flag `js: true` - thanks @vikeri!
 
+### Fixed
+
+- Fix find for sibling nodes when the precendent selector match an element
+at the end of sibling list - fix [issue #39](https://github.com/philss/floki/issues/39)
+
 ## [0.6.1] - 2015-10-11
 
 ### Fixed
