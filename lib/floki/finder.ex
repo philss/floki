@@ -34,8 +34,9 @@ defmodule Floki.Finder do
   defp traverse({}, _, _, acc), do: acc
   defp traverse([], _, _, acc), do: acc
   defp traverse(string, _, _, acc) when is_binary(string), do: acc
-  defp traverse({:comment, _comment},_, _, acc), do: acc
-  defp traverse({:pi, _xml, _xml_attrs},_, _, acc), do: acc
+  defp traverse({:comment, _comment}, _, _, acc), do: acc
+  defp traverse({:pi, _xml, _xml_attrs}, _, _, acc), do: acc
+  defp traverse({:pi, _php_script}, _, _, acc), do: acc
   defp traverse([node|sibling_nodes], _, selectors, acc) do
     acc = traverse(node, sibling_nodes, selectors, acc)
     traverse(sibling_nodes, [], selectors, acc)
@@ -125,5 +126,6 @@ defmodule Floki.Finder do
 
   defp ignore_node?({:comment, _}), do: true
   defp ignore_node?({:pi, _, _}), do: true
+  defp ignore_node?({:pi, _}), do: true
   defp ignore_node?(_), do: false
 end
