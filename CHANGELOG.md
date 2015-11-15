@@ -5,6 +5,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 
+## [0.7.1] - 2015-11-14
+
+### Fixed
+
+- Ignore PHP scripts when finding nodes.
+
 ## [0.7.0] - 2015-11-03
 
 ### Added
@@ -146,7 +152,8 @@ of the parent element inside HTML.
 
 - Elixir version requirement from "~> 1.0.0" to ">= 1.0.0".
 
-[unreleased]: https://github.com/philss/floki/compare/v0.7.0...HEAD
+[unreleased]: https://github.com/philss/floki/compare/v0.7.1...HEAD
+[0.7.1]: https://github.com/philss/floki/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/philss/floki/compare/v0.6.1...v0.7.0
 [0.6.1]: https://github.com/philss/floki/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/philss/floki/compare/v0.5.0...v0.6.0
