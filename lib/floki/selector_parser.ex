@@ -6,6 +6,7 @@ defmodule Floki.SelectorParser do
   alias Floki.Selector
   alias Floki.AttributeSelector
   alias Floki.Combinator
+  @attr_match_types [:equal, :dash_match, :includes, :prefix_match, :sufix_match, :substring_match]
 
   @doc """
   Returns a `Selector` struct with the parsed selector.
@@ -67,46 +68,33 @@ defmodule Floki.SelectorParser do
   defp consume_attribute(:done, tokens, attr_selector) do
     {tokens, attr_selector}
   end
-  defp consume_attribute(status = :consuming, [h|t], attr_selector) do
-    new_attr_selector =
-      case h do
-        {:identifier, _, identifier} ->
-          set_attribute_name_or_value(attr_selector, identifier)
-        {:equal, _} ->
-          %{attr_selector | match_type: :equal}
-        {:dash_match, _} ->
-          %{attr_selector | match_type: :dash_match}
-        {:includes, _} ->
-          %{attr_selector | match_type: :includes}
-        {:prefix_match, _} ->
-          %{attr_selector | match_type: :prefix_match}
-        {:sufix_match, _} ->
-          %{attr_selector | match_type: :sufix_match}
-        {:substring_match, _} ->
-          %{attr_selector | match_type: :substring_match}
-        {:quoted, 1, value} ->
-          %{attr_selector | value: to_string(value)}
-        {']', _} ->
-          status = :done
-          attr_selector
-        unknown ->
-          # TODO: find a better way to notify unknown tokens
-          IO.puts("Unknown token #{inspect unknown}. Ignoring.")
-
-          attr_selector
-      end
-
-    consume_attribute(status, t, new_attr_selector)
+  defp consume_attribute(:consuming, [{:identifier, _, identifier}|t], attr_selector) do
+    new_selector = set_attribute_name_or_value(attr_selector, identifier)
+    consume_attribute(:consuming, t, new_selector)
+  end
+  defp consume_attribute(:consuming, [{match_type, _}|t], attr_selector) when match_type in @attr_match_types do
+    new_selector = %{attr_selector | match_type: match_type}
+    consume_attribute(:consuming, t, new_selector)
+  end
+  defp consume_attribute(:consuming, [{:quoted, _, value}|t], attr_selector) do
+    new_selector = %{attr_selector | value: to_string(value)}
+    consume_attribute(:consuming, t, new_selector)
+  end
+  defp consume_attribute(:consuming, [{']', _}|t], attr_selector) do
+    consume_attribute(:done, t, attr_selector)
+  end
+  defp consume_attribute(:consuming, [unknown|t], attr_selector) do
+    # TODO: find a better way to notify unknown tokens
+    IO.puts("Unknown token #{inspect unknown}. Ignoring.")
+    consume_attribute(:consuming, t, attr_selector)
   end
 
   defp set_attribute_name_or_value(attr_selector, identifier) do
-    # When match type is not defined, this is attribute name.
+    # When match type is not defined, this is an attribute name.
     # Otherwise, it is an attribute value.
     case attr_selector.match_type do
-      nil ->
-        %{attr_selector | attribute: to_string(identifier)}
-      _ ->
-        %{attr_selector | value: to_string(identifier)}
+      nil -> %{attr_selector | attribute: to_string(identifier)}
+      _ -> %{attr_selector | value: to_string(identifier)}
     end
   end
 

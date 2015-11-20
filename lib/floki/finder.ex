@@ -37,20 +37,20 @@ defmodule Floki.Finder do
   defp traverse({:comment, _comment}, _, _, acc), do: acc
   defp traverse({:pi, _xml, _xml_attrs}, _, _, acc), do: acc
   defp traverse({:pi, _php_script}, _, _, acc), do: acc
-  defp traverse([node|sibling_nodes], _, selectors, acc) do
-    acc = traverse(node, sibling_nodes, selectors, acc)
+  defp traverse([html_node|sibling_nodes], _, selectors, acc) do
+    acc = traverse(html_node, sibling_nodes, selectors, acc)
     traverse(sibling_nodes, [], selectors, acc)
   end
-  defp traverse(node, sibling_nodes, [head_selector|tail_selectors], acc) do
-    acc = traverse(node, sibling_nodes, head_selector, acc)
-    traverse(node, sibling_nodes, tail_selectors, acc)
+  defp traverse(html_node, sibling_nodes, [head_selector|tail_selectors], acc) do
+    acc = traverse(html_node, sibling_nodes, head_selector, acc)
+    traverse(html_node, sibling_nodes, tail_selectors, acc)
   end
-  defp traverse({_, _, children_nodes} = node, sibling_nodes, selector, acc) do
+  defp traverse({_, _, children_nodes} = html_node, sibling_nodes, selector, acc) do
     acc =
-      if Selector.match?(node, selector) do
+      if Selector.match?(html_node, selector) do
         combinator = selector.combinator
         case combinator do
-          nil -> [node|acc]
+          nil -> [html_node|acc]
           _ ->
             case combinator.match_type do
               :descendant ->

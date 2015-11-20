@@ -17,11 +17,11 @@ defmodule Floki.Selector do
   def match?(nil, _selector), do: false
   def match?({:comment, _comment}, _selector), do: false
   def match?({:pi, _xml, _xml_attrs}, _selector), do: false
-  def match?(node, selector) do
-    id_match?(node, selector.id)
-      && type_match?(node, selector.type)
-      && classes_matches?(node, selector.classes)
-      && attributes_matches?(node, selector.attributes)
+  def match?(html_node, selector) do
+    id_match?(html_node, selector.id)
+      && type_match?(html_node, selector.type)
+      && classes_matches?(html_node, selector.classes)
+      && attributes_matches?(html_node, selector.attributes)
   end
 
   defp id_match?(_node, nil), do: true
