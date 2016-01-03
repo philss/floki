@@ -25,9 +25,13 @@ defmodule Floki.Finder do
   end
 
   defp get_selectors(selector_as_string) do
-    Enum.map String.split(selector_as_string, ","), fn(s) ->
-      SelectorTokenizer.tokenize(s) |> SelectorParser.parse
-    end
+    selector_as_string
+    |> String.split(",")
+    |> Enum.map(fn(s) ->
+      tokens = SelectorTokenizer.tokenize(s)
+
+      SelectorParser.parse(tokens)
+    end)
   end
 
   defp traverse(_, _, [], acc), do: acc

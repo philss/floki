@@ -1,5 +1,5 @@
 defmodule Floki.FilterOut do
-  @doc """
+  @moduledoc """
   Helper functions for filtering out a specific element from the tree.
   """
 
@@ -31,6 +31,4 @@ defmodule Floki.FilterOut do
   defp mapper(nodetext, _) do
     nodetext
   end
-
-
 end

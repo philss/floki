@@ -18,56 +18,53 @@ defmodule Floki.SelectorParser do
   end
 
   defp parse([], selector), do: selector
-  defp parse([h|t], selector) do
-    new_selector =
-      case h do
-        {:identifier, _, type} ->
-          %{selector | type: to_string(type)}
-        {'*', _} ->
-          %{selector | type: "*"}
-        {:hash, _, id} ->
-          %{selector | id: to_string(id)}
-        {:class, _, class} ->
-          %{selector | classes: [to_string(class)|selector.classes]}
-        {'[', _} ->
-          {t, result} = consume_attribute(t)
+  defp parse([{:identifier, _, type}|t], selector) do
+    parse(t, %{selector | type: to_string(type)})
+  end
+  defp parse([{'*', _}|t], selector) do
+    parse(t, %{selector | type: "*"})
+  end
+  defp parse([{:hash, _, id}|t], selector) do
+    parse(t, %{selector | id: to_string(id)})
+  end
+  defp parse([{:class, _, class}|t], selector) do
+    parse(t, %{selector | classes: [to_string(class)|selector.classes]})
+  end
+  defp parse([{'[', _}|t], selector) do
+      {t, result} = consume_attribute(t)
 
-          %{selector | attributes: [result|selector.attributes]}
-        {:space, _} ->
-          {t, combinator} = consume_combinator(t, :descendant)
+      parse(t, %{selector | attributes: [result|selector.attributes]})
+  end
+  defp parse([{:space, _}|t], selector) do
+    {t, combinator} = consume_combinator(t, :descendant)
 
-          %{selector | combinator: combinator}
-        {:greater, _} ->
-          {t, combinator} = consume_combinator(t, :child)
+    parse(t, %{selector | combinator: combinator})
+  end
+  defp parse([{:greater, _}|t], selector) do
+    {t, combinator} = consume_combinator(t, :child)
 
-          %{selector | combinator: combinator}
-        {:plus, _} ->
-          {t, combinator} = consume_combinator(t, :sibling)
+    parse(t, %{selector | combinator: combinator})
+  end
+  defp parse([{:plus, _}|t], selector) do
+    {t, combinator} = consume_combinator(t, :sibling)
 
-          %{selector | combinator: combinator}
-        {:tilde, _} ->
-          {t, combinator} = consume_combinator(t, :general_sibling)
+    parse(t, %{selector | combinator: combinator})
+  end
+  defp parse([{:tilde, _}|t], selector) do
+    {t, combinator} = consume_combinator(t, :general_sibling)
 
-          %{selector | combinator: combinator}
-        {:unknown, _, unknown} ->
-          # TODO: find a better way to notify unknown tokens
-          IO.puts("Unknown token #{inspect unknown}. Ignoring.")
+   parse(t, %{selector | combinator: combinator})
+  end
+  defp parse([{:unknown, _, unknown}|t], selector) do
+    # TODO: find a better way to notify unknown tokens
+    IO.puts("Unknown token #{inspect unknown}. Ignoring.")
 
-          selector
-      end
-
-    parse(t, new_selector)
+    parse(t, selector)
   end
 
-  defp consume_attribute(tokens) do
-    consume_attribute(:consuming, tokens, %AttributeSelector{})
-  end
-  defp consume_attribute(_, [], attr_selector) do
-    {[], attr_selector}
-  end
-  defp consume_attribute(:done, tokens, attr_selector) do
-    {tokens, attr_selector}
-  end
+  defp consume_attribute(tokens), do: consume_attribute(:consuming, tokens, %AttributeSelector{})
+  defp consume_attribute(_, [], attr_selector), do: {[], attr_selector}
+  defp consume_attribute(:done, tokens, attr_selector), do: {tokens, attr_selector}
   defp consume_attribute(:consuming, [{:identifier, _, identifier}|t], attr_selector) do
     new_selector = set_attribute_name_or_value(attr_selector, identifier)
     consume_attribute(:consuming, t, new_selector)
@@ -101,9 +98,7 @@ defmodule Floki.SelectorParser do
   defp consume_combinator(tokens, combinator_type) when is_atom(combinator_type) do
     consume_combinator(tokens, %Combinator{match_type: combinator_type, selector: %Selector{}})
   end
-  defp consume_combinator([], combinator) do
-    {[], combinator}
-  end
+  defp consume_combinator([], combinator), do: {[], combinator}
   defp consume_combinator(tokens, combinator) do
     selector = parse(tokens)
 

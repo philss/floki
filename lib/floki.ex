@@ -1,6 +1,7 @@
 defmodule Floki do
   alias Floki.Finder
   alias Floki.Parser
+  alias Floki.FilterOut
 
   @moduledoc """
   A HTML parser and seeker.
@@ -138,7 +139,7 @@ defmodule Floki do
   @spec find(binary | html_tree, binary) :: html_tree
 
   def find(html, selector) when is_binary(html) do
-    parse(html) |> Finder.find(selector)
+    html |> parse |> Finder.find(selector)
   end
   def find(html_tree, selector) do
     Finder.find(html_tree, selector)
@@ -170,14 +171,15 @@ defmodule Floki do
 
   def text(html, opts \\ [deep: true, js: false]) do
     html_tree =
-      case is_binary(html) do
-        true -> parse(html)
-        false -> html
+      if is_binary(html) do
+        parse(html)
+      else
+        html
       end
 
     cleaned_html_tree =
       case opts[:js] do
-         true -> html_tree
+        true -> html_tree
         _ -> filter_out(html_tree, "script")
       end
 
@@ -269,11 +271,9 @@ defmodule Floki do
   def filter_out(html_tree, selector) when is_binary(html_tree) do
     html_tree
     |> parse
-    |> Floki.FilterOut.filter_out(selector)
+    |> FilterOut.filter_out(selector)
   end
   def filter_out(elements, selector) do
-    Floki.FilterOut.filter_out(elements, selector)
+    FilterOut.filter_out(elements, selector)
   end
-
-
 end
