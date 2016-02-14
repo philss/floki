@@ -7,14 +7,11 @@
 
 Floki is a simple HTML parser that enables search for nodes using CSS selectors.
 
-You can perform searches using classes, attributes, tag names and IDs.
-You can also combine selectors and use groups, like: `"a.foo[data-action='bar'], .baz.zaz"`.
-
 [Check the documentation](http://hexdocs.pm/floki).
 
 ## Usage
 
-Assuming that you have the following HTML:
+Take this HTML as an example:
 
 ```html
 <!doctype html>
@@ -97,7 +94,7 @@ It is simple as that!
 
 ## Installation
 
-You can install Floki by adding a dependency to your mix file (mix.exs):
+Add Floki in your `mix.exs`, as a dependency:
 
 ```elixir
 defp deps do
