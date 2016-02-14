@@ -4,11 +4,7 @@ defmodule Floki do
   alias Floki.FilterOut
 
   @moduledoc """
-  A HTML parser and seeker.
-
-  This is a simple HTML parser that enables searching using CSS like selectors.
-
-  You can search elements by class, tag name and id.
+  Floki is a simple HTML parser that enables search for nodes using CSS selectors.
 
   ## Example
 
@@ -27,14 +23,14 @@ defmodule Floki do
   </html>
   ```
 
-  You can perform the following queries:
+  Examples of queries that you can perform:
 
-    * Floki.find(html, "#content") : returns the section with all children;
-    * Floki.find(html, ".headline") : returns a list with the `p` element;
-    * Floki.find(html, "a") : returns a list with the `a` element;
-    * Floki.find(html, "[data-model=user]") : returns a list with elements that match that data attribute;
-    * Floki.find(html, "#content a") # returns all links inside content section;
-    * Floki.find(html, ".headline, a") # returns the .headline elements and links.
+    * Floki.find(html, "#content")
+    * Floki.find(html, ".headline")
+    * Floki.find(html, "a")
+    * Floki.find(html, "[data-model=user]")
+    * Floki.find(html, "#content a")
+    * Floki.find(html, ".headline, a")
 
   Each HTML node is represented by a tuple like:
 
@@ -91,6 +87,8 @@ defmodule Floki do
       ~s(<div class="wrapper">my content</div>)
 
   """
+
+  @spec raw_html(html_tree) :: binary
 
   def raw_html(html_tree), do: raw_html(html_tree, "")
   defp raw_html([], html), do: html
