@@ -262,6 +262,9 @@ defmodule Floki do
       iex> Floki.filter_out([{"body", [], [{"script", [], []},{"div", [], []}]}], "script")
       [{"body", [], [{"div", [], []}]}]
 
+      iex> Floki.filter_out("<div><!-- comment --> text</div>", :comment)
+      {"div", [], [" text"]}
+
   """
 
   @spec filter_out(binary | html_tree, binary) :: list

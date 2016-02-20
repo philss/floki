@@ -12,23 +12,15 @@ defmodule Floki.FilterOut do
     mapper(html_tree, selector)
   end
 
-  defp filter({nodetext, _, _}, selector) when nodetext === selector do
-    false
-  end
-
-  defp filter(_, _) do
-    true
-  end
+  defp filter({nodetext, _, _}, selector) when nodetext === selector, do: false
+  defp filter({nodetext, _}, selector) when nodetext === selector, do: false
+  defp filter(_, _), do: true
 
   defp mapper(nodes, selector) when is_list(nodes) do
     Enum.filter_map(nodes, &filter(&1, selector), &mapper(&1, selector))
   end
-
   defp mapper({nodetext, x, y}, selector) do
     {nodetext, x, mapper(y, selector)}
   end
-
-  defp mapper(nodetext, _) do
-    nodetext
-  end
+  defp mapper(nodetext, _), do: nodetext
 end
