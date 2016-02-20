@@ -27,4 +27,10 @@ defmodule Floki.DeepTextTest do
 
     assert Floki.DeepText.get(nodes) == "foobaz"
   end
+
+  test "text that includes a br node inside the tree" do
+    nodes = [{"a", [], ["foo"]}, {"br", [], []}, {"b", [], ["baz"]}]
+
+    assert Floki.DeepText.get(nodes) == "foo\nbaz"
+  end
 end
