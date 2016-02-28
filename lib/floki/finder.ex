@@ -12,13 +12,24 @@ defmodule Floki.Finder do
 
   @doc """
   Find elements inside a HTML tree.
+
+  Second argument can be either a selector string, a selector struct or an array of selector structs.
   """
 
-  @spec find(html_tree, binary) :: html_tree
+  @spec find(html_tree, binary|struct|[struct]) :: html_tree
 
-  def find(html_tree, selector_as_string) do
+  def find(html_tree, selector_as_string) when is_binary(selector_as_string) do
     selectors = get_selectors(selector_as_string)
+    find_selectors(html_tree, selectors)
+  end
+  def find(html_tree, selectors) when is_list(selectors) do
+    find_selectors(html_tree, selectors)
+  end
+  def find(html_tree, %Selector{} = selector) do
+    find_selectors(html_tree, [selector])
+  end
 
+  defp find_selectors(html_tree, selectors) do
     html_tree
     |> traverse([], selectors, [])
     |> Enum.reverse
