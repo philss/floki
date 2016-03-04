@@ -9,6 +9,7 @@ defmodule Floki.Finder do
   alias Floki.SelectorTokenizer
 
   @type html_tree :: tuple | list
+  @type selector :: binary | %Selector{} | [%Selector{}]
 
   @doc """
   Find elements inside a HTML tree.
@@ -16,7 +17,7 @@ defmodule Floki.Finder do
   Second argument can be either a selector string, a selector struct or an array of selector structs.
   """
 
-  @spec find(html_tree, binary|struct|[struct]) :: html_tree
+  @spec find(html_tree, selector) :: html_tree
 
   def find(html_tree, selector_as_string) when is_binary(selector_as_string) do
     selectors = get_selectors(selector_as_string)
