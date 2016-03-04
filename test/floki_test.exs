@@ -451,6 +451,20 @@ defmodule FlokiTest do
     assert Floki.find("foobar<a", "a") == []
   end
 
+  # Floki.find/2 - Raw selector structs
+
+  test "find single selector structs" do
+    selector_struct = %Floki.Selector{ type: "a" }
+    assert Floki.find(@html, "a") == Floki.find(@html, selector_struct)
+  end
+
+  test "find multiple selector structs" do
+    selector_struct_1 = %Floki.Selector{ type: "a" }
+    selector_struct_2 = %Floki.Selector{ type: "div" }
+
+    assert Floki.find(@html, "a,div") == Floki.find(@html, [selector_struct_1, selector_struct_2])
+  end
+
   # Floki.attribute/3
 
   test "get attribute values from elements with a given class" do
