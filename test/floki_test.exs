@@ -47,7 +47,7 @@ defmodule FlokiTest do
   </body>
   </html>
   """
-  
+
   @html_without_html_tag """
   <h2 class="js-cool">One</h2>
   <p>Two</p>
@@ -441,6 +441,12 @@ defmodule FlokiTest do
     ]
 
     assert Floki.find(@xml, "title") == expected
+  end
+
+  test "find elements inside namespaces" do
+    xml = "<x:foo><x:bar>42</x:bar></x:foo>"
+
+    assert Floki.find(xml, "x:bar") == [{"x:bar", [], ["42"]}]
   end
 
   @tag timeout: 1000

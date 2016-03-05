@@ -1,6 +1,6 @@
 Definitions.
 
-IDENTIFIER = [-A-Za-z0-9_]+
+IDENTIFIER = [-A-Za-z0-9_:]+
 QUOTED = (\".*\"|\'.*\')
 SYMBOL = [\[\]*]
 W = [\s\t\r\n\f]
