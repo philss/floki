@@ -5,6 +5,17 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 
+## [0.8.0] - 2016-03-06
+
+### Added
+
+- Add possibility to search tags with namespaces.
+- Accept `Floki.Selector` as parameter of `Floki.find/2` instead of only strings - thanks @hansihe.
+
+### Changed
+
+- Using a smaller package with only the mochiweb HTML parser.
+
 ## [0.7.2] - 2016-02-23
 
 ### Fixed
@@ -159,7 +170,8 @@ of the parent element inside HTML.
 
 - Elixir version requirement from "~> 1.0.0" to ">= 1.0.0".
 
-[unreleased]: https://github.com/philss/floki/compare/v0.7.2...HEAD
+[unreleased]: https://github.com/philss/floki/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/philss/floki/compare/v0.7.2...v0.8.0
 [0.7.2]: https://github.com/philss/floki/compare/v0.7.1...v0.7.2
 [0.7.1]: https://github.com/philss/floki/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/philss/floki/compare/v0.6.1...v0.7.0
