@@ -154,6 +154,11 @@ defmodule FlokiTest do
     assert raw_html == ~s(<a href="uol.com.br" class="bar"><span>UOL</span><img src="foo.png"/></a>)
   end
 
+  test "raw_html (with boolean attribute)" do
+    raw_html = Floki.raw_html({"div", ["hidden"], []})
+    assert raw_html == "<div hidden></div>"
+  end
+
   # Floki.find/2 - Classes
 
   test "find elements with a given class" do

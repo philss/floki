@@ -101,9 +101,12 @@ defmodule Floki do
 
   defp tag_attrs(attr_list) do
     attr_list
-    |> Enum.reduce("", fn({attr, value}, attrs) -> ~s(#{attrs} #{attr}="#{value}") end)
+    |> Enum.reduce("", &build_attrs/2)
     |> String.strip
   end
+
+  defp build_attrs({attr, value}, attrs), do: ~s(#{attrs} #{attr}="#{value}")
+  defp build_attrs(attr, attrs), do: "#{attrs} #{attr}"
 
   defp tag_for(type, attrs, _children) when type in @self_closing_tags do
     case attrs do
