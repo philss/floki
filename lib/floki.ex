@@ -106,6 +106,7 @@ defmodule Floki do
   end
 
   defp build_attrs({attr, value}, attrs), do: ~s(#{attrs} #{attr}="#{value}")
+  defp build_attrs(attr, attrs), do: "#{attrs} #{attr}"
 
   defp tag_for(type, attrs, _children) when type in @self_closing_tags do
     case attrs do
