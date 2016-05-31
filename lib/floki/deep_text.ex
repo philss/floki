@@ -6,7 +6,7 @@ defmodule Floki.DeepText do
 
   @type html_tree :: tuple | list
 
-  @spec get(html_tree) :: binary
+  @spec get(html_tree, binary) :: binary
 
   @doc """
   Get text nodes from a deep tree of HTML nodes.
@@ -17,20 +17,24 @@ defmodule Floki.DeepText do
       iex> Floki.DeepText.get([{"a", [], ["The meaning of life is...", {"strong", [], ["something else"]}] }])
       "The meaning of life is...something else"
 
+      iex> Floki.DeepText.get([{"a", [], ["The meaning of life is...", {"strong", [], ["something else"]}] }], " ")
+      "The meaning of life is... something else"
+
   """
-  def get(html_tree) do
-    get_text(html_tree, "")
+  def get(html_tree, sep \\ "") do
+    get_text(html_tree, "", sep)
   end
 
-  defp get_text(text, acc) when is_binary(text), do: acc <> text
-  defp get_text(nodes, acc) when is_list(nodes) do
+  defp get_text(text, "", sep) when is_binary(text), do: text
+  defp get_text(text, acc, sep) when is_binary(text), do: Enum.join([acc, text], sep)
+  defp get_text(nodes, acc, sep) when is_list(nodes) do
     Enum.reduce nodes, acc, fn(child, istr) ->
-      get_text(child, istr)
+      get_text(child, istr, sep)
     end
   end
-  defp get_text({:comment, _}, acc), do: acc
-  defp get_text({"br", _, _}, acc), do: acc <> "\n"
-  defp get_text({_, _, nodes}, acc) do
-    get_text(nodes, acc)
+  defp get_text({:comment, _}, acc, _), do: acc
+  defp get_text({"br", _, _}, acc, _), do: acc <> "\n"
+  defp get_text({_, _, nodes}, acc, sep) do
+    get_text(nodes, acc, sep)
   end
 end
