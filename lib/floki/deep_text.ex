@@ -25,7 +25,7 @@ defmodule Floki.DeepText do
     get_text(html_tree, "", sep)
   end
 
-  defp get_text(text, "", sep) when is_binary(text), do: text
+  defp get_text(text, "", _sep) when is_binary(text), do: text
   defp get_text(text, acc, sep) when is_binary(text), do: Enum.join([acc, text], sep)
   defp get_text(nodes, acc, sep) when is_list(nodes) do
     Enum.reduce nodes, acc, fn(child, istr) ->

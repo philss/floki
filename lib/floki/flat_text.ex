@@ -22,7 +22,6 @@ defmodule Floki.FlatText do
 
   """
   def get(html_nodes, sep \\ "")
-
   def get(html_nodes, sep) when is_list(html_nodes) do
     Enum.reduce(html_nodes, "", fn(html_node, acc) ->
       text_from_node(html_node, acc, sep)
@@ -33,18 +32,15 @@ defmodule Floki.FlatText do
   end
 
   defp text_from_node({ _tag, _attrs, html_nodes}, acc, sep) do
-    Enum.reduce html_nodes, acc, fn(node, acc) ->
+    Enum.reduce(html_nodes, acc, fn(node, acc) ->
       capture_text(node, acc, sep)
-    end
+    end)
   end
-
-  defp text_from_node(text, "", sep) when is_binary(text), do: text
+  defp text_from_node(text, "", _sep) when is_binary(text), do: text
   defp text_from_node(text, acc, sep) when is_binary(text), do: Enum.join([acc, text], sep)
-
   defp text_from_node(_, acc, _), do: acc
 
-  defp capture_text(text, "", sep) when is_binary(text), do: text
+  defp capture_text(text, "", _sep) when is_binary(text), do: text
   defp capture_text(text, acc, sep) when is_binary(text), do: Enum.join([acc, text], sep)
   defp capture_text(_html_node, acc, _), do: acc
-
 end
