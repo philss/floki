@@ -173,6 +173,9 @@ defmodule Floki do
       iex> Floki.text("<ul><li>hello</li><li>world</li></ul>", sep: " ")
       "hello world"
 
+      iex> Floki.text([{"div", [], ["hello world"]}])
+      "hello world"
+
   """
 
   @spec text(html_tree | binary) :: binary
@@ -212,6 +215,9 @@ defmodule Floki do
       iex> Floki.attribute("<a href='https://google.com'>Google</a>", "a", "href")
       ["https://google.com"]
 
+      iex> Floki.attribute([{"a", [{"href", "https://google.com"}], ["Google"]}], "a", "href")
+      ["https://google.com"]
+
   """
 
   @spec attribute(binary | html_tree, binary, binary) :: list
@@ -228,6 +234,9 @@ defmodule Floki do
   ## Examples
 
       iex> Floki.attribute("<a href=https://google.com>Google</a>", "href")
+      ["https://google.com"]
+
+      iex> Floki.attribute([{"a", [{"href", "https://google.com"}], ["Google"]}], "href")
       ["https://google.com"]
 
   """
