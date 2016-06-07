@@ -135,6 +135,9 @@ defmodule Floki do
       iex> Floki.find("<p><a href='https://google.com'>Google</a></p>", "a")
       [{"a", [{"href", "https://google.com"}], ["Google"]}]
 
+      iex> Floki.find([{ "div", [], [{"a", [{"href", "https://google.com"}], ["Google"]}]}], "div a")
+      [{"a", [{"href", "https://google.com"}], ["Google"]}]
+
   """
 
   @spec find(binary | html_tree, binary) :: html_tree
@@ -168,6 +171,9 @@ defmodule Floki do
       "hello world"
 
       iex> Floki.text("<ul><li>hello</li><li>world</li></ul>", sep: " ")
+      "hello world"
+
+      iex> Floki.text([{"div", [], ["hello world"]}])
       "hello world"
 
   """
@@ -209,6 +215,9 @@ defmodule Floki do
       iex> Floki.attribute("<a href='https://google.com'>Google</a>", "a", "href")
       ["https://google.com"]
 
+      iex> Floki.attribute([{"a", [{"href", "https://google.com"}], ["Google"]}], "a", "href")
+      ["https://google.com"]
+
   """
 
   @spec attribute(binary | html_tree, binary, binary) :: list
@@ -225,6 +234,9 @@ defmodule Floki do
   ## Examples
 
       iex> Floki.attribute("<a href=https://google.com>Google</a>", "href")
+      ["https://google.com"]
+
+      iex> Floki.attribute([{"a", [{"href", "https://google.com"}], ["Google"]}], "href")
       ["https://google.com"]
 
   """
