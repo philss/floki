@@ -135,8 +135,8 @@ defmodule Floki do
       iex> Floki.find("<p><a href='https://google.com'>Google</a></p>", "a")
       [{"a", [{"href", "https://google.com"}], ["Google"]}]
 
-      iex> Floki.find([{ "div", [], [{"a", [{ "href", "https://www.bing.com"}], ["Bing"]} ] }], "div a")
-      [{"a", [{"href", "https://www.bing.com"}], ["Bing"]}]
+      iex> Floki.find([{ "div", [], [{"a", [{"href", "https://google.com"}], ["Google"]}]}], "div a")
+      [{"a", [{"href", "https://google.com"}], ["Google"]}]
 
   """
 
