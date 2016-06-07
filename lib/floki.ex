@@ -135,6 +135,9 @@ defmodule Floki do
       iex> Floki.find("<p><a href='https://google.com'>Google</a></p>", "a")
       [{"a", [{"href", "https://google.com"}], ["Google"]}]
 
+      iex> Floki.find([{ "div", [], [{"a", [{ "href", "https://www.bing.com"}], ["Bing"]} ] }], "div a")
+      [{"a", [{"href", "https://www.bing.com"}], ["Bing"]}]
+
   """
 
   @spec find(binary | html_tree, binary) :: html_tree
