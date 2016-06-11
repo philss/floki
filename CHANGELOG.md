@@ -5,6 +5,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 
+### Added
+
+- A separator between text when getting text from nodes - thanks @rochdi.
+
 ## [0.8.1] - 2016-05-20
 
 ### Added
