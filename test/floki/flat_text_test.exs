@@ -39,7 +39,7 @@ defmodule Floki.FlatTextTest do
     assert Floki.FlatText.get(node, "|") == "The text start| and end."
   end
 
-  test "text from an array of nodes" do
+  test "text from a list of nodes" do
     nodes = [
             {"div",
               [],
@@ -59,7 +59,7 @@ defmodule Floki.FlatTextTest do
     assert Floki.FlatText.get(nodes) == expected_text
   end
 
-  test "text from an array of nodes with separator" do
+  test "text from a list of nodes with separator" do
     nodes = [
             {"div",
               [],

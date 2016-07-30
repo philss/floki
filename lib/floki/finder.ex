@@ -14,7 +14,7 @@ defmodule Floki.Finder do
   @doc """
   Find elements inside a HTML tree.
 
-  Second argument can be either a selector string, a selector struct or an array of selector structs.
+  Second argument can be either a selector string, a selector struct or a list of selector structs.
   """
 
   @spec find(html_tree, selector) :: html_tree
