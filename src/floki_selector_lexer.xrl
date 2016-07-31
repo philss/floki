@@ -1,6 +1,6 @@
 Definitions.
 
-IDENTIFIER = [-A-Za-z0-9_:]+
+IDENTIFIER = [-A-Za-z0-9_]+
 QUOTED = (\".*\"|\'.*\')
 SYMBOL = [\[\]*]
 W = [\s\t\r\n\f]
@@ -22,6 +22,7 @@ Rules.
 {W}*>{W}*        : {token, {greater, TokenLine}}.
 {W}*\+{W}*       : {token, {plus, TokenLine}}.
 {W}*~{W}*        : {token, {tilde, TokenLine}}.
+{W}*\|{W}*       : {token, {namespace_pipe, TokenLine}}.
 {W}+             : {token, {space, TokenLine}}.
 .                : {token, {unknown, TokenLine, TokenChars}}.
 

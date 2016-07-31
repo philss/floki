@@ -451,10 +451,10 @@ defmodule FlokiTest do
   test "find elements inside namespaces" do
     xml = "<x:foo><x:bar>42</x:bar></x:foo>"
 
-    assert Floki.find(xml, "x:bar") == [{"x:bar", [], ["42"]}]
+    assert Floki.find(xml, "x | bar") == [{"x:bar", [], ["42"]}]
   end
 
-  @tag timeout: 1000
+  @tag timeout: 50
   test "find an inexistent element inside a invalid HTML" do
     assert Floki.find("something", "a") == []
     assert Floki.find("", "a") == []
