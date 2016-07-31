@@ -15,7 +15,7 @@ defmodule Floki.DeepTextTest do
     assert Floki.DeepText.get(node, " ") == "Google"
   end
 
-  test "text from an array of deep nodes" do
+  test "text from a list of deep nodes" do
     nodes =
       [{"div", [],
           ["This is a text",
@@ -28,7 +28,7 @@ defmodule Floki.DeepTextTest do
      assert Floki.DeepText.get(nodes) == "This is a text that is divided into tiny pieces. It keeps growing... And ends."
   end
 
-  test "text from an array of deep nodes with a separator" do
+  test "text from a list of deep nodes with a separator" do
     nodes =
       [{"div", [],
           ["This is a text",
