@@ -8,13 +8,15 @@ defmodule Floki.SelectorTokenizerTest do
 
   test "complex selector" do
     complex = """
-    a.link,
+    ns|a.link,
     .b[title=hello],
     [href~=foo] *,
     a > b
     """
 
     assert SelectorTokenizer.tokenize(complex) == [
+      {:identifier, 1, 'ns'},
+      {:namespace_pipe, 1},
       {:identifier, 1, 'a'},
       {:class, 1, 'link'},
       {:comma, 1},

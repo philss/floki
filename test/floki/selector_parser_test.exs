@@ -78,4 +78,13 @@ defmodule Floki.SelectorParserTest do
       }
     }
   end
+
+  test "with namespace" do
+    tokens = tokenize("xyz | a")
+
+    assert SelectorParser.parse(tokens) == %Selector{
+      type: "a",
+      namespace: "xyz"
+    }
+  end
 end
