@@ -68,7 +68,7 @@ defmodule Floki.Finder do
         case combinator do
           nil -> [html_node|acc]
           _ ->
-            traverse_using(combinator.match_type, children_nodes, sibling_nodes, combinator.selector, acc)
+            traverse_using(combinator, children_nodes, sibling_nodes, acc)
         end
       else
         acc
@@ -77,8 +77,10 @@ defmodule Floki.Finder do
     traverse(children_nodes, sibling_nodes, selector, acc)
   end
 
-  defp traverse_using(match_type, children_nodes, sibling_nodes, selector, acc) do
-    case match_type do
+  defp traverse_using(combinator, children_nodes, sibling_nodes, acc) do
+    selector = combinator.selector
+
+    case combinator.match_type do
       :descendant ->
         traverse(children_nodes, sibling_nodes, selector, acc)
       :child ->
