@@ -68,24 +68,28 @@ defmodule Floki.Finder do
         case combinator do
           nil -> [html_node|acc]
           _ ->
-            case combinator.match_type do
-              :descendant ->
-                traverse(children_nodes, sibling_nodes, combinator.selector, acc)
-              :child ->
-                traverse_child(children_nodes, sibling_nodes, combinator.selector, acc)
-              :sibling ->
-                traverse_sibling(children_nodes, sibling_nodes, combinator.selector, acc)
-              :general_sibling ->
-                traverse_general_sibling(children_nodes, sibling_nodes, combinator.selector, acc)
-              other ->
-                raise "Combinator of type \"#{other}\" not implemented"
-            end
+            traverse_using(combinator.match_type, children_nodes, sibling_nodes, combinator.selector, acc)
         end
       else
         acc
       end
 
     traverse(children_nodes, sibling_nodes, selector, acc)
+  end
+
+  defp traverse_using(match_type, children_nodes, sibling_nodes, selector, acc) do
+    case match_type do
+      :descendant ->
+        traverse(children_nodes, sibling_nodes, selector, acc)
+      :child ->
+        traverse_child(children_nodes, sibling_nodes, selector, acc)
+      :sibling ->
+        traverse_sibling(children_nodes, sibling_nodes, selector, acc)
+      :general_sibling ->
+        traverse_general_sibling(children_nodes, sibling_nodes, selector, acc)
+      other ->
+        raise "Combinator of type \"#{other}\" not implemented"
+    end
   end
 
   defp traverse_child(nodes, sibling_nodes, selector, acc) do
