@@ -369,6 +369,25 @@ defmodule FlokiTest do
     assert Floki.find(@html_with_img, "body > img") == []
   end
 
+  test "find only immediate children elements" do
+    expected = [
+      {"img", [{"src", "http://facebook.com/logo.png"}], []}
+    ]
+
+    html = ~s(
+    <div>
+      <p>
+        <span>
+          <img src="http://facebook.com/logo.png" />
+        </span>
+      </p>
+    </div>
+    )
+
+    assert Floki.find(html, "div > p > img") == []
+    assert Floki.find(html, "div > p > span > img") == expected
+  end
+
   # Floki.find/2 - Sibling combinator
 
   test "find sibling element" do

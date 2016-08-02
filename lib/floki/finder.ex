@@ -97,11 +97,13 @@ defmodule Floki.Finder do
   defp traverse_child(nodes, sibling_nodes, selector, acc) do
     Enum.reduce(nodes, acc, fn(n, res_acc) ->
       if Selector.match?(n, selector) do
-        case selector.combinator do
+        combinator = selector.combinator
+
+        case combinator do
           nil -> [n|res_acc]
           _ ->
             {_, _, children_nodes} = n
-            traverse(children_nodes, sibling_nodes, selector.combinator.selector, res_acc)
+            traverse_using(combinator, children_nodes, sibling_nodes, res_acc)
         end
       else
         res_acc
