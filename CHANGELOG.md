@@ -5,6 +5,16 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 
+## [0.10.0] - 2016-08-05
+
+### Changed
+
+- Change the search for namespaced elements using the correct CSS3 syntax.
+
+### Fixed
+
+- Fix the search for child elements when is more than two elements deep - thanks @gmile
+
 ## [0.9.0] - 2016-06-16
 
 ### Added
@@ -186,7 +196,8 @@ of the parent element inside HTML.
 
 - Elixir version requirement from "~> 1.0.0" to ">= 1.0.0".
 
-[unreleased]: https://github.com/philss/floki/compare/v0.9.0...HEAD
+[unreleased]: https://github.com/philss/floki/compare/v0.10.0...HEAD
+[0.10.0]: https://github.com/philss/floki/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/philss/floki/compare/v0.8.1...v0.9.0
 [0.8.1]: https://github.com/philss/floki/compare/v0.8.0...v0.8.1
 [0.8.0]: https://github.com/philss/floki/compare/v0.7.2...v0.8.0
