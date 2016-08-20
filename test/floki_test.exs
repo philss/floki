@@ -456,6 +456,8 @@ defmodule FlokiTest do
     ]
 
     assert Floki.find(@html, "a.js-google ~ a") == expected
+    assert Floki.find(@html, "body > div > a.js-google ~ a") == expected
+    assert Floki.find(@html, "body > div ~ a") == []
     assert Floki.find(@html, "a.js-java ~ a") == []
   end
 
