@@ -388,6 +388,30 @@ defmodule FlokiTest do
     assert Floki.find(html, "div > p > span > img") == expected
   end
 
+  test "find a sibling after immediate child chain" do
+    expected = [
+      {
+        "img", [
+          {"src", "http://twitter.com/logo.png"},
+          {"class", "img-without-closing-tag"}],
+        []
+      }
+    ]
+
+    html = ~s(
+    <div>
+      <p>
+        <span>
+          <img src="http://facebook.com/logo.png" />
+          <img src="http://twitter.com/logo.png" class="img-without-closing-tag" />
+        </span>
+      </p>
+    </div>
+    )
+
+    assert Floki.find(html, "div > p > span > img + img") == expected
+  end
+
   # Floki.find/2 - Sibling combinator
 
   test "find sibling element" do
@@ -432,6 +456,8 @@ defmodule FlokiTest do
     ]
 
     assert Floki.find(@html, "a.js-google ~ a") == expected
+    assert Floki.find(@html, "body > div > a.js-google ~ a") == expected
+    assert Floki.find(@html, "body > div ~ a") == []
     assert Floki.find(@html, "a.js-java ~ a") == []
   end
 

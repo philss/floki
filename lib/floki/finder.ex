@@ -62,19 +62,18 @@ defmodule Floki.Finder do
     traverse(html_node, sibling_nodes, tail_selectors, acc)
   end
   defp traverse({_, _, children_nodes} = html_node, sibling_nodes, selector, acc) do
-    acc =
-      if Selector.match?(html_node, selector) do
-        combinator = selector.combinator
-        case combinator do
-          nil -> [html_node|acc]
-          _ ->
-            traverse_using(combinator, children_nodes, sibling_nodes, acc)
-        end
-      else
-        acc
-      end
+    if Selector.match?(html_node, selector) do
+      combinator = selector.combinator
 
-    traverse(children_nodes, sibling_nodes, selector, acc)
+      case combinator do
+        nil ->
+          traverse(children_nodes, sibling_nodes, selector, [html_node|acc])
+        _ ->
+          traverse_using(combinator, children_nodes, sibling_nodes, acc)
+      end
+    else
+      traverse(children_nodes, sibling_nodes, selector, acc)
+    end
   end
 
   defp traverse_using(combinator, children_nodes, sibling_nodes, acc) do
@@ -82,36 +81,36 @@ defmodule Floki.Finder do
 
     case combinator.match_type do
       :descendant ->
-        traverse(children_nodes, sibling_nodes, selector, acc)
+        traverse(children_nodes, [], selector, acc)
       :child ->
-        traverse_child(children_nodes, sibling_nodes, selector, acc)
+        traverse_child(children_nodes, selector, acc)
       :sibling ->
-        traverse_sibling(children_nodes, sibling_nodes, selector, acc)
+        traverse_sibling(sibling_nodes, selector, acc)
       :general_sibling ->
-        traverse_general_sibling(children_nodes, sibling_nodes, selector, acc)
+        traverse_general_sibling(sibling_nodes, selector, acc)
       other ->
         raise "Combinator of type \"#{other}\" not implemented"
     end
   end
 
-  defp traverse_child(nodes, sibling_nodes, selector, acc) do
-    Enum.reduce(nodes, acc, fn(n, res_acc) ->
-      if Selector.match?(n, selector) do
-        combinator = selector.combinator
+  defp traverse_child([], _selector, acc), do: acc
+  defp traverse_child([n|sibling_nodes], selector, acc) do
+    if Selector.match?(n, selector) do
+      combinator = selector.combinator
 
-        case combinator do
-          nil -> [n|res_acc]
-          _ ->
-            {_, _, children_nodes} = n
-            traverse_using(combinator, children_nodes, sibling_nodes, res_acc)
-        end
-      else
-        res_acc
+      case combinator do
+        nil ->
+          traverse_child(sibling_nodes, selector, [n|acc])
+        _ ->
+          {_, _, children_nodes} = n
+          traverse_using(combinator, children_nodes, sibling_nodes, acc)
       end
-    end)
+    else
+      traverse_child(sibling_nodes, selector, acc)
+    end
   end
 
-  defp traverse_sibling(_nodes, sibling_nodes, selector, acc) do
+  defp traverse_sibling(sibling_nodes, selector, acc) do
     sibling_nodes = Enum.drop_while(sibling_nodes, &ignore_node?/1)
 
     sibling_node = case sibling_nodes do
@@ -131,7 +130,7 @@ defmodule Floki.Finder do
     end
   end
 
-  defp traverse_general_sibling(_nodes, sibling_nodes, selector, acc) do
+  defp traverse_general_sibling(sibling_nodes, selector, acc) do
     sibling_nodes = Enum.drop_while(sibling_nodes, &ignore_node?/1)
 
     Enum.reduce(sibling_nodes, acc, fn(sibling_node, res_acc) ->
