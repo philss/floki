@@ -1,9 +1,17 @@
 language: elixir
-elixir:
-  - 1.1.1
-  - 1.2.0
-otp_release:
-  - 18.1
+
+matrix:
+  include:
+    - otp_release: 18.3
+      elixir: 1.1.1
+    - otp_release: 18.3
+      elixir: 1.2.6
+    - otp_release: 18.3
+      elixir: 1.3.2
+    - otp_release: 19.0
+      elixir: 1.3.2
+
+sudo: false
 
 after_script:
   - mix deps.get --only docs
