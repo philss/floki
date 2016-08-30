@@ -1,4 +1,6 @@
 defmodule Floki.SelectorParser do
+  require Logger
+
   @moduledoc """
   Parses a list of tokens returned from `SelectorTokenizer` and transfor into a `Selector`.
   """
@@ -59,8 +61,7 @@ defmodule Floki.SelectorParser do
    do_parse(t, %{selector | combinator: combinator})
   end
   defp do_parse([{:unknown, _, unknown}|t], selector) do
-    # TODO: find a better way to notify unknown tokens
-    IO.puts("Unknown token #{inspect unknown}. Ignoring.")
+    Logger.warn("[floki] Unknown token #{inspect unknown}. Ignoring.")
 
     do_parse(t, selector)
   end
@@ -84,8 +85,7 @@ defmodule Floki.SelectorParser do
     consume_attribute(:done, t, attr_selector)
   end
   defp consume_attribute(:consuming, [unknown|t], attr_selector) do
-    # TODO: find a better way to notify unknown tokens
-    IO.puts("Unknown token #{inspect unknown}. Ignoring.")
+    Logger.warn("[floki] Unknown token #{inspect unknown}. Ignoring.")
     consume_attribute(:consuming, t, attr_selector)
   end
 

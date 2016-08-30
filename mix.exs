@@ -17,7 +17,7 @@ defmodule Floki.Mixfile do
   end
 
   def application do
-    [applications: [:mochiweb_html]]
+    [applications: [:logger, :mochiweb_html]]
   end
 
   defp deps do

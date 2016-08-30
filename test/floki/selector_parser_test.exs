@@ -1,5 +1,6 @@
 defmodule Floki.SelectorParserTest do
   use ExUnit.Case
+  import ExUnit.CaptureLog
 
   alias Floki.Selector
   alias Floki.Combinator
@@ -86,5 +87,17 @@ defmodule Floki.SelectorParserTest do
       type: "a",
       namespace: "xyz"
     }
+  end
+
+  test "warn unknown tokens" do
+    log_capturer = fn(string) ->
+      tokens = tokenize(string)
+      fn ->
+        SelectorParser.parse(tokens)
+      end
+    end
+
+    assert capture_log(log_capturer.("a { b")) =~ "[floki] Unknown token '{'. Ignoring."
+    assert capture_log(log_capturer.("a + b@")) =~ "[floki] Unknown token '@'. Ignoring."
   end
 end
