@@ -149,6 +149,16 @@ defmodule Floki do
     Finder.find(html_tree, selector)
   end
 
+  def transform(html_tree_list, transformation) when is_list(html_tree_list) do
+    html_tree_list |> Enum.map(fn
+      html_tree ->
+        Finder.find_and_transform(html_tree, transformation)
+      end)
+  end
+  def transform(html_tree, transformation) do
+    Finder.find_and_transform(html_tree, transformation)
+  end
+
   @doc """
   Returns the text nodes from a HTML tree.
   By default, it will perform a deep search through the HTML tree.
