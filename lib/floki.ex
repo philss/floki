@@ -153,7 +153,7 @@ defmodule Floki do
     html_tree_list |> Enum.map(fn
       html_tree ->
         Finder.find_and_transform(html_tree, transformation)
-      end)
+    end)
   end
   def transform(html_tree, transformation) do
     Finder.find_and_transform(html_tree, transformation)
