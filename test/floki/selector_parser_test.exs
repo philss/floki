@@ -97,7 +97,7 @@ defmodule Floki.SelectorParserTest do
       end
     end
 
-    assert capture_log(log_capturer.("a { b")) =~ "[floki] Unknown token '{'. Ignoring."
-    assert capture_log(log_capturer.("a + b@")) =~ "[floki] Unknown token '@'. Ignoring."
+    assert capture_log(log_capturer.("a { b")) =~ "module=Floki.SelectorParser  Unknown token '{'. Ignoring."
+    assert capture_log(log_capturer.("a + b@")) =~ "module=Floki.SelectorParser  Unknown token '@'. Ignoring."
   end
 end

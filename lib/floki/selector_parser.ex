@@ -61,7 +61,7 @@ defmodule Floki.SelectorParser do
    do_parse(t, %{selector | combinator: combinator})
   end
   defp do_parse([{:unknown, _, unknown}|t], selector) do
-    Logger.warn("[floki] Unknown token #{inspect unknown}. Ignoring.")
+    Logger.warn("Unknown token #{inspect unknown}. Ignoring.")
 
     do_parse(t, selector)
   end
@@ -85,7 +85,7 @@ defmodule Floki.SelectorParser do
     consume_attribute(:done, t, attr_selector)
   end
   defp consume_attribute(:consuming, [unknown|t], attr_selector) do
-    Logger.warn("[floki] Unknown token #{inspect unknown}. Ignoring.")
+    Logger.warn("Unknown token #{inspect unknown}. Ignoring.")
     consume_attribute(:consuming, t, attr_selector)
   end
 
