@@ -5,6 +5,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 
+### Changed
+
+- Using Logger to notify unkwon tokens in selector parser - thanks @teamon and @geonnave
+
 ## [0.10.1] - 2016-08-28
 
 ### Fixed
