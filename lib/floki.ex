@@ -74,7 +74,7 @@ defmodule Floki do
     Parser.parse(html)
   end
 
-  @self_closing_tags ["area", "base", "br", "col", "command", "embed", "hr", "img", "input", "keygen", "link", "mete", "param", "source", "track", "wbr"]
+  @self_closing_tags ["area", "base", "br", "col", "command", "embed", "hr", "img", "input", "keygen", "link", "meta", "param", "source", "track", "wbr"]
 
   @doc """
   Converts HTML tree to raw HTML.
