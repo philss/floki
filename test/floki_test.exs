@@ -560,4 +560,15 @@ defmodule FlokiTest do
 
     assert Floki.attribute("<a href=#{url}>Google</a>", "href") == [url]
   end
+
+  test "transforms nodes" do
+    elements = Floki.find(@html, ".content")
+    transformation = fn
+      {"a", [{"href", x} | xs]} ->
+        {"a", [{"href", String.replace(x, "http://", "https://")} | xs]}
+      x -> x
+    end
+    transform = Floki.transform(elements, transformation)
+    assert transform |> Floki.find("a") |> Floki.attribute("href") == ["https://google.com", "https://elixir-lang.org", "https://java.com"]
+  end
 end

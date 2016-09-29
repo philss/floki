@@ -30,6 +30,16 @@ defmodule Floki.Finder do
     find_selectors(html_tree, [selector])
   end
 
+  def apply_transformation({name, attrs, rest}, transformation) do
+    {new_name, new_attrs} = transformation.({name, attrs})
+    new_rest = Enum.map(rest, fn
+      html_tree -> apply_transformation(html_tree, transformation)
+    end)
+    {new_name, new_attrs, new_rest}
+  end
+
+  def apply_transformation(x, transformation), do: x
+
   defp find_selectors(html_tree, selectors) do
     html_tree
     |> traverse([], selectors, [])
