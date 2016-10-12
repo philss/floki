@@ -100,7 +100,7 @@ Add Floki in your `mix.exs`, as a dependency:
 ```elixir
 defp deps do
   [
-    {:floki, "~> 0.10.1"}
+    {:floki, "~> 0.11.0"}
   ]
 end
 ```

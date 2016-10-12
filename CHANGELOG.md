@@ -5,9 +5,18 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 
+## [0.11.0] - 2016-10-12
+
+### Added
+
+- First attempt to transform nodes with `Floki.transform/2`. It is not able to update
+the tree yet, but works good with results from `Floki.find/2` - thanks @bobjflong
+
 ### Changed
 
 - Using Logger to notify unkwon tokens in selector parser - thanks @teamon and @geonnave
+- Replace `mochiweb_html` with `mochiweb` package. This is needed to fix conflics with other
+packages that are using `mochiweb`. - thanks @aphillipo
 
 ## [0.10.1] - 2016-08-28
 
@@ -206,7 +215,8 @@ of the parent element inside HTML.
 
 - Elixir version requirement from "~> 1.0.0" to ">= 1.0.0".
 
-[unreleased]: https://github.com/philss/floki/compare/v0.10.1...HEAD
+[unreleased]: https://github.com/philss/floki/compare/v0.11.0...HEAD
+[0.11.0]: https://github.com/philss/floki/compare/v0.10.1...v0.11.0
 [0.10.1]: https://github.com/philss/floki/compare/v0.10.0...v0.10.1
 [0.10.0]: https://github.com/philss/floki/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/philss/floki/compare/v0.8.1...v0.9.0
