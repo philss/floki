@@ -4,9 +4,7 @@ defmodule Floki.Finder do
   selectors.
   """
 
-  alias Floki.Selector
-  alias Floki.SelectorParser
-  alias Floki.SelectorTokenizer
+  alias Floki.{Selector, SelectorParser, SelectorTokenizer}
 
   @type html_tree :: tuple | list
   @type selector :: binary | %Selector{} | [%Selector{}]

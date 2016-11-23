@@ -2,10 +2,7 @@ defmodule Floki.SelectorParserTest do
   use ExUnit.Case
   import ExUnit.CaptureLog
 
-  alias Floki.Selector
-  alias Floki.Combinator
-  alias Floki.AttributeSelector
-  alias Floki.SelectorParser
+  alias Floki.{Selector, Combinator, AttributeSelector, SelectorParser}
 
   def tokenize(string) do
     Floki.SelectorTokenizer.tokenize(string)

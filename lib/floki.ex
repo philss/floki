@@ -1,7 +1,5 @@
 defmodule Floki do
-  alias Floki.Finder
-  alias Floki.Parser
-  alias Floki.FilterOut
+  alias Floki.{Finder, Parser, FilterOut}
 
   @moduledoc """
   Floki is a simple HTML parser that enables search for nodes using CSS selectors.

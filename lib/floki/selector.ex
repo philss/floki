@@ -3,8 +3,7 @@ defmodule Floki.Selector do
   Represents a CSS selector. It also have functions to match nodes with a given selector.
   """
 
-  alias Floki.Selector
-  alias Floki.AttributeSelector
+  alias Floki.{Selector, AttributeSelector}
 
   defstruct id: nil, type: nil, classes: [], attributes: [], combinator: nil, namespace: nil
 
