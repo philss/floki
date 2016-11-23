@@ -5,6 +5,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 
+### Changed
+
+- Remove support for Elixir 1.1 and below
+
 ## [0.11.0] - 2016-10-12
 
 ### Added
