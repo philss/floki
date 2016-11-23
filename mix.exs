@@ -9,9 +9,9 @@ defmodule Floki.Mixfile do
      name: "Floki",
      version: @version,
      description: @description,
-     elixir: ">= 1.1.0",
-     package: package,
-     deps: deps,
+     elixir: ">= 1.2.0",
+     package: package(),
+     deps: deps(),
      source_url: "https://github.com/philss/floki",
      docs: [extras: ["README.md"], main: "Floki"]]
   end
