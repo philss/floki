@@ -1,5 +1,5 @@
 defmodule Floki.DeepTextTest do
-  use ExUnit.Case, assync: true
+  use ExUnit.Case, async: true
 
   doctest Floki.DeepText
 
