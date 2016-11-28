@@ -1,5 +1,5 @@
 defmodule Floki.SelectorTokenizerTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
   alias Floki.SelectorTokenizer
 
   test "empty selector" do
