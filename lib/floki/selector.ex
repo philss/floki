@@ -4,6 +4,7 @@ defmodule Floki.Selector do
   """
 
   alias Floki.{Selector, AttributeSelector}
+  alias Floki.HTMLTree.{HTMLNode, Text}
 
   defstruct id: nil, type: nil, classes: [], attributes: [], combinator: nil, namespace: nil
 
@@ -16,6 +17,10 @@ defmodule Floki.Selector do
   def match?(nil, _selector), do: false
   def match?({:comment, _comment}, _selector), do: false
   def match?({:pi, _xml, _xml_attrs}, _selector), do: false
+  def match?(%Text{}, _), do: false
+  def match?(%HTMLNode{type: type, attributes: attributes}, selector) do
+    Floki.Selector.match?({type, attributes, []}, selector)
+  end
   def match?(html_node, selector) do
     id_match?(html_node, selector.id)
       && namespace_match?(html_node, selector.namespace)
