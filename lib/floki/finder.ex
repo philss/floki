@@ -28,6 +28,7 @@ defmodule Floki.Finder do
     find_selectors(html_tree, [selector])
   end
 
+  # Not documented yet because it's an experimental API
   def apply_transformation({name, attrs, rest}, transformation) do
     {new_name, new_attrs} = transformation.({name, attrs})
 
