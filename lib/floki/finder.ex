@@ -19,8 +19,8 @@ defmodule Floki.Finder do
 
   @spec find(html_tree, selector) :: html_tree
 
-  def find(html_as_string, _) when is_binary(html_as_string), do: []
   def find([], _), do: []
+  def find(html_as_string, _) when is_binary(html_as_string), do: []
   def find(html_tree, selector_as_string) when is_binary(selector_as_string) do
     selectors = get_selectors(selector_as_string)
     find_selectors(html_tree, selectors)
@@ -28,7 +28,7 @@ defmodule Floki.Finder do
   def find(html_tree, selectors) when is_list(selectors) do
     find_selectors(html_tree, selectors)
   end
-  def find(html_tree, %Selector{} = selector) do
+  def find(html_tree, selector = %Selector{}) do
     find_selectors(html_tree, [selector])
   end
 
