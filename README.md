@@ -172,6 +172,10 @@ Floki.find(html, ".headline")
 # => "Floki"
 ```
 
+## References
+
+- https://www.w3.org/community/webed/wiki/CSS/Selectors
+
 ## License
 
 Floki is under MIT license. Check the `LICENSE` file for more details.

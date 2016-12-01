@@ -2,16 +2,25 @@ Definitions.
 
 IDENTIFIER = [-A-Za-z0-9_]+
 QUOTED = (\"[^"]*\"|\'[^']*\')
+INT = [0-9]+
+ODD = (o|O)(d|D)(d|D)
+EVEN = (e|E)(v|V)(e|E)(n|N)
+PSEUDO_EXP = (\+|-)?({INT})?(n|N)((\+|-){INT})?
 SYMBOL = [\[\]*]
 W = [\s\t\r\n\f]
 
 Rules.
 
 {IDENTIFIER}     : {token, {identifier, TokenLine, TokenChars}}.
-{QUOTED}         : {token, {quoted, TokenLine, remove_quotes(TokenChars)}}.
+{QUOTED}         : {token, {quoted, TokenLine, remove_wrapper(TokenChars)}}.
 {SYMBOL}         : {token, {TokenChars, TokenLine}}.
 #{IDENTIFIER}    : {token, {hash, TokenLine, tail(TokenChars)}}.
 \.{IDENTIFIER}   : {token, {class, TokenLine, tail(TokenChars)}}.
+\:{IDENTIFIER}   : {token, {pseudo, TokenLine, tail(TokenChars)}}.
+\({INT}\)        : {token, {pseudo_int, TokenLine, list_to_integer(remove_wrapper(TokenChars))}}.
+\({ODD}\)        : {token, {pseudo_odd, TokenLine}}.
+\({EVEN}\)       : {token, {pseudo_even, TokenLine}}.
+\({PSEUDO_EXP}\) : {token, {pseudo_exp, TokenLine, remove_wrapper(TokenChars)}}.
 ~=               : {token, {includes, TokenLine}}.
 \|=              : {token, {dash_match, TokenLine}}.
 \^=              : {token, {prefix_match, TokenLine}}.
@@ -29,7 +38,7 @@ Rules.
 
 Erlang code.
 
-remove_quotes(Chars) ->
+remove_wrapper(Chars) ->
   Len = string:len(Chars),
   string:substr(Chars, 2, Len - 2).
 
