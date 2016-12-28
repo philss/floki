@@ -46,6 +46,18 @@ defmodule Floki.SelectorParser do
     pseudo_class = selector.pseudo_class
     do_parse(t, %{selector | pseudo_class: %{pseudo_class | value: pseudo_class_int}})
   end
+  defp do_parse([{:pseudo_class_even, _} | t], selector) do
+    pseudo_class = selector.pseudo_class
+    do_parse(t, %{selector | pseudo_class: %{pseudo_class | value: "even"}})
+  end
+  defp do_parse([{:pseudo_class_odd, _} | t], selector) do
+    pseudo_class = selector.pseudo_class
+    do_parse(t, %{selector | pseudo_class: %{pseudo_class | value: "odd"}})
+  end
+  defp do_parse([{:pseudo_class_pattern, _, pattern} | t], selector) do
+    pseudo_class = selector.pseudo_class
+    do_parse(t, %{selector | pseudo_class: %{pseudo_class | value: to_string(pattern)}})
+  end
   defp do_parse([{:space, _} | t], selector) do
     {t, combinator} = consume_combinator(t, :descendant)
 

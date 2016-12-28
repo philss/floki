@@ -79,22 +79,22 @@ defmodule Floki.SelectorTokenizerTest do
 
     assert SelectorTokenizer.tokenize(":nth-child(2n+1)") == [
       {:pseudo, 1, 'nth-child'},
-      {:pseudo_class_exp, 1, '2n+1'}
+      {:pseudo_class_pattern, 1, '2n+1'}
     ]
 
     assert SelectorTokenizer.tokenize(":nth-child(2n-1)") == [
       {:pseudo, 1, 'nth-child'},
-      {:pseudo_class_exp, 1, '2n-1'}
+      {:pseudo_class_pattern, 1, '2n-1'}
     ]
 
     assert SelectorTokenizer.tokenize(":nth-child(n+0)") == [
       {:pseudo, 1, 'nth-child'},
-      {:pseudo_class_exp, 1, 'n+0'}
+      {:pseudo_class_pattern, 1, 'n+0'}
     ]
 
     assert SelectorTokenizer.tokenize(":nth-child(-n+6)") == [
       {:pseudo, 1, 'nth-child'},
-      {:pseudo_class_exp, 1, '-n+6'}
+      {:pseudo_class_pattern, 1, '-n+6'}
     ]
   end
 end

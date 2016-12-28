@@ -90,9 +90,30 @@ defmodule Floki.SelectorParserTest do
     tokens = tokenize("li:nth-child(2)")
 
     assert SelectorParser.parse(tokens) == %Selector{
-     type: "li",
-     pseudo_class: %PseudoClass{name: "nth-child", value: 2},
-   }
+      type: "li",
+      pseudo_class: %PseudoClass{name: "nth-child", value: 2},
+    }
+
+    tokens = tokenize("tr:nth-child(odd)")
+
+    assert SelectorParser.parse(tokens) == %Selector{
+      type: "tr",
+      pseudo_class: %PseudoClass{name: "nth-child", value: "odd"}
+    }
+
+    tokens = tokenize("td:nth-child(even)")
+
+    assert SelectorParser.parse(tokens) == %Selector{
+      type: "td",
+      pseudo_class: %PseudoClass{name: "nth-child", value: "even"}
+    }
+
+    tokens = tokenize("div:nth-child(-n+3)")
+
+    assert SelectorParser.parse(tokens) == %Selector{
+      type: "div",
+      pseudo_class: %PseudoClass{name: "nth-child", value: "-n+3"}
+    }
   end
 
   test "warn unknown tokens" do
