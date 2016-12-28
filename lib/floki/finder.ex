@@ -174,8 +174,8 @@ defmodule Floki.Finder do
     end
   end
 
-  def as_tuple(_tree, %Text{content: text}), do: text
-  def as_tuple(tree, html_node) do
+  defp as_tuple(_tree, %Text{content: text}), do: text
+  defp as_tuple(tree, html_node) do
     children = html_node.children_nodes_ids
                |> Enum.reverse
                |> Enum.map(fn(id) -> as_tuple(tree, get_node(id, tree)) end)
