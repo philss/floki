@@ -2,7 +2,7 @@ defmodule Floki.SelectorParserTest do
   use ExUnit.Case, async: true
   import ExUnit.CaptureLog
 
-  alias Floki.{Selector, Combinator, AttributeSelector, SelectorParser}
+  alias Floki.{Selector, Combinator, PseudoClass, AttributeSelector, SelectorParser}
 
   def tokenize(string) do
     Floki.SelectorTokenizer.tokenize(string)
@@ -84,6 +84,15 @@ defmodule Floki.SelectorParserTest do
       type: "a",
       namespace: "xyz"
     }
+  end
+
+  test "with pseudo-class" do
+    tokens = tokenize("li:nth-child(2)")
+
+    assert SelectorParser.parse(tokens) == %Selector{
+     type: "li",
+     pseudo_class: %PseudoClass{name: "nth-child", value: 2},
+   }
   end
 
   test "warn unknown tokens" do

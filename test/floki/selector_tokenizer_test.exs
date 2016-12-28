@@ -64,37 +64,37 @@ defmodule Floki.SelectorTokenizerTest do
   test "pseudo classes" do
     assert SelectorTokenizer.tokenize(":nth-child(3)") == [
       {:pseudo, 1, 'nth-child'},
-      {:pseudo_int, 1, 3}
+      {:pseudo_class_int, 1, 3}
     ]
 
     assert SelectorTokenizer.tokenize(":nth-child(odd)") == [
       {:pseudo, 1, 'nth-child'},
-      {:pseudo_odd, 1}
+      {:pseudo_class_odd, 1}
     ]
 
     assert SelectorTokenizer.tokenize(":nth-child(even)") == [
       {:pseudo, 1, 'nth-child'},
-      {:pseudo_even, 1}
+      {:pseudo_class_even, 1}
     ]
 
     assert SelectorTokenizer.tokenize(":nth-child(2n+1)") == [
       {:pseudo, 1, 'nth-child'},
-      {:pseudo_exp, 1, '2n+1'}
+      {:pseudo_class_exp, 1, '2n+1'}
     ]
 
     assert SelectorTokenizer.tokenize(":nth-child(2n-1)") == [
       {:pseudo, 1, 'nth-child'},
-      {:pseudo_exp, 1, '2n-1'}
+      {:pseudo_class_exp, 1, '2n-1'}
     ]
 
     assert SelectorTokenizer.tokenize(":nth-child(n+0)") == [
       {:pseudo, 1, 'nth-child'},
-      {:pseudo_exp, 1, 'n+0'}
+      {:pseudo_class_exp, 1, 'n+0'}
     ]
 
     assert SelectorTokenizer.tokenize(":nth-child(-n+6)") == [
       {:pseudo, 1, 'nth-child'},
-      {:pseudo_exp, 1, '-n+6'}
+      {:pseudo_class_exp, 1, '-n+6'}
     ]
   end
 end

@@ -17,10 +17,10 @@ Rules.
 #{IDENTIFIER}    : {token, {hash, TokenLine, tail(TokenChars)}}.
 \.{IDENTIFIER}   : {token, {class, TokenLine, tail(TokenChars)}}.
 \:{IDENTIFIER}   : {token, {pseudo, TokenLine, tail(TokenChars)}}.
-\({INT}\)        : {token, {pseudo_int, TokenLine, list_to_integer(remove_wrapper(TokenChars))}}.
-\({ODD}\)        : {token, {pseudo_odd, TokenLine}}.
-\({EVEN}\)       : {token, {pseudo_even, TokenLine}}.
-\({PSEUDO_EXP}\) : {token, {pseudo_exp, TokenLine, remove_wrapper(TokenChars)}}.
+\({INT}\)        : {token, {pseudo_class_int, TokenLine, list_to_integer(remove_wrapper(TokenChars))}}.
+\({ODD}\)        : {token, {pseudo_class_odd, TokenLine}}.
+\({EVEN}\)       : {token, {pseudo_class_even, TokenLine}}.
+\({PSEUDO_EXP}\) : {token, {pseudo_class_exp, TokenLine, remove_wrapper(TokenChars)}}.
 ~=               : {token, {includes, TokenLine}}.
 \|=              : {token, {dash_match, TokenLine}}.
 \^=              : {token, {prefix_match, TokenLine}}.
