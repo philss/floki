@@ -1,10 +1,12 @@
 defmodule Floki.Finder do
+  require Logger
+
   @moduledoc """
   The finder engine traverse the HTML tree searching for nodes matching
   selectors.
   """
 
-  alias Floki.{Combinator, Selector, SelectorParser, SelectorTokenizer}
+  alias Floki.{Combinator, Selector, SelectorParser, SelectorTokenizer, PseudoClass}
   alias Floki.{HTMLTree}
   alias Floki.HTMLTree.Text
 
@@ -69,18 +71,39 @@ defmodule Floki.Finder do
     |> Enum.flat_map(fn(selector) -> get_matches(tree, html_node, selector) end)
   end
 
-  defp get_matches(_tree, html_node, selector = %Selector{combinator: nil}) do
-    if Selector.match?(html_node, selector) do
+  defp get_matches(tree, html_node, selector = %Selector{combinator: nil}) do
+    if selector_match?(tree, html_node, selector) do
       [html_node]
     else
       []
     end
   end
   defp get_matches(tree, html_node, selector = %Selector{combinator: combinator}) do
-    if Selector.match?(html_node, selector) do
+    if selector_match?(tree, html_node, selector) do
       traverse_with(combinator, tree, [html_node])
     else
       []
+    end
+  end
+
+  defp selector_match?(_tree, html_node, selector = %Selector{pseudo_class: nil}) do
+    Selector.match?(html_node, selector)
+  end
+  defp selector_match?(tree, html_node, selector) do
+    Selector.match?(html_node, selector) && pseudo_class_match?(tree, html_node, selector)
+  end
+
+  defp pseudo_class_match?(tree, html_node, selector) do
+    pseudo_class = selector.pseudo_class
+
+    case pseudo_class.name do
+      "nth-child" ->
+        PseudoClass.match_nth_child?(tree, html_node, pseudo_class)
+      "first-child" ->
+        PseudoClass.match_nth_child?(tree, html_node, %PseudoClass{name: "nth-child", value: 1})
+      unknown_pseudo_class ->
+        Logger.warn("Pseudo-class #{inspect unknown_pseudo_class} is not implemented. Ignoring.")
+        false
     end
   end
 

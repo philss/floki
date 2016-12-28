@@ -482,6 +482,40 @@ defmodule FlokiTest do
     assert Floki.find(@html_with_img, ".js-x-logo, #logo") == expected
   end
 
+  # Floki.find/2 - Pseudo-class
+
+  test "get elements by nth-child and first-child pseudo-classes" do
+    html = """
+    <html>
+    <body>
+      <a href="/a">1</a>
+      <a href="/b">2</a>
+      <a href="/c">3</a>
+      <a href="/d">4</a>
+      <a href="/e">5</a>
+    </html>
+    """
+
+    assert Floki.find(html, "a:nth-child(2)") == [
+      {"a", [{"href", "/b"}], ["2"] }
+    ]
+
+    assert Floki.find(html, "a:nth-child(even)") == [
+      {"a", [{"href", "/b"}], ["2"] },
+      {"a", [{"href", "/d"}], ["4"] }
+    ]
+
+    assert Floki.find(html, "a:nth-child(odd)") == [
+      {"a", [{"href", "/a"}], ["1"] },
+      {"a", [{"href", "/c"}], ["3"] },
+      {"a", [{"href", "/e"}], ["5"] }
+    ]
+
+    assert Floki.find(html, "a:first-child") == [
+      {"a", [{"href", "/a"}], ["1"] }
+    ]
+  end
+
   # Floki.find/2 - XML and invalid HTML
 
   test "get elements inside a XML" do
