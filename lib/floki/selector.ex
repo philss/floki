@@ -6,7 +6,13 @@ defmodule Floki.Selector do
   alias Floki.{Selector, AttributeSelector}
   alias Floki.HTMLTree.{HTMLNode, Text}
 
-  defstruct id: nil, type: nil, classes: [], attributes: [], combinator: nil, namespace: nil
+  defstruct id: nil,
+            type: nil,
+            classes: [],
+            attributes: [],
+            namespace: nil,
+            pseudo_class: nil,
+            combinator: nil
 
   @doc """
   Returns if a given node matches with a given selector.

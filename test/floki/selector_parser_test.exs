@@ -3,6 +3,7 @@ defmodule Floki.SelectorParserTest do
   import ExUnit.CaptureLog
 
   alias Floki.{Selector, Combinator, AttributeSelector, SelectorParser}
+  alias Floki.Selector.PseudoClass
 
   def tokenize(string) do
     Floki.SelectorTokenizer.tokenize(string)
@@ -83,6 +84,36 @@ defmodule Floki.SelectorParserTest do
     assert SelectorParser.parse(tokens) == %Selector{
       type: "a",
       namespace: "xyz"
+    }
+  end
+
+  test "with pseudo-class" do
+    tokens = tokenize("li:nth-child(2)")
+
+    assert SelectorParser.parse(tokens) == %Selector{
+      type: "li",
+      pseudo_class: %PseudoClass{name: "nth-child", value: 2},
+    }
+
+    tokens = tokenize("tr:nth-child(odd)")
+
+    assert SelectorParser.parse(tokens) == %Selector{
+      type: "tr",
+      pseudo_class: %PseudoClass{name: "nth-child", value: "odd"}
+    }
+
+    tokens = tokenize("td:nth-child(even)")
+
+    assert SelectorParser.parse(tokens) == %Selector{
+      type: "td",
+      pseudo_class: %PseudoClass{name: "nth-child", value: "even"}
+    }
+
+    tokens = tokenize("div:nth-child(-n+3)")
+
+    assert SelectorParser.parse(tokens) == %Selector{
+      type: "div",
+      pseudo_class: %PseudoClass{name: "nth-child", value: "-n+3"}
     }
   end
 

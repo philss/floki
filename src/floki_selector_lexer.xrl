@@ -2,34 +2,43 @@ Definitions.
 
 IDENTIFIER = [-A-Za-z0-9_]+
 QUOTED = (\"[^"]*\"|\'[^']*\')
+INT = [0-9]+
+ODD = (o|O)(d|D)(d|D)
+EVEN = (e|E)(v|V)(e|E)(n|N)
+PSEUDO_PATT = (\+|-)?({INT})?(n|N)((\+|-){INT})?
 SYMBOL = [\[\]*]
 W = [\s\t\r\n\f]
 
 Rules.
 
-{IDENTIFIER}     : {token, {identifier, TokenLine, TokenChars}}.
-{QUOTED}         : {token, {quoted, TokenLine, remove_quotes(TokenChars)}}.
-{SYMBOL}         : {token, {TokenChars, TokenLine}}.
-#{IDENTIFIER}    : {token, {hash, TokenLine, tail(TokenChars)}}.
-\.{IDENTIFIER}   : {token, {class, TokenLine, tail(TokenChars)}}.
-~=               : {token, {includes, TokenLine}}.
-\|=              : {token, {dash_match, TokenLine}}.
-\^=              : {token, {prefix_match, TokenLine}}.
-\$=              : {token, {sufix_match, TokenLine}}.
-\*=              : {token, {substring_match, TokenLine}}.
-=                : {token, {equal, TokenLine}}.
-{W}*,            : {token, {comma, TokenLine}}.
-{W}*>{W}*        : {token, {greater, TokenLine}}.
-{W}*\+{W}*       : {token, {plus, TokenLine}}.
-{W}*~{W}*        : {token, {tilde, TokenLine}}.
-{W}*\|{W}*       : {token, {namespace_pipe, TokenLine}}.
-{W}+             : {token, {space, TokenLine}}.
-.                : {token, {unknown, TokenLine, TokenChars}}.
+{IDENTIFIER}                         : {token, {identifier, TokenLine, TokenChars}}.
+{QUOTED}                             : {token, {quoted, TokenLine, remove_wrapper(TokenChars)}}.
+{SYMBOL}                             : {token, {TokenChars, TokenLine}}.
+#{IDENTIFIER}                        : {token, {hash, TokenLine, tail(TokenChars)}}.
+\.{IDENTIFIER}                       : {token, {class, TokenLine, tail(TokenChars)}}.
+\:{IDENTIFIER}                       : {token, {pseudo, TokenLine, tail(TokenChars)}}.
+\({INT}\)                            : {token, {pseudo_class_int, TokenLine, list_to_integer(remove_wrapper(TokenChars))}}.
+\({ODD}\)                            : {token, {pseudo_class_odd, TokenLine}}.
+\({EVEN}\)                           : {token, {pseudo_class_even, TokenLine}}.
+\({PSEUDO_PATT}\)                    : {token, {pseudo_class_pattern, TokenLine, remove_wrapper(TokenChars)}}.
+~=                                   : {token, {includes, TokenLine}}.
+\|=                                  : {token, {dash_match, TokenLine}}.
+\^=                                  : {token, {prefix_match, TokenLine}}.
+\$=                                  : {token, {sufix_match, TokenLine}}.
+\*=                                  : {token, {substring_match, TokenLine}}.
+=                                    : {token, {equal, TokenLine}}.
+{W}*,                                : {token, {comma, TokenLine}}.
+{W}*>{W}*                            : {token, {greater, TokenLine}}.
+{W}*\+{W}*                           : {token, {plus, TokenLine}}.
+{W}*~{W}*                            : {token, {tilde, TokenLine}}.
+{W}*\|{W}*                           : {token, {namespace_pipe, TokenLine}}.
+{W}+                                 : {token, {space, TokenLine}}.
+.                                    : {token, {unknown, TokenLine, TokenChars}}.
 
 
 Erlang code.
 
-remove_quotes(Chars) ->
+remove_wrapper(Chars) ->
   Len = string:len(Chars),
   string:substr(Chars, 2, Len - 2).
 

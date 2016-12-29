@@ -60,4 +60,41 @@ defmodule Floki.SelectorTokenizerTest do
       {:unknown, 1, '&'}
     ]
   end
+
+  test "pseudo classes" do
+    assert SelectorTokenizer.tokenize(":nth-child(3)") == [
+      {:pseudo, 1, 'nth-child'},
+      {:pseudo_class_int, 1, 3}
+    ]
+
+    assert SelectorTokenizer.tokenize(":nth-child(odd)") == [
+      {:pseudo, 1, 'nth-child'},
+      {:pseudo_class_odd, 1}
+    ]
+
+    assert SelectorTokenizer.tokenize(":nth-child(even)") == [
+      {:pseudo, 1, 'nth-child'},
+      {:pseudo_class_even, 1}
+    ]
+
+    assert SelectorTokenizer.tokenize(":nth-child(2n+1)") == [
+      {:pseudo, 1, 'nth-child'},
+      {:pseudo_class_pattern, 1, '2n+1'}
+    ]
+
+    assert SelectorTokenizer.tokenize(":nth-child(2n-1)") == [
+      {:pseudo, 1, 'nth-child'},
+      {:pseudo_class_pattern, 1, '2n-1'}
+    ]
+
+    assert SelectorTokenizer.tokenize(":nth-child(n+0)") == [
+      {:pseudo, 1, 'nth-child'},
+      {:pseudo_class_pattern, 1, 'n+0'}
+    ]
+
+    assert SelectorTokenizer.tokenize(":nth-child(-n+6)") == [
+      {:pseudo, 1, 'nth-child'},
+      {:pseudo_class_pattern, 1, '-n+6'}
+    ]
+  end
 end
