@@ -9,7 +9,6 @@ defmodule Floki.Finder do
   alias Floki.{Combinator, Selector, SelectorParser, SelectorTokenizer}
   alias Floki.HTMLTree
   alias Floki.Selector.PseudoClass
-  alias Floki.HTMLTree.Text
 
   @type html_tree :: tuple | list
   @type selector :: binary | %Selector{} | [%Selector{}]
@@ -19,8 +18,8 @@ defmodule Floki.Finder do
 
   @spec find(html_tree, selector) :: html_tree
 
-  def find([], _), do: []
-  def find(html_as_string, _) when is_binary(html_as_string), do: []
+  def find([], _), do: {:empty_tree, []}
+  def find(html_as_string, _) when is_binary(html_as_string), do: {:empty_tree, []}
   def find(html_tree, selector_as_string) when is_binary(selector_as_string) do
     selectors = get_selectors(selector_as_string)
     find_selectors(html_tree, selectors)
@@ -47,11 +46,13 @@ defmodule Floki.Finder do
   defp find_selectors(html_tuple_or_list, selectors) do
     tree = HTMLTree.build(html_tuple_or_list)
 
-    tree.node_ids
-    |> Enum.reverse
-    |> get_nodes(tree)
-    |> Enum.flat_map(fn(html_node) -> get_matches_for_selectors(tree, html_node, selectors) end)
-    |> Enum.map(fn(html_node) -> as_tuple(tree, html_node) end)
+    results =
+      tree.node_ids
+      |> Enum.reverse
+      |> get_nodes(tree)
+      |> Enum.flat_map(fn(html_node) -> get_matches_for_selectors(tree, html_node, selectors) end)
+
+    {tree, results}
   end
 
   defp get_selectors(selector_as_string) do
@@ -195,14 +196,5 @@ defmodule Floki.Finder do
       [] -> ids_after
       [sibling_id | _] -> Enum.take_while(ids_after, fn(id) -> id != sibling_id end)
     end
-  end
-
-  defp as_tuple(_tree, %Text{content: text}), do: text
-  defp as_tuple(tree, html_node) do
-    children = html_node.children_nodes_ids
-               |> Enum.reverse
-               |> Enum.map(fn(id) -> as_tuple(tree, get_node(id, tree)) end)
-
-    {html_node.type, html_node.attributes, children}
   end
 end
