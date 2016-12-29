@@ -5,7 +5,8 @@ defmodule Floki.SelectorParser do
   Parses a list of tokens returned from `SelectorTokenizer` and transfor into a `Selector`.
   """
 
-  alias Floki.{Selector, AttributeSelector, Combinator, PseudoClass}
+  alias Floki.{Selector, AttributeSelector, Combinator}
+  alias Floki.Selector.PseudoClass
 
   @attr_match_types [:equal, :dash_match, :includes, :prefix_match, :sufix_match, :substring_match]
 

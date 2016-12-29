@@ -1,4 +1,4 @@
-defmodule Floki.PseudoClass do
+defmodule Floki.Selector.PseudoClass do
   @moduledoc false
 
   require Logger

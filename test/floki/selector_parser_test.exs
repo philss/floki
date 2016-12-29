@@ -2,7 +2,8 @@ defmodule Floki.SelectorParserTest do
   use ExUnit.Case, async: true
   import ExUnit.CaptureLog
 
-  alias Floki.{Selector, Combinator, PseudoClass, AttributeSelector, SelectorParser}
+  alias Floki.{Selector, Combinator, AttributeSelector, SelectorParser}
+  alias Floki.Selector.PseudoClass
 
   def tokenize(string) do
     Floki.SelectorTokenizer.tokenize(string)

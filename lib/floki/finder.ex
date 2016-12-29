@@ -6,8 +6,9 @@ defmodule Floki.Finder do
   selectors.
   """
 
-  alias Floki.{Combinator, Selector, SelectorParser, SelectorTokenizer, PseudoClass}
-  alias Floki.{HTMLTree}
+  alias Floki.{Combinator, Selector, SelectorParser, SelectorTokenizer}
+  alias Floki.HTMLTree
+  alias Floki.Selector.PseudoClass
   alias Floki.HTMLTree.Text
 
   @type html_tree :: tuple | list
