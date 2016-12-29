@@ -1,4 +1,6 @@
 defmodule Floki.PseudoClass do
+  @moduledoc false
+
   require Logger
 
   defstruct name: "", value: nil
