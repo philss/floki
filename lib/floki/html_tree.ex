@@ -16,7 +16,7 @@ defmodule Floki.HTMLTree do
 
     %HTMLTree{root_nodes_ids: [root_id],
               node_ids: [root_id],
-              nodes: %{ root_id => %HTMLNode{type: tag, attributes: attrs, node_id: root_id} }}
+              nodes: %{root_id => %HTMLNode{type: tag, attributes: attrs, node_id: root_id}}}
     |> build_tree(children, root_id, [])
   end
 

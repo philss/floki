@@ -31,9 +31,9 @@ defmodule Floki.FlatText do
     text_from_node(html_node, "", sep)
   end
 
-  defp text_from_node({ _tag, _attrs, html_nodes}, acc, sep) do
-    Enum.reduce(html_nodes, acc, fn(node, acc) ->
-      capture_text(node, acc, sep)
+  defp text_from_node({_tag, _attrs, html_nodes}, acc, sep) do
+    Enum.reduce(html_nodes, acc, fn(html_node, acc) ->
+      capture_text(html_node, acc, sep)
     end)
   end
   defp text_from_node(text, "", _sep) when is_binary(text), do: text

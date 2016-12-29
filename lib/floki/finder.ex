@@ -128,7 +128,9 @@ defmodule Floki.Finder do
     results =
       Enum.flat_map(stack, fn(html_node) ->
         # It treats sibling as list to easily ignores those that didn't match
-        sibling_id = get_siblings(html_node, tree) |> Enum.take(1)
+        sibling_id = html_node
+                     |> get_siblings(tree)
+                     |> Enum.take(1)
 
         nodes = get_nodes(sibling_id, tree)
 
