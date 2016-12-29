@@ -1,10 +1,10 @@
 defmodule Floki.Finder do
   require Logger
 
-  @moduledoc """
-  The finder engine traverse the HTML tree searching for nodes matching
-  selectors.
-  """
+  @moduledoc false
+
+  # The finder engine traverse the HTML tree searching for nodes matching
+  # selectors.
 
   alias Floki.{Combinator, Selector, SelectorParser, SelectorTokenizer}
   alias Floki.HTMLTree
@@ -14,11 +14,8 @@ defmodule Floki.Finder do
   @type html_tree :: tuple | list
   @type selector :: binary | %Selector{} | [%Selector{}]
 
-  @doc """
-  Find elements inside a HTML tree.
-
-  Second argument can be either a selector string, a selector struct or a list of selector structs.
-  """
+  # Find elements inside a HTML tree.
+  # Second argument can be either a selector string, a selector struct or a list of selector structs.
 
   @spec find(html_tree, selector) :: html_tree
 

@@ -1,16 +1,14 @@
 defmodule Floki.AttributeSelector do
-  @moduledoc """
-  It is very similar to the `Selector` module, but is specialized in attributes
-  and attribute selectors.
-  """
+  @moduledoc false
+
+  # It is very similar to the `Selector` module, but is specialized in attributes
+  # and attribute selectors.
 
   alias Floki.AttributeSelector
 
   defstruct match_type: nil, attribute: nil, value: nil
 
-  @doc """
-  Returns if attributes of a node matches with a given attribute selector.
-  """
+  # Returns if attributes of a node matches with a given attribute selector.
   def match?(attributes, s = %AttributeSelector{match_type: nil, value: nil}) do
     attribute_present?(s.attribute, attributes)
   end

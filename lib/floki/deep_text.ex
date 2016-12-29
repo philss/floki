@@ -1,26 +1,13 @@
 defmodule Floki.DeepText do
-  @moduledoc """
-  DeepText is a strategy to get text nodes from a HTML tree using a deep search
-  algorithm. It will get all string nodes and concat them.
-  """
+  @moduledoc false
+
+  # DeepText is a strategy to get text nodes from a HTML tree using a deep search
+  # algorithm. It will get all string nodes and concat them.
 
   @type html_tree :: tuple | list
 
   @spec get(html_tree, binary) :: binary
 
-  @doc """
-  Get text nodes from a deep tree of HTML nodes.
-
-
-  ## Examples
-
-      iex> Floki.DeepText.get([{"a", [], ["The meaning of life is...", {"strong", [], ["something else"]}] }])
-      "The meaning of life is...something else"
-
-      iex> Floki.DeepText.get([{"a", [], ["The meaning of life is...", {"strong", [], ["something else"]}] }], " ")
-      "The meaning of life is... something else"
-
-  """
   def get(html_tree, sep \\ "") do
     get_text(html_tree, "", sep)
   end

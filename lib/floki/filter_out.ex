@@ -1,7 +1,7 @@
 defmodule Floki.FilterOut do
-  @moduledoc """
-  Helper functions for filtering out a specific element from the tree.
-  """
+  @moduledoc false
+
+  # Helper functions for filtering out a specific element from the tree.
 
   @type html_tree :: tuple | list
   @type selector :: binary

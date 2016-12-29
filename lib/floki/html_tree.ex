@@ -1,7 +1,7 @@
 defmodule Floki.HTMLTree do
   @moduledoc false
 
-  # Internal: Builds a `Map` representing a HTML tree based on tuples or list of tuples.
+  # Builds a `Map` representing a HTML tree based on tuples or list of tuples.
   #
   # It is useful because keeps references for each node, and the possibility to
   # update the tree.

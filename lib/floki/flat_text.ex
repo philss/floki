@@ -1,26 +1,18 @@
 defmodule Floki.FlatText do
-  @moduledoc """
-  FlatText is a strategy to get text nodes from a HTML tree without search deep
-  in the tree. It only gets the text nodes from the first level of nodes.
-  """
+  @moduledoc false
+
+  # FlatText is a strategy to get text nodes from a HTML tree without search deep
+  # in the tree. It only gets the text nodes from the first level of nodes.
+
+  # Example
+
+  #   iex> Floki.FlatText.get([{"a", [], ["The meaning of life is...", {"strong", [], ["something else"]}] }])
+  #   "The meaning of life is..."
 
   @type html_tree :: tuple | list
 
   @spec get(html_tree, binary) :: binary
 
-  @doc """
-  Get text nodes from first level of HTML nodes.
-
-
-  ## Examples
-
-      iex> Floki.FlatText.get([{"a", [], ["The meaning of life is...", {"strong", [], ["something else"]}] }])
-      "The meaning of life is..."
-
-      iex> Floki.FlatText.get([{"a", [], ["The meaning of life is...", {"strong", [], ["something else"]}] }], " ")
-      "The meaning of life is..."
-
-  """
   def get(html_nodes, sep \\ "")
   def get(html_nodes, sep) when is_list(html_nodes) do
     Enum.reduce(html_nodes, "", fn(html_node, acc) ->
