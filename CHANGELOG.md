@@ -5,9 +5,15 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 
+### Added
+
+- Add basic support for nth-child pseudo-class selector.
+Closes [issue #64](https://github.com/philss/floki/issues/64).
+
 ### Changed
 
-- Remove support for Elixir 1.1 and below
+- Remove support for Elixir 1.1 and below.
+- Remove public documentation for internal code.
 
 ## [0.11.0] - 2016-10-12
 
