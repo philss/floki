@@ -38,6 +38,31 @@ defmodule Floki.HTMLTree do
     Enum.reduce(html_tuples, %HTMLTree{}, reducer)
   end
 
+  def delete_node(tree, html_node) do
+    do_delete(tree, [html_node], [])
+  end
+
+  defp do_delete(tree, [], []), do: tree
+  defp do_delete(tree, [html_node | t], stack_ids) do
+    new_tree_nodes = Map.delete(tree.nodes, html_node.node_id)
+    ids_for_stack = get_ids_for_delete_stack(html_node)
+
+    do_delete(%{tree | nodes: new_tree_nodes,
+                       node_ids: List.delete(tree.node_ids, html_node.node_id),
+                       root_nodes_ids: List.delete(tree.root_nodes_ids, html_node.node_id)},
+              t, ids_for_stack ++ stack_ids)
+  end
+  defp do_delete(tree, [], stack_ids) do
+    html_nodes = tree.nodes
+                 |> Map.take(stack_ids)
+                 |> Map.values
+
+    do_delete(tree, html_nodes, [])
+  end
+
+  defp get_ids_for_delete_stack(%HTMLNode{children_nodes_ids: ids}), do: ids
+  defp get_ids_for_delete_stack(_), do: []
+
   defp build_tree(tree, [], _, []), do: tree
   defp build_tree(tree, [{tag, attrs, child_children} | children], parent_id, stack) do
     new_id = IDSeeder.seed(tree.node_ids)
