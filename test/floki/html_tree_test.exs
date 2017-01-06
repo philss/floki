@@ -111,7 +111,7 @@ defmodule Floki.HTMLTreeTest do
      node_ids: [5, 1],
      nodes: %{
        1 => %HTMLNode{type: "html",
-                      children_nodes_ids: [5, 2],
+                      children_nodes_ids: [5],
                       node_id: 1},
        5 => %HTMLNode{type: "span",
                       parent_node_id: 1,

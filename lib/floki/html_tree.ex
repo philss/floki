@@ -45,6 +45,14 @@ defmodule Floki.HTMLTree do
   defp do_delete(tree, [], []), do: tree
   defp do_delete(tree, [html_node | t], stack_ids) do
     new_tree_nodes = Map.delete(tree.nodes, html_node.node_id)
+    parent_node = Map.get(tree.nodes, html_node.parent_node_id)
+
+    if parent_node do
+      new_children_node_ids = List.delete(parent_node.children_nodes_ids, html_node.node_id)
+      new_parent = %{parent_node | children_nodes_ids: new_children_node_ids}
+      new_tree_nodes = %{new_tree_nodes | new_parent.node_id => new_parent}
+    end
+
     ids_for_stack = get_ids_for_delete_stack(html_node)
 
     do_delete(%{tree | nodes: new_tree_nodes,
