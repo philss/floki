@@ -52,7 +52,7 @@ defmodule Floki.FilterOut do
     children = html_node.children_nodes_ids
                |> Enum.reverse
                |> Enum.map(fn(id) -> Map.get(tree.nodes, id) end)
-               |> Enum.map(fn(node) -> as_tuple(tree, node) end)
+               |> Enum.map(fn(html_node) -> as_tuple(tree, html_node) end)
 
     {html_node.type, html_node.attributes, children}
   end

@@ -29,10 +29,20 @@ defmodule Floki.Selector.PseudoClass do
     parent_node = Map.get(tree.nodes, html_node.parent_node_id)
     children_nodes_ids = parent_node.children_nodes_ids
                          |> Enum.reverse
+                         |> filter_only_html_nodes(tree.nodes)
                          |> Enum.with_index(1)
 
     {_node_id, position} = Enum.find(children_nodes_ids, fn({id, _}) -> id == html_node.node_id end)
 
     position
+  end
+
+  defp filter_only_html_nodes(ids, nodes) do
+    Enum.filter(ids, fn(id) ->
+      case Map.get(nodes, id) do
+        %HTMLNode{} -> true
+        _ -> false
+      end
+    end)
   end
 end

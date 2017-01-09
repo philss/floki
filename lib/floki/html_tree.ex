@@ -9,7 +9,7 @@ defmodule Floki.HTMLTree do
   defstruct nodes: %{}, root_nodes_ids: [], node_ids: []
 
   alias Floki.HTMLTree
-  alias Floki.HTMLTree.{HTMLNode, Text, IDSeeder}
+  alias Floki.HTMLTree.{HTMLNode, Text, Comment, IDSeeder}
 
   def build({tag, attrs, children}) do
     root_id = IDSeeder.seed([])
@@ -44,14 +44,7 @@ defmodule Floki.HTMLTree do
 
   defp do_delete(tree, [], []), do: tree
   defp do_delete(tree, [html_node | t], stack_ids) do
-    new_tree_nodes = Map.delete(tree.nodes, html_node.node_id)
-    parent_node = Map.get(tree.nodes, html_node.parent_node_id)
-
-    if parent_node do
-      new_children_node_ids = List.delete(parent_node.children_nodes_ids, html_node.node_id)
-      new_parent = %{parent_node | children_nodes_ids: new_children_node_ids}
-      new_tree_nodes = %{new_tree_nodes | new_parent.node_id => new_parent}
-    end
+    new_tree_nodes = delete_node_from_nodes(tree.nodes, html_node)
 
     ids_for_stack = get_ids_for_delete_stack(html_node)
 
@@ -66,6 +59,19 @@ defmodule Floki.HTMLTree do
                  |> Map.values
 
     do_delete(tree, html_nodes, [])
+  end
+
+  defp delete_node_from_nodes(nodes, html_node) do
+    tree_nodes = Map.delete(nodes, html_node.node_id)
+    parent_node = Map.get(nodes, html_node.parent_node_id)
+
+    if parent_node do
+      children_ids = List.delete(parent_node.children_nodes_ids, html_node.node_id)
+      new_parent = %{parent_node | children_nodes_ids: children_ids}
+      %{tree_nodes | new_parent.node_id => new_parent}
+    else
+      tree_nodes
+    end
   end
 
   defp get_ids_for_delete_stack(%HTMLNode{children_nodes_ids: ids}), do: ids
@@ -84,7 +90,15 @@ defmodule Floki.HTMLTree do
     %{tree | nodes: nodes, node_ids: [new_id | tree.node_ids]}
     |> build_tree(child_children, new_id, [{parent_id, children} | stack])
   end
+  defp build_tree(tree, [{:comment, comment} | children], parent_id, stack) do
+    new_id = IDSeeder.seed(tree.node_ids)
+    new_node = %Comment{content: comment, node_id: new_id, parent_node_id: parent_id}
 
+    nodes = put_new_node(tree.nodes, new_node)
+
+    %{tree | nodes: nodes, node_ids: [new_id | tree.node_ids]}
+    |> build_tree(children, parent_id, stack)
+  end
   defp build_tree(tree, [text | children], parent_id, stack) when is_binary(text) do
     new_id = IDSeeder.seed(tree.node_ids)
     new_node = %Text{content: text, node_id: new_id, parent_node_id: parent_id}

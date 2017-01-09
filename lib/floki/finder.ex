@@ -8,6 +8,7 @@ defmodule Floki.Finder do
 
   alias Floki.{Combinator, Selector, SelectorParser, SelectorTokenizer}
   alias Floki.HTMLTree
+  alias Floki.HTMLTree.HTMLNode
   alias Floki.Selector.PseudoClass
 
   @type html_tree :: tuple | list
@@ -173,17 +174,28 @@ defmodule Floki.Finder do
     Map.get(tree.nodes, id)
   end
 
+  defp get_sibling_ids_from([], _html_node), do: []
+  defp get_sibling_ids_from(ids, html_node) do
+    ids
+    |> Enum.reverse
+    |> Enum.drop_while(fn(id) -> id != html_node.node_id end)
+    |> tl()
+  end
   defp get_siblings(html_node, tree) do
     parent = get_node(html_node.parent_node_id, tree)
 
-    if parent do
-      [_html_node_id | sibling_ids] = parent.children_nodes_ids
-                                      |> Enum.reverse
-                                      |> Enum.drop_while(fn(id) -> id != html_node.node_id end)
-      sibling_ids
-    else
-      []
-    end
+    ids = if parent do
+            get_sibling_ids_from(parent.children_nodes_ids, html_node)
+          else
+            get_sibling_ids_from(tree.root_nodes_ids, html_node)
+          end
+
+    Enum.filter(ids, fn(id) ->
+      case get_node(id, tree) do
+        %HTMLNode{} -> true
+        _ -> false
+      end
+    end)
   end
 
   # It takes all ids until the next sibling, that represents the ids under a given sub-tree
