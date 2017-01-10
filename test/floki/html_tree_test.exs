@@ -129,4 +129,44 @@ defmodule Floki.HTMLTreeTest do
       nodes: %{}
     }
   end
+
+  test "build tuple representation of tree" do
+    html_tree = %HTMLTree{
+     root_nodes_ids: [1],
+     node_ids: [6, 5, 4, 3, 2, 1],
+     nodes: %{
+       1 => %HTMLNode{type: "html",
+                      children_nodes_ids: [6, 3, 2],
+                      node_id: 1},
+       2 => %Comment{content: "start of the stack", node_id: 2, parent_node_id: 1},
+       3 => %HTMLNode{type: "a",
+                      attributes: [{"class", "link"}],
+                      parent_node_id: 1,
+                      children_nodes_ids: [4],
+                      node_id: 3},
+       4 => %HTMLNode{type: "b",
+                      parent_node_id: 3,
+                      children_nodes_ids: [5],
+                      node_id: 4},
+       5 => %Text{content: "click me",
+                  parent_node_id: 4,
+                  node_id: 5},
+       6 => %HTMLNode{type: "span",
+                      parent_node_id: 1,
+                      node_id: 6}
+      }
+    }
+
+    expected_tuple =
+      {"html", [],
+       [
+         {:comment, "start of the stack"},
+         {"a", [{"class", "link"}],
+          [{"b", [], ["click me"]}]},
+         {"span", [], []}]}
+
+    assert HTMLTree.to_tuple(html_tree, %HTMLNode{type: "html",
+                                                  children_nodes_ids: [6, 3, 2],
+                                                  node_id: 1}) == expected_tuple
+  end
 end

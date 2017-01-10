@@ -42,6 +42,16 @@ defmodule Floki.HTMLTree do
     do_delete(tree, [html_node], [])
   end
 
+  def to_tuple(_tree, %Text{content: text}), do: text
+  def to_tuple(_tree, %Comment{content: comment}), do: {:comment, comment}
+  def to_tuple(tree, html_node) do
+    children = html_node.children_nodes_ids
+               |> Enum.reverse
+               |> Enum.map(fn(id) -> to_tuple(tree, Map.get(tree.nodes, id)) end)
+
+    {html_node.type, html_node.attributes, children}
+  end
+
   defp do_delete(tree, [], []), do: tree
   defp do_delete(tree, [html_node | t], stack_ids) do
     new_tree_nodes = delete_node_from_nodes(tree.nodes, html_node)

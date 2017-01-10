@@ -1,6 +1,5 @@
 defmodule Floki do
-  alias Floki.{Finder, Parser, FilterOut}
-  alias Floki.HTMLTree.Text
+  alias Floki.{Finder, Parser, FilterOut, HTMLTree}
 
   @moduledoc """
   Floki is a simple HTML parser that enables search for nodes using CSS selectors.
@@ -146,12 +145,12 @@ defmodule Floki do
 
     {tree, results} = Finder.find(html_as_tuple, selector)
 
-    Enum.map(results, fn(html_node) -> as_tuple(tree, html_node) end)
+    Enum.map(results, fn(html_node) -> HTMLTree.to_tuple(tree, html_node) end)
   end
   def find(html_tree_as_tuple, selector) do
     {tree, results} = Finder.find(html_tree_as_tuple, selector)
 
-    Enum.map(results, fn(html_node) -> as_tuple(tree, html_node) end)
+    Enum.map(results, fn(html_node) -> HTMLTree.to_tuple(tree, html_node) end)
   end
 
   def transform(html_tree_list, transformation) when is_list(html_tree_list) do
@@ -314,14 +313,5 @@ defmodule Floki do
   end
   def filter_out(elements, selector) do
     FilterOut.filter_out(elements, selector)
-  end
-
-  defp as_tuple(_tree, %Text{content: text}), do: text
-  defp as_tuple(tree, html_node) do
-    children = html_node.children_nodes_ids
-               |> Enum.reverse
-               |> Enum.map(fn(id) -> as_tuple(tree, Map.get(tree.nodes, id)) end)
-
-    {html_node.type, html_node.attributes, children}
   end
 end
