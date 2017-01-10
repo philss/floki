@@ -489,8 +489,10 @@ defmodule FlokiTest do
     <html>
     <body>
       <a href="/a">1</a>
+      ignores this text
       <a href="/b">2</a>
       <a href="/c">3</a>
+      <!-- also ignores this comment -->
       <a href="/d">4</a>
       <a href="/e">5</a>
     </html>

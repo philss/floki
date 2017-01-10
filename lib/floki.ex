@@ -1,5 +1,5 @@
 defmodule Floki do
-  alias Floki.{Finder, Parser, FilterOut}
+  alias Floki.{Finder, Parser, FilterOut, HTMLTree}
 
   @moduledoc """
   Floki is a simple HTML parser that enables search for nodes using CSS selectors.
@@ -141,10 +141,16 @@ defmodule Floki do
   @spec find(binary | html_tree, binary) :: html_tree
 
   def find(html, selector) when is_binary(html) do
-    html |> parse |> Finder.find(selector)
+    html_as_tuple = parse(html)
+
+    {tree, results} = Finder.find(html_as_tuple, selector)
+
+    Enum.map(results, fn(html_node) -> HTMLTree.to_tuple(tree, html_node) end)
   end
-  def find(html_tree, selector) do
-    Finder.find(html_tree, selector)
+  def find(html_tree_as_tuple, selector) do
+    {tree, results} = Finder.find(html_tree_as_tuple, selector)
+
+    Enum.map(results, fn(html_node) -> HTMLTree.to_tuple(tree, html_node) end)
   end
 
   def transform(html_tree_list, transformation) when is_list(html_tree_list) do
