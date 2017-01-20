@@ -607,4 +607,16 @@ defmodule FlokiTest do
     transform = Floki.transform(elements, transformation)
     assert transform |> Floki.find("a") |> Floki.attribute("href") == ["https://google.com", "https://elixir-lang.org", "https://java.com"]
   end
+
+  test "finding leaf nodes" do
+    html = """
+      <html>
+      <body>
+      <div id="messageBox" class="legacyErrors"><div class="messageBox error"><h2 class="accessAid">Error Message</h2><p>There has been an error in your account.</p></div></div>
+      <div id="main" class="legacyErrors"><p>Separate Error Message</p></div>
+      </body>
+      </html>
+      """
+    assert Floki.find(html, ".messageBox p") == [{"p", [], ["There has been an error in your account."]}]
+  end
 end
