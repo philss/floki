@@ -155,8 +155,7 @@ defmodule Floki.Finder do
   defp traverse_with(%Combinator{match_type: :descendant, selector: s}, tree, stack) do
     results =
       Enum.flat_map(stack, fn(html_node) ->
-        sibling_ids = get_siblings(html_node, tree)
-        ids_to_match = get_ids_for_decendant_match(html_node.node_id, sibling_ids, tree.node_ids)
+        ids_to_match = get_descendant_ids(html_node.node_id, tree)
         nodes = ids_to_match
                 |> get_nodes(tree)
 
@@ -198,15 +197,13 @@ defmodule Floki.Finder do
     end)
   end
 
-  # It takes all ids until the next sibling, that represents the ids under a given sub-tree
-  defp get_ids_for_decendant_match(node_id, sibling_ids, ids) do
-    [_ | ids_after] = ids
-                      |> Enum.reverse
-                      |> Enum.drop_while(fn(id) -> id != node_id end)
-
-    case sibling_ids do
-      [] -> ids_after
-      [sibling_id | _] -> Enum.take_while(ids_after, fn(id) -> id != sibling_id end)
+  # finds all descendant node ids recursively through the tree
+  defp get_descendant_ids(node_id, tree) do
+    case get_node(node_id, tree) do
+      %{children_nodes_ids: node_ids} ->
+        node_ids ++ Enum.flat_map(node_ids, &( get_descendant_ids(&1, tree) ))
+      _ ->
+        []
     end
   end
 end
