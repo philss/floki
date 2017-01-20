@@ -5,6 +5,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 
+## [0.12.1] - 2017-12-20
+
+### Fixed
+
+- Fix search for elements using descendant combinator - issue #84 - thanks @mmmries
+
 ## [0.12.0] - 2016-12-28
 
 ### Added
@@ -227,7 +233,8 @@ of the parent element inside HTML.
 
 - Elixir version requirement from "~> 1.0.0" to ">= 1.0.0".
 
-[unreleased]: https://github.com/philss/floki/compare/v0.12.0...HEAD
+[unreleased]: https://github.com/philss/floki/compare/v0.12.1...HEAD
+[0.12.1]: https://github.com/philss/floki/compare/v0.12.0...v0.12.1
 [0.12.0]: https://github.com/philss/floki/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/philss/floki/compare/v0.10.1...v0.11.0
 [0.10.1]: https://github.com/philss/floki/compare/v0.10.0...v0.10.1
