@@ -52,6 +52,7 @@ defmodule Floki.Finder do
       |> Enum.reverse
       |> get_nodes(tree)
       |> Enum.flat_map(fn(html_node) -> get_matches_for_selectors(tree, html_node, selectors) end)
+      |> Enum.uniq
 
     {tree, results}
   end
@@ -201,7 +202,7 @@ defmodule Floki.Finder do
   defp get_descendant_ids(node_id, tree) do
     case get_node(node_id, tree) do
       %{children_nodes_ids: node_ids} ->
-        node_ids ++ Enum.flat_map(node_ids, &( get_descendant_ids(&1, tree) ))
+        Enum.reverse(node_ids) ++ Enum.flat_map(node_ids, &( get_descendant_ids(&1, tree) ))
       _ ->
         []
     end
