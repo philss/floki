@@ -5,6 +5,13 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 
+## [0.13.1] - 2017-12-22
+
+### Fixed
+
+- Fix ordering of duplicated descendant matches - thanks @mmmries
+- Fix ordering of `Floki.text/1` when there are only root nodes - thanks @mmmries
+
 ## [0.13.0] - 2017-12-22
 
 ### Added
@@ -239,7 +246,8 @@ of the parent element inside HTML.
 
 - Elixir version requirement from "~> 1.0.0" to ">= 1.0.0".
 
-[unreleased]: https://github.com/philss/floki/compare/v0.13.0...HEAD
+[unreleased]: https://github.com/philss/floki/compare/v0.13.1...HEAD
+[0.13.1]: https://github.com/philss/floki/compare/v0.13.0...v0.13.1
 [0.13.0]: https://github.com/philss/floki/compare/v0.12.1...v0.13.0
 [0.12.1]: https://github.com/philss/floki/compare/v0.12.0...v0.12.1
 [0.12.0]: https://github.com/philss/floki/compare/v0.11.0...v0.12.0
