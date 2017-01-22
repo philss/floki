@@ -190,6 +190,9 @@ defmodule Floki do
       iex> Floki.text([{"div", [], ["hello world"]}])
       "hello world"
 
+      iex> Floki.text([{"p", [], ["1"]},{"p", [], ["2"]}])
+      "12"
+
   """
 
   @spec text(html_tree | binary) :: binary

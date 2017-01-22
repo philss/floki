@@ -76,6 +76,31 @@ defmodule Floki.HTMLTreeTest do
     }
   end
 
+  test "builds the root node ids in the right order" do
+    tuples = [{"p", [], ["1"]},{"p", [], ["2"]}]
+    tree = HTMLTree.build(tuples)
+    assert tree == %HTMLTree{
+      root_nodes_ids: [1, 3],
+      node_ids: [4, 3, 2, 1],
+      nodes: %{
+        1 => %HTMLNode{type: "p",
+                       children_nodes_ids: [2],
+                       node_id: 1},
+        2 => %Text{content: "1",
+                   node_id: 2,
+                   parent_node_id: 1},
+        3 => %HTMLNode{attributes: [],
+                       children_nodes_ids: [4],
+                       node_id: 3,
+                       parent_node_id: nil,
+                       type: "p"},
+        4 => %Text{content: "2",
+                   node_id: 4,
+                   parent_node_id: 3},
+      }
+    }
+  end
+
   test "delete HTML node from tree" do
     tree = %HTMLTree{
      root_nodes_ids: [1],
