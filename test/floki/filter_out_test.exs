@@ -6,4 +6,10 @@ defmodule Floki.FilterOutTest do
 
     assert Floki.FilterOut.filter_out(html, "div[class]") == {"body", [], [{"div", [], ["two"]}]}
   end
+
+  test "filter out returns the elements in the same order they were passed in" do
+    nodes = [{"p", [], ["1"]},{"p", [], ["2"]}]
+    assert Floki.FilterOut.filter_out(nodes, "script") == nodes
+    assert Floki.FilterOut.filter_out(nodes, :comment) == nodes
+  end
 end
