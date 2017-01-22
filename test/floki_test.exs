@@ -619,4 +619,19 @@ defmodule FlokiTest do
       """
     assert Floki.find(html, ".messageBox p") == [{"p", [], ["There has been an error in your account."]}]
   end
+
+  test "descendant matches are returned in order and without duplicates" do
+    html = """
+      <div>
+        <div>
+          <hr>
+            <p>1</p>
+            <p>2</p>
+            <p>3</p>
+          </hr>
+        </div>
+      </div>
+      """
+    assert Floki.find(html, "div p") == [{"p", [], ["1"]},{"p", [], ["2"]},{"p", [], ["3"]}]
+  end
 end
