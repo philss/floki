@@ -622,17 +622,15 @@ defmodule FlokiTest do
 
   test "descendant matches are returned in order and without duplicates" do
     html = """
-      <html><body>
+      <div>
         <div>
-          <div>
-            <hr>
-              <p>1</p>
-              <p>2</p>
-              <p>3</p>
-            </hr>
-          </div>
+          <hr>
+            <p>1</p>
+            <p>2</p>
+            <p>3</p>
+          </hr>
         </div>
-      </body></html>
+      </div>
       """
     assert Floki.find(html, "div p") == [{"p", [], ["1"]},{"p", [], ["2"]},{"p", [], ["3"]}]
   end
