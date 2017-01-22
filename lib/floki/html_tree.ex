@@ -29,7 +29,7 @@ defmodule Floki.HTMLTree do
 
         %{tree | nodes: Map.put(tree.nodes, root_id, root_node),
                  node_ids: [root_id | tree.node_ids],
-                 root_nodes_ids: [root_id | tree.root_nodes_ids]}
+                 root_nodes_ids: tree.root_nodes_ids ++ [root_id]}
         |> build_tree(children, root_id, [])
       (_, tree) ->
         tree
