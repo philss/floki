@@ -1,6 +1,5 @@
 defmodule Floki.HTMLParser.Html5ever do
   @moduledoc false
-  @root_node "floki"
 
   def parse(html) do
     case Code.ensure_loaded(Html5ever) do
