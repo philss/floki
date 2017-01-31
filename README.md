@@ -34,12 +34,15 @@ Here are some queries that you can perform (with return examples):
 ```elixir
 Floki.find(html, "#content")
 # => [{"section", [{"id", "content"}],
-# =>  [{"p", [{"class", "headline"}], ["Floki"]},
-# =>   {"a", [{"href", "http://github.com/philss/floki"}], ["Github page"]}]}]
+# =>   [{"p", [{"class", "headline"}], ["Floki"]},
+# =>    {"span", [{"class", "headline"}], ["Enables search using CSS selectors"]},
+# =>    {"a", [{"href", "http://github.com/philss/floki"}], ["Github page"]},
+# =>    {"span", [{"data-model", "user"}], ["philss"]}]}]
 
 
 Floki.find(html, "p.headline")
 # => [{"p", [{"class", "headline"}], ["Floki"]}]
+
 
 Floki.find(html, "p.headline")
 |> Floki.raw_html
@@ -52,8 +55,7 @@ Floki.find(html, "a")
 
 
 Floki.find(html, "a[href^=https]")
-# => [{"a", [{"href", "http://github.com/philss/floki"}], ["Github page"]},
-# =>  {"a", [{"href", "https://hex.pm/packages/floki"}], ["Hex package"]}]
+# => [{"a", [{"href", "https://hex.pm/packages/floki"}], ["Hex package"]}]
 
 
 Floki.find(html, "#content a")
@@ -64,7 +66,7 @@ Floki.find(html, "[data-model=user]")
 # => [{"span", [{"data-model", "user"}], ["philss"]}]
 
 
-Floki.find(html, ".headline, a")
+Floki.find(html, ".headline:nth-child(1), a")
 # => [{"p", [{"class", "headline"}], ["Floki"]},
 # =>  {"a", [{"href", "http://github.com/philss/floki"}], ["Github page"]},
 # =>  {"a", [{"href", "https://hex.pm/packages/floki"}], ["Hex package"]}]
@@ -95,7 +97,7 @@ It is simple as that!
 
 ## Installation
 
-Add Floki in your `mix.exs`, as a dependency:
+Add Floki to your `mix.exs`:
 
 ```elixir
 defp deps do
