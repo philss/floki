@@ -118,7 +118,47 @@ If you get this [kind of error](https://github.com/philss/floki/issues/35),
 you need to install the `erlang-dev` and `erlang-parsetools` packages in order get the `leex` module.
 The packages names may be different depending on your OS.
 
-## More about the API
+### Optional - Using http5ever as the HTML parser
+
+You can configure Floki to use [html5ever](https://github.com/servo/html5ever) as your HTML parser.
+This is recommended if you need [better performance](https://gist.github.com/philss/70b4b0294f29501c3c7e0f60338cc8bd)
+and a more accurate parser. However `html5ever` is being under active development and **may be unstable**.
+
+Since it's written in Rust, we need to install Rust and compile the project. Luckily we have have the
+[html5ever Elixir NIF](https://github.com/hansihe/html5ever_elixir) that makes the integration very easy.
+
+You still need to install Rust in your system. To do that, please
+[follow the instruction](https://www.rust-lang.org/en-US/install.html) presented in the official page.
+
+#### Installing html5ever
+
+After setup Rust, you need to add `html5ever` NIF to your dependency list:
+
+```elixir
+defp deps do
+  [
+    {:floki, "~> 0.13.1"},
+    {:html5ever, "~> 0.1.0"}
+  ]
+end
+```
+
+Run `mix deps.get` and compiles the project with `mix compile` to make sure it works.
+
+Then you need to configure your app to use `html5ever`:
+
+```
+# in config/config.exs
+
+config :floki, :html_parser, Floki.HTMLParser.Html5ever
+```
+
+After that you are able to use `html5ever` as your HTML parser with Floki.
+
+To know more about NIFs, check the [Erlang docs](http://erlang.org/doc/man/erl_nif.html).
+And to know why Rust NIFs can be better, check the [Rustler](https://github.com/hansihe/rustler) project.
+
+## More about Floki API
 
 To parse a HTML document, try:
 
@@ -173,10 +213,6 @@ Floki.find(html, ".headline")
 
 # => "Floki"
 ```
-
-## References
-
-- https://www.w3.org/community/webed/wiki/CSS/Selectors
 
 ## License
 
