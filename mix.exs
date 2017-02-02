@@ -17,8 +17,7 @@ defmodule Floki.Mixfile do
   end
 
   def application do
-    [extra_applications: [:logger],
-     mod: {Floki, []}]
+    [extra_applications: [:logger]]
   end
 
   defp deps do
