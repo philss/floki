@@ -147,7 +147,7 @@ Run `mix deps.get` and compiles the project with `mix compile` to make sure it w
 
 Then you need to configure your app to use `html5ever`:
 
-```
+```elixir
 # in config/config.exs
 
 config :floki, :html_parser, Floki.HTMLParser.Html5ever
