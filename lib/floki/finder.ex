@@ -68,8 +68,7 @@ defmodule Floki.Finder do
   end
 
   defp get_matches_for_selectors(tree, html_node, selectors) do
-    selectors
-    |> Enum.flat_map(fn(selector) -> get_matches(tree, html_node, selector) end)
+    Enum.flat_map(selectors, fn(selector) -> get_matches(tree, html_node, selector) end)
   end
 
   defp get_matches(tree, html_node, selector = %Selector{combinator: nil}) do
@@ -157,8 +156,7 @@ defmodule Floki.Finder do
     results =
       Enum.flat_map(stack, fn(html_node) ->
         ids_to_match = get_descendant_ids(html_node.node_id, tree)
-        nodes = ids_to_match
-                |> get_nodes(tree)
+        nodes = get_nodes(ids_to_match, tree)
 
         Enum.filter(nodes, fn(html_node) -> Selector.match?(html_node, s) end)
       end)
@@ -202,7 +200,7 @@ defmodule Floki.Finder do
   defp get_descendant_ids(node_id, tree) do
     case get_node(node_id, tree) do
       %{children_nodes_ids: node_ids} ->
-        Enum.reverse(node_ids) ++ Enum.flat_map(node_ids, &( get_descendant_ids(&1, tree) ))
+        Enum.reverse(node_ids) ++ Enum.flat_map(node_ids, &(get_descendant_ids(&1, tree)))
       _ ->
         []
     end

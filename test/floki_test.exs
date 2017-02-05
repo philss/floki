@@ -135,22 +135,22 @@ defmodule FlokiTest do
   # Floki.raw_html/2
 
   test "raw_html" do
-    raw_html = Floki.parse(@basic_html) |> Floki.raw_html
+    raw_html = @basic_html |> Floki.parse |> Floki.raw_html
     assert raw_html == String.split(@basic_html, "\n") |> Enum.map(&(String.strip(&1))) |> Enum.join("")
   end
 
   test "raw_html (html with data attributes)" do
-    raw_html = Floki.parse(@html_with_data_attributes) |> Floki.raw_html
+    raw_html = @html_with_data_attributes |> Floki.parse |> Floki.raw_html
     assert raw_html == String.split(raw_html, "\n") |> Enum.map(&(String.strip(&1))) |> Enum.join("")
   end
 
   test "raw_html (with comment)" do
-    raw_html = Floki.parse(@html_with_img) |> Floki.raw_html
+    raw_html = @html_with_img |> Floki.parse |> Floki.raw_html
     assert raw_html == String.split(raw_html, "\n") |> Enum.map(&(String.strip(&1))) |> Enum.join("")
   end
 
   test "raw_html (after find)" do
-    raw_html = Floki.parse(@basic_html) |> Floki.find("a") |> Floki.raw_html
+    raw_html = @basic_html |> Floki.parse |> Floki.find("a") |> Floki.raw_html
     assert raw_html == ~s(<a href="uol.com.br" class="bar"><span>UOL</span><img src="foo.png"/></a>)
   end
 
@@ -477,7 +477,7 @@ defmodule FlokiTest do
   end
 
   test "get one element when search for multiple and just one exist" do
-    expected = [ {"img", [ {"src", "logo.png"}, {"id", "logo"}], []} ]
+    expected = [{"img", [{"src", "logo.png"}, {"id", "logo"}], []}]
 
     assert Floki.find(@html_with_img, ".js-x-logo, #logo") == expected
   end
@@ -499,22 +499,22 @@ defmodule FlokiTest do
     """
 
     assert Floki.find(html, "a:nth-child(2)") == [
-      {"a", [{"href", "/b"}], ["2"] }
+      {"a", [{"href", "/b"}], ["2"]}
     ]
 
     assert Floki.find(html, "a:nth-child(even)") == [
-      {"a", [{"href", "/b"}], ["2"] },
-      {"a", [{"href", "/d"}], ["4"] }
+      {"a", [{"href", "/b"}], ["2"]},
+      {"a", [{"href", "/d"}], ["4"]}
     ]
 
     assert Floki.find(html, "a:nth-child(odd)") == [
-      {"a", [{"href", "/a"}], ["1"] },
-      {"a", [{"href", "/c"}], ["3"] },
-      {"a", [{"href", "/e"}], ["5"] }
+      {"a", [{"href", "/a"}], ["1"]},
+      {"a", [{"href", "/c"}], ["3"]},
+      {"a", [{"href", "/e"}], ["5"]}
     ]
 
     assert Floki.find(html, "a:first-child") == [
-      {"a", [{"href", "/a"}], ["1"] }
+      {"a", [{"href", "/a"}], ["1"]}
     ]
   end
 
@@ -546,13 +546,13 @@ defmodule FlokiTest do
   # Floki.find/2 - Raw selector structs
 
   test "find single selector structs" do
-    selector_struct = %Floki.Selector{ type: "a" }
+    selector_struct = %Floki.Selector{type: "a"}
     assert Floki.find(@html, "a") == Floki.find(@html, selector_struct)
   end
 
   test "find multiple selector structs" do
-    selector_struct_1 = %Floki.Selector{ type: "a" }
-    selector_struct_2 = %Floki.Selector{ type: "div" }
+    selector_struct_1 = %Floki.Selector{type: "a"}
+    selector_struct_2 = %Floki.Selector{type: "div"}
 
     assert Floki.find(@html, "a,div") == Floki.find(@html, [selector_struct_1, selector_struct_2])
   end

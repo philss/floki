@@ -13,11 +13,12 @@ defmodule Floki.HTMLTree do
 
   def build({tag, attrs, children}) do
     root_id = IDSeeder.seed([])
+    root_node = %HTMLNode{type: tag, attributes: attrs, node_id: root_id}
 
-    %HTMLTree{root_nodes_ids: [root_id],
-              node_ids: [root_id],
-              nodes: %{root_id => %HTMLNode{type: tag, attributes: attrs, node_id: root_id}}}
-    |> build_tree(children, root_id, [])
+    build_tree(%HTMLTree{root_nodes_ids: [root_id],
+                         node_ids: [root_id],
+                         nodes: %{root_id => root_node}},
+               children, root_id, [])
   end
 
   def build(html_tuples) when is_list(html_tuples) do
@@ -27,10 +28,10 @@ defmodule Floki.HTMLTree do
 
         root_node = %HTMLNode{type: tag, attributes: attrs, node_id: root_id}
 
-        %{tree | nodes: Map.put(tree.nodes, root_id, root_node),
-                 node_ids: [root_id | tree.node_ids],
-                 root_nodes_ids: tree.root_nodes_ids ++ [root_id]}
-        |> build_tree(children, root_id, [])
+        build_tree(%{tree | nodes: Map.put(tree.nodes, root_id, root_node),
+                            node_ids: [root_id | tree.node_ids],
+                            root_nodes_ids: tree.root_nodes_ids ++ [root_id]},
+                   children, root_id, [])
       (_, tree) ->
         tree
     end
@@ -97,8 +98,8 @@ defmodule Floki.HTMLTree do
 
     nodes = put_new_node(tree.nodes, new_node)
 
-    %{tree | nodes: nodes, node_ids: [new_id | tree.node_ids]}
-    |> build_tree(child_children, new_id, [{parent_id, children} | stack])
+   build_tree(%{tree | nodes: nodes, node_ids: [new_id | tree.node_ids]},
+              child_children, new_id, [{parent_id, children} | stack])
   end
   defp build_tree(tree, [{:comment, comment} | children], parent_id, stack) do
     new_id = IDSeeder.seed(tree.node_ids)
@@ -106,8 +107,8 @@ defmodule Floki.HTMLTree do
 
     nodes = put_new_node(tree.nodes, new_node)
 
-    %{tree | nodes: nodes, node_ids: [new_id | tree.node_ids]}
-    |> build_tree(children, parent_id, stack)
+    build_tree(%{tree | nodes: nodes, node_ids: [new_id | tree.node_ids]},
+               children, parent_id, stack)
   end
   defp build_tree(tree, [text | children], parent_id, stack) when is_binary(text) do
     new_id = IDSeeder.seed(tree.node_ids)
@@ -115,8 +116,8 @@ defmodule Floki.HTMLTree do
 
     nodes = put_new_node(tree.nodes, new_node)
 
-    %{tree | nodes: nodes, node_ids: [new_id | tree.node_ids]}
-    |> build_tree(children, parent_id, stack)
+    build_tree(%{tree | nodes: nodes, node_ids: [new_id | tree.node_ids]},
+               children, parent_id, stack)
   end
   defp build_tree(tree, [_other | children], parent_id, stack) do
     build_tree(tree, children, parent_id, stack)
