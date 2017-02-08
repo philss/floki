@@ -1,5 +1,5 @@
 defmodule Floki do
-  alias Floki.{Finder, Parser, FilterOut, HTMLTree}
+  alias Floki.{Finder, HTMLParser, FilterOut, HTMLTree}
 
   @moduledoc """
   Floki is a simple HTML parser that enables search for nodes using CSS selectors.
@@ -69,7 +69,7 @@ defmodule Floki do
   @spec parse(binary) :: html_tree
 
   def parse(html) do
-    Parser.parse(html)
+    HTMLParser.parse(html)
   end
 
   @self_closing_tags ["area", "base", "br", "col", "command", "embed", "hr", "img", "input", "keygen", "link", "meta", "param", "source", "track", "wbr"]
