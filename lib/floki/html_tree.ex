@@ -32,6 +32,14 @@ defmodule Floki.HTMLTree do
                             node_ids: [root_id | tree.node_ids],
                             root_nodes_ids: tree.root_nodes_ids ++ [root_id]},
                    children, root_id, [])
+      (text, tree) when is_binary(text) ->
+        root_id = IDSeeder.seed(tree.node_ids)
+
+        root_node = %Text{content: text, node_id: root_id}
+        build_tree(%{tree | nodes: Map.put(tree.nodes, root_id, root_node),
+                            node_ids: [root_id | tree.node_ids],
+                            root_nodes_ids: tree.root_nodes_ids ++ [root_id]},
+                   [], root_id, [])
       (_, tree) ->
         tree
     end

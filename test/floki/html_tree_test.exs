@@ -4,7 +4,7 @@ defmodule Floki.HTMLTreeTest do
   alias Floki.HTMLTree
   alias Floki.HTMLTree.{HTMLNode, Text, Comment}
 
-  test "build the tuple tree into HTML tree" do
+  test "builds the tuple tree into HTML tree" do
     link_attrs = [{"href", "/home"}]
     html_tuple =
       {"html", [],
@@ -41,7 +41,7 @@ defmodule Floki.HTMLTreeTest do
     }
   end
 
-  test "build HTML tuple list" do
+  test "builds HTML tuple list" do
     html_tuple_list = [
       {"html", [],
        [
@@ -73,6 +73,21 @@ defmodule Floki.HTMLTreeTest do
                       parent_node_id: 1,
                       node_id: 5}
      }
+    }
+  end
+
+  test "builds the HTML only with text nodes" do
+    text_nodes = ["hello", " world"]
+
+    assert HTMLTree.build(text_nodes) == %HTMLTree{
+      root_nodes_ids: [1, 2],
+      node_ids: [2, 1],
+      nodes: %{
+        1 => %Text{content: "hello",
+                   node_id: 1},
+        2 => %Text{content: " world",
+                   node_id: 2}
+      }
     }
   end
 
