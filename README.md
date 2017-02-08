@@ -5,6 +5,7 @@
 [![Hex.pm](https://img.shields.io/hexpm/dt/floki.svg)](https://hex.pm/packages/floki)
 [![Deps Status](https://beta.hexfaktor.org/badge/all/github/philss/floki.svg)](https://beta.hexfaktor.org/github/philss/floki)
 [![Inline docs](http://inch-ci.org/github/philss/floki.svg?branch=master)](http://inch-ci.org/github/philss/floki)
+[![Ebert](https://ebertapp.io/github/philss/floki.svg)](https://ebertapp.io/github/philss/floki)
 
 Floki is a simple HTML parser that enables search for nodes using CSS selectors.
 
