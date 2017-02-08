@@ -5,20 +5,27 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 
-## [0.13.1] - 2017-12-22
+## [0.13.2] - 2017-02-07
+
+### Fixed
+
+- Fixed bug that was causing Floki.text/1 and Floki.filter_out/2
+to ignore "trees" with only text nodes. Issue #91 - thanks @boydm.
+
+## [0.13.1] - 2017-01-22
 
 ### Fixed
 
 - Fix ordering of duplicated descendant matches - thanks @mmmries
 - Fix ordering of `Floki.text/1` when there are only root nodes - thanks @mmmries
 
-## [0.13.0] - 2017-12-22
+## [0.13.0] - 2017-01-22
 
 ### Added
 
 - Floki.filter_out/2 is now able to understand complex selectors to filter out from the tree.
 
-## [0.12.1] - 2017-12-20
+## [0.12.1] - 2017-01-20
 
 ### Fixed
 
