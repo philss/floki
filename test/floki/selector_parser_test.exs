@@ -12,8 +12,7 @@ defmodule Floki.SelectorParserTest do
   test "type with classes" do
     tokens = tokenize("a.link.button")
 
-    assert SelectorParser.parse(tokens) == %Selector{type: "a",
-      classes: ["button", "link"]}
+    assert SelectorParser.parse(tokens) == %Selector{type: "a", classes: ["button", "link"]}
   end
 
   test "type with id" do
@@ -78,7 +77,7 @@ defmodule Floki.SelectorParserTest do
     }
   end
 
-  test "with namespace" do
+  test "namespace" do
     tokens = tokenize("xyz | a")
 
     assert SelectorParser.parse(tokens) == %Selector{
@@ -87,7 +86,7 @@ defmodule Floki.SelectorParserTest do
     }
   end
 
-  test "with pseudo-class" do
+  test "nth-child pseudo-class" do
     tokens = tokenize("li:nth-child(2)")
 
     assert SelectorParser.parse(tokens) == %Selector{
@@ -117,11 +116,18 @@ defmodule Floki.SelectorParserTest do
     }
   end
 
+  test "not pseudo-class" do
+    assert SelectorParser.parse("a.foo:not(.bar)") == %Selector{
+      type: "a",
+      classes: ["foo"],
+      pseudo_class: %PseudoClass{name: "not", value: %Selector{classes: ["bar"]}}
+    }
+  end
+
   test "warn unknown tokens" do
     log_capturer = fn(string) ->
-      tokens = tokenize(string)
       fn ->
-        SelectorParser.parse(tokens)
+        SelectorParser.parse(string)
       end
     end
 

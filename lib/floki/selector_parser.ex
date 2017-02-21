@@ -4,7 +4,7 @@ defmodule Floki.SelectorParser do
   @moduledoc false
   # Parses a list of tokens returned from `SelectorTokenizer` and transfor into a `Selector`.
 
-  alias Floki.{Selector, AttributeSelector, Combinator}
+  alias Floki.{Selector, SelectorTokenizer, AttributeSelector, Combinator}
   alias Floki.Selector.PseudoClass
 
   @attr_match_types [:equal, :dash_match, :includes, :prefix_match, :sufix_match, :substring_match]
@@ -12,6 +12,10 @@ defmodule Floki.SelectorParser do
   # Returns a `Selector` struct with the parsed selector.
   # Note that this parser does not deal with groups of selectors.
 
+  def parse(selector) when is_binary(selector) do
+    token_list = SelectorTokenizer.tokenize(selector)
+    parse(token_list)
+  end
   def parse(tokens) do
     do_parse(tokens, %Selector{})
   end
@@ -55,6 +59,11 @@ defmodule Floki.SelectorParser do
   defp do_parse([{:pseudo_class_pattern, _, pattern} | t], selector) do
     pseudo_class = selector.pseudo_class
     do_parse(t, %{selector | pseudo_class: %{pseudo_class | value: to_string(pattern)}})
+  end
+  defp do_parse([{:pseudo_class_generic_value, _, value} | t], s = %Selector{pseudo_class: %PseudoClass{name: "not"}}) do
+    pseudo_class = s.pseudo_class
+    not_selector = parse(to_string(value))
+    do_parse(t, %{s | pseudo_class: %{pseudo_class | value: not_selector}})
   end
   defp do_parse([{:space, _} | t], selector) do
     {t, combinator} = consume_combinator(t, :descendant)
