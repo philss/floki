@@ -9,6 +9,12 @@ defmodule Floki.SelectorParserTest do
     Floki.SelectorTokenizer.tokenize(string)
   end
 
+  def log_capturer(string) do
+    fn ->
+      SelectorParser.parse(string)
+    end
+  end
+
   test "type with classes" do
     tokens = tokenize("a.link.button")
 
@@ -122,16 +128,13 @@ defmodule Floki.SelectorParserTest do
       classes: ["foo"],
       pseudo_class: %PseudoClass{name: "not", value: %Selector{classes: ["bar"]}}
     }
+
+    assert capture_log(log_capturer("a.foo:not(.bar > .baz)")) =~
+            "module=Floki.SelectorParser  Only simple selectors are allowed in :not() pseudo-class. Ignoring."
   end
 
   test "warn unknown tokens" do
-    log_capturer = fn(string) ->
-      fn ->
-        SelectorParser.parse(string)
-      end
-    end
-
-    assert capture_log(log_capturer.("a { b")) =~ "module=Floki.SelectorParser  Unknown token '{'. Ignoring."
-    assert capture_log(log_capturer.("a + b@")) =~ "module=Floki.SelectorParser  Unknown token '@'. Ignoring."
+    assert capture_log(log_capturer("a { b")) =~ "module=Floki.SelectorParser  Unknown token '{'. Ignoring."
+    assert capture_log(log_capturer("a + b@")) =~ "module=Floki.SelectorParser  Unknown token '@'. Ignoring."
   end
 end
