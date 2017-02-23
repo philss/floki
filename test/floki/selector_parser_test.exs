@@ -2,8 +2,15 @@ defmodule Floki.SelectorParserTest do
   use ExUnit.Case, async: true
   import ExUnit.CaptureLog
 
+  require Logger
+
   alias Floki.{Selector, Combinator, AttributeSelector, SelectorParser}
   alias Floki.Selector.PseudoClass
+
+  setup_all do
+    :ok = Logger.remove_backend(:console)
+    on_exit(fn -> Logger.add_backend(:console, flush: true) end)
+  end
 
   def tokenize(string) do
     Floki.SelectorTokenizer.tokenize(string)
@@ -127,6 +134,12 @@ defmodule Floki.SelectorParserTest do
       type: "a",
       classes: ["foo"],
       pseudo_class: %PseudoClass{name: "not", value: %Selector{classes: ["bar"]}}
+    }
+
+    assert SelectorParser.parse("a.foo:not(.bar > .baz)") == %Selector{
+      type: "a",
+      classes: ["foo"],
+      pseudo_class: nil
     }
 
     assert capture_log(log_capturer("a.foo:not(.bar > .baz)")) =~
