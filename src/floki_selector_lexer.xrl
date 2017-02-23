@@ -2,6 +2,7 @@ Definitions.
 
 IDENTIFIER = [-A-Za-z0-9_]+
 QUOTED = (\"[^"]*\"|\'[^']*\')
+PARENTESIS = \([^)]*\)
 INT = [0-9]+
 ODD = (o|O)(d|D)(d|D)
 EVEN = (e|E)(v|V)(e|E)(n|N)
@@ -21,6 +22,7 @@ Rules.
 \({ODD}\)                            : {token, {pseudo_class_odd, TokenLine}}.
 \({EVEN}\)                           : {token, {pseudo_class_even, TokenLine}}.
 \({PSEUDO_PATT}\)                    : {token, {pseudo_class_pattern, TokenLine, remove_wrapper(TokenChars)}}.
+{PARENTESIS}                         : {token, {pseudo_class_generic_value, TokenLine, remove_wrapper(TokenChars)}}.
 ~=                                   : {token, {includes, TokenLine}}.
 \|=                                  : {token, {dash_match, TokenLine}}.
 \^=                                  : {token, {prefix_match, TokenLine}}.

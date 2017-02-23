@@ -3,8 +3,6 @@ defmodule Floki.SelectorTokenizer do
 
   # It decodes a given selector and returns the tokens that represents it.
   # Check the rules in "src/floki_selector_lexer.xrl"
-
-  def tokenize(""), do: []
   def tokenize(selector) do
     char_list = selector |> String.strip |> String.to_char_list
 

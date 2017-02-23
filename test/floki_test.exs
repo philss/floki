@@ -518,6 +518,23 @@ defmodule FlokiTest do
     ]
   end
 
+  test "not pseudo-class" do
+    html = """
+    <html>
+    <body>
+      <a class="link foo">A foo</a>
+      <a class="link bar">A bar</a>
+      <a class="link baz">A baz</a>
+    </body>
+    </html>
+    """
+
+    assert Floki.find(html, "a.link:not(.bar)") == [
+      {"a", [{"class", "link foo"}], ["A foo"]},
+      {"a", [{"class", "link baz"}], ["A baz"]}
+    ]
+  end
+
   # Floki.find/2 - XML and invalid HTML
 
   test "get elements inside a XML" do

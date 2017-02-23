@@ -2,18 +2,30 @@ defmodule Floki.SelectorParserTest do
   use ExUnit.Case, async: true
   import ExUnit.CaptureLog
 
+  require Logger
+
   alias Floki.{Selector, Combinator, AttributeSelector, SelectorParser}
   alias Floki.Selector.PseudoClass
+
+  setup_all do
+    :ok = Logger.remove_backend(:console)
+    on_exit(fn -> Logger.add_backend(:console, flush: true) end)
+  end
 
   def tokenize(string) do
     Floki.SelectorTokenizer.tokenize(string)
   end
 
+  def log_capturer(string) do
+    fn ->
+      SelectorParser.parse(string)
+    end
+  end
+
   test "type with classes" do
     tokens = tokenize("a.link.button")
 
-    assert SelectorParser.parse(tokens) == %Selector{type: "a",
-      classes: ["button", "link"]}
+    assert SelectorParser.parse(tokens) == %Selector{type: "a", classes: ["button", "link"]}
   end
 
   test "type with id" do
@@ -78,7 +90,7 @@ defmodule Floki.SelectorParserTest do
     }
   end
 
-  test "with namespace" do
+  test "namespace" do
     tokens = tokenize("xyz | a")
 
     assert SelectorParser.parse(tokens) == %Selector{
@@ -87,7 +99,7 @@ defmodule Floki.SelectorParserTest do
     }
   end
 
-  test "with pseudo-class" do
+  test "nth-child pseudo-class" do
     tokens = tokenize("li:nth-child(2)")
 
     assert SelectorParser.parse(tokens) == %Selector{
@@ -117,15 +129,25 @@ defmodule Floki.SelectorParserTest do
     }
   end
 
-  test "warn unknown tokens" do
-    log_capturer = fn(string) ->
-      tokens = tokenize(string)
-      fn ->
-        SelectorParser.parse(tokens)
-      end
-    end
+  test "not pseudo-class" do
+    assert SelectorParser.parse("a.foo:not(.bar)") == %Selector{
+      type: "a",
+      classes: ["foo"],
+      pseudo_class: %PseudoClass{name: "not", value: %Selector{classes: ["bar"]}}
+    }
 
-    assert capture_log(log_capturer.("a { b")) =~ "module=Floki.SelectorParser  Unknown token '{'. Ignoring."
-    assert capture_log(log_capturer.("a + b@")) =~ "module=Floki.SelectorParser  Unknown token '@'. Ignoring."
+    assert SelectorParser.parse("a.foo:not(.bar > .baz)") == %Selector{
+      type: "a",
+      classes: ["foo"],
+      pseudo_class: nil
+    }
+
+    assert capture_log(log_capturer("a.foo:not(.bar > .baz)")) =~
+            "module=Floki.SelectorParser  Only simple selectors are allowed in :not() pseudo-class. Ignoring."
+  end
+
+  test "warn unknown tokens" do
+    assert capture_log(log_capturer("a { b")) =~ "module=Floki.SelectorParser  Unknown token '{'. Ignoring."
+    assert capture_log(log_capturer("a + b@")) =~ "module=Floki.SelectorParser  Unknown token '@'. Ignoring."
   end
 end

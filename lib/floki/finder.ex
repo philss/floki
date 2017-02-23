@@ -101,6 +101,8 @@ defmodule Floki.Finder do
         PseudoClass.match_nth_child?(tree, html_node, pseudo_class)
       "first-child" ->
         PseudoClass.match_nth_child?(tree, html_node, %PseudoClass{name: "nth-child", value: 1})
+      "not" ->
+        !Selector.match?(html_node, pseudo_class.value)
       unknown_pseudo_class ->
         Logger.warn("Pseudo-class #{inspect unknown_pseudo_class} is not implemented. Ignoring.")
         false
