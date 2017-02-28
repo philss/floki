@@ -120,7 +120,7 @@ defmodule Floki.Finder do
                 |> Enum.reverse
                 |> get_nodes(tree)
 
-        Enum.filter(nodes, fn(html_node) -> Selector.match?(html_node, s) end)
+        Enum.filter(nodes, fn(html_node) -> selector_match?(tree, html_node, s) end)
       end)
 
     traverse_with(s.combinator, tree, results)
@@ -136,7 +136,7 @@ defmodule Floki.Finder do
         nodes = get_nodes(sibling_id, tree)
 
         # Finally, try to match those siblings with the selector
-        Enum.filter(nodes, fn(html_node) -> Selector.match?(html_node, s) end)
+        Enum.filter(nodes, fn(html_node) -> selector_match?(tree, html_node, s) end)
       end)
 
     traverse_with(s.combinator, tree, results)
@@ -149,7 +149,7 @@ defmodule Floki.Finder do
         nodes = get_nodes(sibling_ids, tree)
 
         # Finally, try to match those siblings with the selector
-        Enum.filter(nodes, fn(html_node) -> Selector.match?(html_node, s) end)
+        Enum.filter(nodes, fn(html_node) -> selector_match?(tree, html_node, s) end)
       end)
 
     traverse_with(s.combinator, tree, results)
@@ -160,7 +160,7 @@ defmodule Floki.Finder do
         ids_to_match = get_descendant_ids(html_node.node_id, tree)
         nodes = get_nodes(ids_to_match, tree)
 
-        Enum.filter(nodes, fn(html_node) -> Selector.match?(html_node, s) end)
+        Enum.filter(nodes, fn(html_node) -> selector_match?(tree, html_node, s) end)
       end)
 
     traverse_with(s.combinator, tree, results)
