@@ -5,9 +5,17 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 
+### Added
+
+- Added support for `:not()` pseudo-class selector.
+
+### Fixed
+
+- Fixed pseudo-class selectors that are used in conjunction with combinators - thanks @Eiji7
+
 ## [0.14.0] - 2017-02-07
 
-## Added
+### Added
 
 - Added support for configuring `html5ever` as the HTML parser. Issue #83 - thanks @hansihe
 and @aphillipo!
