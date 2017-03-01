@@ -521,18 +521,23 @@ defmodule FlokiTest do
   test "not pseudo-class" do
     html = """
     <html>
-    <body>
-      <a class="link foo">A foo</a>
-      <a class="link bar">A bar</a>
-      <a class="link baz">A baz</a>
-    </body>
+      <body>
+        <div id="links">
+          <a class="link foo">A foo</a>
+          <a class="link bar">A bar</a>
+          <a class="link baz">A baz</a>
+        </div>
+      </body>
     </html>
     """
-
-    assert Floki.find(html, "a.link:not(.bar)") == [
+    first_result = Floki.find(html, "a.link:not(.bar)")
+    second_result = Floki.find(html, "div#links > a.link:not(.bar)")
+    expected_result = [
       {"a", [{"class", "link foo"}], ["A foo"]},
       {"a", [{"class", "link baz"}], ["A baz"]}
     ]
+    assert first_result == expected_result
+    assert first_result == second_result
   end
 
   # Floki.find/2 - XML and invalid HTML
