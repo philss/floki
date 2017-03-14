@@ -12,6 +12,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 - Fixed pseudo-class selectors that are used in conjunction with combinators - thanks @Eiji7
+- Fixed order of elements after search using descendant combinator - thanks @Eiji7
 
 ## [0.14.0] - 2017-02-07
 
