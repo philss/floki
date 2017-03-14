@@ -112,7 +112,7 @@ defmodule Floki.Finder do
   # The stack serves as accumulator when there is another combinator to traverse.
   # So the scope of one combinator is the stack (or acc) or the parent one.
   defp traverse_with(_, _, []), do: []
-  defp traverse_with(nil, _, result), do: result
+  defp traverse_with(nil, _, results), do: results
   defp traverse_with(%Combinator{match_type: :child, selector: s}, tree, stack) do
     results =
       Enum.flat_map(stack, fn(html_node) ->
@@ -198,11 +198,12 @@ defmodule Floki.Finder do
     end)
   end
 
-  # finds all descendant node ids recursively through the tree
+  # finds all descendant node ids recursively through the tree preserving the order
   defp get_descendant_ids(node_id, tree) do
     case get_node(node_id, tree) do
       %{children_nodes_ids: node_ids} ->
-        Enum.reverse(node_ids) ++ Enum.flat_map(node_ids, &(get_descendant_ids(&1, tree)))
+        reversed_ids = Enum.reverse(node_ids)
+        reversed_ids ++ Enum.flat_map(reversed_ids, &(get_descendant_ids(&1, tree)))
       _ ->
         []
     end

@@ -632,28 +632,61 @@ defmodule FlokiTest do
 
   test "finding leaf nodes" do
     html = """
-      <html>
-      <body>
-      <div id="messageBox" class="legacyErrors"><div class="messageBox error"><h2 class="accessAid">Error Message</h2><p>There has been an error in your account.</p></div></div>
-      <div id="main" class="legacyErrors"><p>Separate Error Message</p></div>
-      </body>
-      </html>
-      """
+    <html>
+    <body>
+    <div id="messageBox" class="legacyErrors">
+      <div class="messageBox error">
+        <h2 class="accessAid">Error Message</h2>
+        <p>There has been an error in your account.</p>
+      </div>
+    </div>
+    <div id="main" class="legacyErrors"><p>Separate Error Message</p></div>
+    </body>
+    </html>
+    """
     assert Floki.find(html, ".messageBox p") == [{"p", [], ["There has been an error in your account."]}]
   end
 
   test "descendant matches are returned in order and without duplicates" do
     html = """
-      <div>
-        <div>
-          <hr>
-            <p>1</p>
-            <p>2</p>
-            <p>3</p>
-          </hr>
-        </div>
-      </div>
-      """
-    assert Floki.find(html, "div p") == [{"p", [], ["1"]},{"p", [], ["2"]},{"p", [], ["3"]}]
+    <!doctype html>
+    <html>
+      <body>
+        <div class="data-view">Foo</div>
+        <table summary="license-detail">
+          <tbody>
+            <tr>
+              <th>
+                <span>Name:</span>
+              </th>
+              <td class="data-view"><span class="surname">Silva</span>, <span>Joana</span> <span>Maria</span></td>
+            </tr>
+            <tr>
+              <th scope="row">
+                <span>License Type:</span>
+              </th>
+              <td class="data-view">Naturopathic Doctor</td>
+            </tr>
+            <tr>
+              <th scope="row">
+                <span>Expiration Date:</span>
+              </th>
+              <td class="data-view">06/30/2017</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="data-view">Bar</div>
+      </body>
+    </html>
+    """
+
+    expected = [
+      {"td", [{"class", "data-view"}], [{"span", [{"class", "surname"}], ["Silva"]}, ", ",
+                                        {"span", [], ["Joana"]}, {"span", [], ["Maria"]}]},
+      {"td", [{"class", "data-view"}], ["Naturopathic Doctor"]},
+      {"td", [{"class", "data-view"}], ["06/30/2017"]},
+    ]
+
+    assert Floki.find(html, "table[summary='license-detail'] td.data-view") == expected
   end
 end
