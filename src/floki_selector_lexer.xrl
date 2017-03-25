@@ -4,6 +4,7 @@ IDENTIFIER = [-A-Za-z0-9_]+
 QUOTED = (\"[^"]*\"|\'[^']*\')
 PARENTESIS = \([^)]*\)
 INT = [0-9]+
+NOT = (n|N)(o|O)(t|T)
 ODD = (o|O)(d|D)(d|D)
 EVEN = (e|E)(v|V)(e|E)(n|N)
 PSEUDO_PATT = (\+|-)?({INT})?(n|N)((\+|-){INT})?
@@ -17,12 +18,13 @@ Rules.
 {SYMBOL}                             : {token, {TokenChars, TokenLine}}.
 #{IDENTIFIER}                        : {token, {hash, TokenLine, tail(TokenChars)}}.
 \.{IDENTIFIER}                       : {token, {class, TokenLine, tail(TokenChars)}}.
+\:{NOT}\(                            : {token, {pseudo_not, TokenLine}}.
 \:{IDENTIFIER}                       : {token, {pseudo, TokenLine, tail(TokenChars)}}.
 \({INT}\)                            : {token, {pseudo_class_int, TokenLine, list_to_integer(remove_wrapper(TokenChars))}}.
 \({ODD}\)                            : {token, {pseudo_class_odd, TokenLine}}.
 \({EVEN}\)                           : {token, {pseudo_class_even, TokenLine}}.
 \({PSEUDO_PATT}\)                    : {token, {pseudo_class_pattern, TokenLine, remove_wrapper(TokenChars)}}.
-{PARENTESIS}                         : {token, {pseudo_class_generic_value, TokenLine, remove_wrapper(TokenChars)}}.
+{W}*\)                               : {token, {close_parentesis, TokenLine}}.
 ~=                                   : {token, {includes, TokenLine}}.
 \|=                                  : {token, {dash_match, TokenLine}}.
 \^=                                  : {token, {prefix_match, TokenLine}}.
@@ -36,7 +38,6 @@ Rules.
 {W}*\|{W}*                           : {token, {namespace_pipe, TokenLine}}.
 {W}+                                 : {token, {space, TokenLine}}.
 .                                    : {token, {unknown, TokenLine, TokenChars}}.
-
 
 Erlang code.
 

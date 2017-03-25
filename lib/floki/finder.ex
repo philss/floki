@@ -96,6 +96,9 @@ defmodule Floki.Finder do
     Selector.match?(html_node, selector) && pseudo_class_match?(tree, html_node, selector)
   end
 
+  # TODO: move pseudo class match to inside "Selector".
+  # This is because we can't match recursively if there is another pseudo class inside
+  # "not", for example
   defp pseudo_class_match?(tree, html_node, selector) do
     pseudo_class = selector.pseudo_class
 
