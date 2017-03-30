@@ -9,7 +9,6 @@ defmodule Floki.Finder do
   alias Floki.{Combinator, Selector, SelectorParser, SelectorTokenizer}
   alias Floki.HTMLTree
   alias Floki.HTMLTree.HTMLNode
-  alias Floki.Selector.PseudoClass
 
   @type html_tree :: tuple | list
   @type selector :: binary | %Selector{} | [%Selector{}]
@@ -86,33 +85,8 @@ defmodule Floki.Finder do
     end
   end
 
-  defp selector_match?(_tree, html_node, selector = %Selector{pseudo_class: nil}) do
-    Selector.match?(html_node, selector)
-  end
-  defp selector_match?(tree, html_node, selector = %Selector{id: nil, type: nil, classes: [], attributes: [], namespace: nil}) do
-    pseudo_class_match?(tree, html_node, selector)
-  end
   defp selector_match?(tree, html_node, selector) do
-    Selector.match?(html_node, selector) && pseudo_class_match?(tree, html_node, selector)
-  end
-
-  # TODO: move pseudo class match to inside "Selector".
-  # This is because we can't match recursively if there is another pseudo class inside
-  # "not", for example
-  defp pseudo_class_match?(tree, html_node, selector) do
-    pseudo_class = selector.pseudo_class
-
-    case pseudo_class.name do
-      "nth-child" ->
-        PseudoClass.match_nth_child?(tree, html_node, pseudo_class)
-      "first-child" ->
-        PseudoClass.match_nth_child?(tree, html_node, %PseudoClass{name: "nth-child", value: 1})
-      "not" ->
-        !Selector.match?(html_node, pseudo_class.value)
-      unknown_pseudo_class ->
-        Logger.warn("Pseudo-class #{inspect unknown_pseudo_class} is not implemented. Ignoring.")
-        false
-    end
+    Selector.match?(html_node, selector, tree)
   end
 
   # The stack serves as accumulator when there is another combinator to traverse.
