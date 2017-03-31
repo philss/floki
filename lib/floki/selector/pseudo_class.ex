@@ -32,9 +32,10 @@ defmodule Floki.Selector.PseudoClass do
                          |> filter_only_html_nodes(tree.nodes)
                          |> Enum.with_index(1)
 
-    {_node_id, position} = Enum.find(children_nodes_ids, fn({id, _}) -> id == html_node.node_id end)
-
-    position
+    case Enum.find(children_nodes_ids, fn({id, _}) -> id == html_node.node_id end) do
+      {_node_id, position} -> position
+      _ -> nil
+    end
   end
 
   defp filter_only_html_nodes(ids, nodes) do

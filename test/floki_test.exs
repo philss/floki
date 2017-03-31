@@ -540,6 +540,16 @@ defmodule FlokiTest do
     assert first_result == second_result
   end
 
+  test "pseudo-class selector only" do
+    expected = [
+      {"channel", [], [{"title", [], ["A podcast"]}, {"link", [], ["www.foo.bar.com"]}]},
+      {"title", [], ["A podcast"]},
+      {"title", [], ["Another podcast"]}
+    ]
+
+    assert Floki.find(@xml, ":first-child") == expected
+  end
+
   # Floki.find/2 - XML and invalid HTML
 
   test "get elements inside a XML" do

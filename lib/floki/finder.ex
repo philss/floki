@@ -89,6 +89,9 @@ defmodule Floki.Finder do
   defp selector_match?(_tree, html_node, selector = %Selector{pseudo_class: nil}) do
     Selector.match?(html_node, selector)
   end
+  defp selector_match?(tree, html_node, selector = %Selector{id: nil, type: nil, classes: [], attributes: [], namespace: nil}) do
+    pseudo_class_match?(tree, html_node, selector)
+  end
   defp selector_match?(tree, html_node, selector) do
     Selector.match?(html_node, selector) && pseudo_class_match?(tree, html_node, selector)
   end
