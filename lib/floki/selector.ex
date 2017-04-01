@@ -32,9 +32,6 @@ defmodule Floki.Selector do
   def match?({:pi, _xml, _xml_attrs}, _selector, _tree), do: false
   def match?(%Text{}, _selector, _tree), do: false
   def match?(%Comment{}, _selector, _tree), do: false
-  #def match?(%HTMLNode{type: type, attributes: attributes}, selector, tree) do
-    #Selector.match?({type, attributes, []}, selector, tree)
-  #end
   def match?(html_node, selector, tree) do
     id_match?(html_node, selector.id)
       && namespace_match?(html_node, selector.namespace)
