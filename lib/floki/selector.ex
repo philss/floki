@@ -105,6 +105,8 @@ defmodule Floki.Selector do
         PseudoClass.match_nth_child?(tree, html_node, %PseudoClass{name: "nth-child", value: 1})
       "not" ->
         !Selector.match?(html_node, pseudo_class.value, tree)
+      "fl-contains" ->
+        PseudoClass.match_contains?(tree, html_node, pseudo_class)
       unknown_pseudo_class ->
         Logger.warn("Pseudo-class #{inspect unknown_pseudo_class} is not implemented. Ignoring.")
         false

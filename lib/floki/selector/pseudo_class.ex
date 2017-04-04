@@ -6,7 +6,7 @@ defmodule Floki.Selector.PseudoClass do
   # Represents a pseudo-class selector
   defstruct name: "", value: nil
 
-  alias Floki.HTMLTree.HTMLNode
+  alias Floki.HTMLTree.{HTMLNode, Text}
 
   def match_nth_child?(_, %HTMLNode{parent_node_id: nil}, _), do: false
   def match_nth_child?(tree, html_node, %__MODULE__{value: position}) when is_integer(position) do
@@ -23,6 +23,17 @@ defmodule Floki.Selector.PseudoClass do
   def match_nth_child?(_, _, %__MODULE__{value: expression}) do
     Logger.warn("Pseudo-class nth-child with expressions like #{inspect expression} are not supported yet. Ignoring.")
     false
+  end
+
+  def match_contains?(tree, html_node, %__MODULE__{value: value}) do
+    res = Enum.find(html_node.children_nodes_ids, fn(id) ->
+      case Map.get(tree.nodes, id) do
+        %Text{content: content} -> content =~ value
+        _ -> false
+      end
+    end)
+
+    res != nil
   end
 
   defp node_position(tree, html_node) do

@@ -554,6 +554,23 @@ defmodule FlokiTest do
     assert Floki.find(@xml, ":first-child") == expected
   end
 
+  test "contains pseudo-class" do
+    expected = [
+      {"p", [], ["Two"]}
+    ]
+
+    assert Floki.find(@html_without_html_tag, "p:fl-contains('Two')") == expected
+  end
+
+  test "contains psuedo-class with substring" do
+    expected = [
+      {"title", [], ["A podcast"]},
+      {"title", [], ["Another podcast"]}
+    ]
+
+    assert Floki.find(@xml, ":fl-contains(' podcast')") == expected
+  end
+
   # Floki.find/2 - XML and invalid HTML
 
   test "get elements inside a XML" do
