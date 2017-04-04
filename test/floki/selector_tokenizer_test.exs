@@ -96,5 +96,10 @@ defmodule Floki.SelectorTokenizerTest do
       {:pseudo, 1, 'nth-child'},
       {:pseudo_class_pattern, 1, '-n+6'}
     ]
+
+    assert SelectorTokenizer.tokenize(":fl-contains('foo')") == [
+      {:pseudo, 1, 'fl-contains'},
+      {:pseudo_class_quoted, 1, 'foo'}
+    ]
   end
 end

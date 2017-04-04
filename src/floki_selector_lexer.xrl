@@ -24,6 +24,7 @@ Rules.
 \({ODD}\)                            : {token, {pseudo_class_odd, TokenLine}}.
 \({EVEN}\)                           : {token, {pseudo_class_even, TokenLine}}.
 \({PSEUDO_PATT}\)                    : {token, {pseudo_class_pattern, TokenLine, remove_wrapper(TokenChars)}}.
+\({QUOTED}\)                         : {token, {pseudo_class_quoted, TokenLine, remove_wrapper(remove_wrapper(TokenChars))}}.
 {W}*\)                               : {token, {close_parentesis, TokenLine}}.
 ~=                                   : {token, {includes, TokenLine}}.
 \|=                                  : {token, {dash_match, TokenLine}}.

@@ -65,6 +65,10 @@ defmodule Floki.SelectorParser do
     pseudo_class = selector.pseudo_class
     do_parse(t, %{selector | pseudo_class: %{pseudo_class | value: to_string(pattern)}})
   end
+  defp do_parse([{:pseudo_class_quoted, _, pattern} | t], selector) do
+    pseudo_class = selector.pseudo_class
+    do_parse(t, %{selector | pseudo_class: %{pseudo_class | value: to_string(pattern)}})
+  end
   defp do_parse([{:pseudo_class_generic_value, _, value} | t], selector) do
     s = case selector.pseudo_class do
           %PseudoClass{name: "not"} ->
