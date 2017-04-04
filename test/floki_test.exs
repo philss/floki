@@ -532,12 +532,16 @@ defmodule FlokiTest do
     """
     first_result = Floki.find(html, "a.link:not(.bar)")
     second_result = Floki.find(html, "div#links > a.link:not(.bar)")
+    third_result = Floki.find(html, "a.link:not(:nth-child(2))")
+
     expected_result = [
       {"a", [{"class", "link foo"}], ["A foo"]},
       {"a", [{"class", "link baz"}], ["A baz"]}
     ]
+
     assert first_result == expected_result
     assert first_result == second_result
+    assert third_result == expected_result
   end
 
   test "pseudo-class selector only" do

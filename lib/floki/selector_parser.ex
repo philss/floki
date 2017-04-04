@@ -41,6 +41,11 @@ defmodule Floki.SelectorParser do
 
     do_parse(t, %{selector | attributes: [result | selector.attributes]})
   end
+  defp do_parse([{:pseudo_not, _} | t], selector) do
+    {t, pseudo_class} = do_parse_pseudo_not(t, %PseudoClass{name: "not"})
+
+    do_parse(t, %{selector | pseudo_class: pseudo_class})
+  end
   defp do_parse([{:pseudo, _, pseudo_class} | t], selector) do
     do_parse(t, %{selector | pseudo_class: %PseudoClass{name: to_string(pseudo_class)}})
   end
@@ -143,5 +148,33 @@ defmodule Floki.SelectorParser do
     selector = parse(tokens)
 
     {[], %{combinator | selector: selector}}
+  end
+
+  defp do_parse_pseudo_not([{:close_parentesis, _} | t], pseudo_class) do
+    {t, pseudo_class}
+  end
+  defp do_parse_pseudo_not(tokens, pseudo_class) do
+    {after_parentesis, before_parentesis} = split_list_for_not_tokens(tokens, [])
+
+    selector = before_parentesis
+               |> Enum.reverse
+               |> parse
+
+    if selector.combinator do
+      Logger.warn("Only simple selectors are allowed in :not() pseudo-class. Ignoring.")
+      {after_parentesis, nil}
+    else
+      {after_parentesis, %{pseudo_class | value: selector}}
+    end
+  end
+
+  defp split_list_for_not_tokens([{:close_parentesis, _} | t], tokens_before) do
+    {t, tokens_before}
+  end
+  defp split_list_for_not_tokens([], tokens_before) do
+    {[], tokens_before}
+  end
+  defp split_list_for_not_tokens([h | t], tokens_before) do
+    split_list_for_not_tokens(t, [h | tokens_before])
   end
 end
