@@ -4,12 +4,12 @@
 [![Floki version](https://img.shields.io/hexpm/v/floki.svg)](https://hex.pm/packages/floki)
 [![Hex.pm](https://img.shields.io/hexpm/dt/floki.svg)](https://hex.pm/packages/floki)
 [![Deps Status](https://beta.hexfaktor.org/badge/all/github/philss/floki.svg)](https://beta.hexfaktor.org/github/philss/floki)
-[![Inline docs](http://inch-ci.org/github/philss/floki.svg?branch=master)](http://inch-ci.org/github/philss/floki)
+[![Inline docs](https://inch-ci.org/github/philss/floki.svg?branch=master)](https://inch-ci.org/github/philss/floki)
 [![Ebert](https://ebertapp.io/github/philss/floki.svg)](https://ebertapp.io/github/philss/floki)
 
 Floki is a simple HTML parser that enables search for nodes using CSS selectors.
 
-[Check the documentation](http://hexdocs.pm/floki).
+[Check the documentation](https://hexdocs.pm/floki).
 
 ## Usage
 
@@ -22,7 +22,7 @@ Take this HTML as an example:
   <section id="content">
     <p class="headline">Floki</p>
     <span class="headline">Enables search using CSS selectors</span>
-    <a href="http://github.com/philss/floki">Github page</a>
+    <a href="https://github.com/philss/floki">Github page</a>
     <span data-model="user">philss</span>
   </section>
   <a href="https://hex.pm/packages/floki">Hex package</a>
@@ -33,14 +33,6 @@ Take this HTML as an example:
 Here are some queries that you can perform (with return examples):
 
 ```elixir
-Floki.find(html, "#content")
-# => [{"section", [{"id", "content"}],
-# =>   [{"p", [{"class", "headline"}], ["Floki"]},
-# =>    {"span", [{"class", "headline"}], ["Enables search using CSS selectors"]},
-# =>    {"a", [{"href", "http://github.com/philss/floki"}], ["Github page"]},
-# =>    {"span", [{"data-model", "user"}], ["philss"]}]}]
-
-
 Floki.find(html, "p.headline")
 # => [{"p", [{"class", "headline"}], ["Floki"]}]
 
@@ -50,17 +42,12 @@ Floki.find(html, "p.headline")
 # => <p class="headline">Floki</p>
 
 
-Floki.find(html, "a")
-# => [{"a", [{"href", "http://github.com/philss/floki"}], ["Github page"]},
-# =>  {"a", [{"href", "https://hex.pm/packages/floki"}], ["Hex package"]}]
-
-
 Floki.find(html, "a[href^=https]")
 # => [{"a", [{"href", "https://hex.pm/packages/floki"}], ["Hex package"]}]
 
 
 Floki.find(html, "#content a")
-# => [{"a", [{"href", "http://github.com/philss/floki"}], ["Github page"]}]
+# => [{"a", [{"href", "https://github.com/philss/floki"}], ["Github page"]}]
 
 
 Floki.find(html, "[data-model=user]")
@@ -69,7 +56,7 @@ Floki.find(html, "[data-model=user]")
 
 Floki.find(html, ".headline:nth-child(1), a")
 # => [{"p", [{"class", "headline"}], ["Floki"]},
-# =>  {"a", [{"href", "http://github.com/philss/floki"}], ["Github page"]},
+# =>  {"a", [{"href", "https://github.com/philss/floki"}], ["Github page"]},
 # =>  {"a", [{"href", "https://hex.pm/packages/floki"}], ["Hex package"]}]
 ```
 
@@ -81,8 +68,7 @@ Example of node:
 
     {"p", [{"class", "headline"}], ["Floki"]}
 
-So even if the only child node is the element text, it is represented
-inside a list.
+So even if the only child node is the element text, it is represented inside a list.
 
 You can write a simple HTML crawler with Floki and [HTTPoison](https://github.com/edgurgel/httpoison):
 
@@ -103,7 +89,7 @@ Add Floki to your `mix.exs`:
 ```elixir
 defp deps do
   [
-    {:floki, "~> 0.14.0"}
+    {:floki, "~> 0.16.0"}
   ]
 end
 ```
@@ -125,9 +111,8 @@ You can configure Floki to use [html5ever](https://github.com/servo/html5ever) a
 This is recommended if you need [better performance](https://gist.github.com/philss/70b4b0294f29501c3c7e0f60338cc8bd)
 and a more accurate parser. However `html5ever` is being under active development and **may be unstable**.
 
-Since it's written in Rust, we need to install Rust and compile the project. Luckily we have have the
-[html5ever Elixir NIF](https://github.com/hansihe/html5ever_elixir) that makes the integration very easy.
-For more info, check the article [Rustler - Safe Erlang and Elixir NIFs in Rust](http://hansihe.com/2017/02/05/rustler-safe-erlang-elixir-nifs-in-rust.html).
+Since it's written in Rust, we need to install Rust and compile the project.
+Luckily we have have the [html5ever Elixir NIF](https://github.com/hansihe/html5ever_elixir) that makes the integration very easy.
 
 You still need to install Rust in your system. To do that, please
 [follow the instruction](https://www.rust-lang.org/en-US/install.html) presented in the official page.
@@ -139,7 +124,7 @@ After setup Rust, you need to add `html5ever` NIF to your dependency list:
 ```elixir
 defp deps do
   [
-    {:floki, "~> 0.14.0"},
+    {:floki, "~> 0.16.0"},
     {:html5ever, "~> 0.3.0"}
   ]
 end
@@ -156,6 +141,8 @@ config :floki, :html_parser, Floki.HTMLParser.Html5ever
 ```
 
 After that you are able to use `html5ever` as your HTML parser with Floki.
+
+For more info, check the article [Rustler - Safe Erlang and Elixir NIFs in Rust](http://hansihe.com/2017/02/05/rustler-safe-erlang-elixir-nifs-in-rust.html).
 
 ## More about Floki API
 
@@ -192,7 +179,7 @@ Floki.find(html, ".example")
 To fetch some attribute from elements, try:
 
 ```elixir
-Floki.attribute(html, ".example", "class") # href or src are good possibilities to fetch links
+Floki.attribute(html, ".example", "class")
 # => ["example"]
 ```
 

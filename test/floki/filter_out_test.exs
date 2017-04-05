@@ -8,7 +8,7 @@ defmodule Floki.FilterOutTest do
   end
 
   test "filter out returns the elements in the same order they were passed in" do
-    nodes = [{"p", [], ["1"]},{"p", [], ["2"]}]
+    nodes = [{"p", [], ["1"]}, {"p", [], ["2"]}]
     assert Floki.FilterOut.filter_out(nodes, "script") == nodes
     assert Floki.FilterOut.filter_out(nodes, :comment) == nodes
   end

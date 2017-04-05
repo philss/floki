@@ -92,7 +92,7 @@ defmodule Floki.HTMLTreeTest do
   end
 
   test "builds the root node ids in the right order" do
-    tuples = [{"p", [], ["1"]},{"p", [], ["2"]}]
+    tuples = [{"p", [], ["1"]}, {"p", [], ["2"]}]
     tree = HTMLTree.build(tuples)
     assert tree == %HTMLTree{
       root_nodes_ids: [1, 3],
