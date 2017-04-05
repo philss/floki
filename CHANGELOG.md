@@ -13,29 +13,29 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
-- Fixed pseudo-class selectors that are used in conjunction with combinators - thanks @Eiji7
-- Fixed order of elements after search using descendant combinator - thanks @Eiji7
+- Fixed pseudo-class selectors that are used in conjunction with combinators - thanks [@Eiji7](https://github.com/Eiji7)
+- Fixed order of elements after search using descendant combinator - thanks [@Eiji7](https://github.com/Eiji7)
 
 ## [0.14.0] - 2017-02-07
 
 ### Added
 
-- Added support for configuring `html5ever` as the HTML parser. Issue #83 - thanks @hansihe
-and @aphillipo!
+- Added support for configuring `html5ever` as the HTML parser. Issue #83 - thanks [@hansihe](https://github.com/hansihe)
+and [@aphillipo](https://github.com/aphillipo)!
 
 ## [0.13.2] - 2017-02-07
 
 ### Fixed
 
 - Fixed bug that was causing Floki.text/1 and Floki.filter_out/2
-to ignore "trees" with only text nodes. Issue #91 - thanks @boydm.
+to ignore "trees" with only text nodes. Issue #91 - thanks [@boydm](https://github.com/boydm).
 
 ## [0.13.1] - 2017-01-22
 
 ### Fixed
 
-- Fix ordering of duplicated descendant matches - thanks @mmmries
-- Fix ordering of `Floki.text/1` when there are only root nodes - thanks @mmmries
+- Fix ordering of duplicated descendant matches - thanks [@mmmries](https://github.com/mmmries)
+- Fix ordering of `Floki.text/1` when there are only root nodes - thanks [@mmmries](https://github.com/mmmries)
 
 ## [0.13.0] - 2017-01-22
 
@@ -47,7 +47,7 @@ to ignore "trees" with only text nodes. Issue #91 - thanks @boydm.
 
 ### Fixed
 
-- Fix search for elements using descendant combinator - issue #84 - thanks @mmmries
+- Fix search for elements using descendant combinator - issue #84 - thanks [@mmmries](https://github.com/mmmries)
 
 ## [0.12.0] - 2016-12-28
 
@@ -66,19 +66,19 @@ Closes [issue #64](https://github.com/philss/floki/issues/64).
 ### Added
 
 - First attempt to transform nodes with `Floki.transform/2`. It is not able to update
-the tree yet, but works good with results from `Floki.find/2` - thanks @bobjflong
+the tree yet, but works good with results from `Floki.find/2` - thanks [@bobjflong](https://github.com/bobjflong)
 
 ### Changed
 
-- Using Logger to notify unkwon tokens in selector parser - thanks @teamon and @geonnave
+- Using Logger to notify unkwon tokens in selector parser - thanks [@teamon](https://github.com/teamon) and [@geonnave](https://github.com/geonnave)
 - Replace `mochiweb_html` with `mochiweb` package. This is needed to fix conflics with other
-packages that are using `mochiweb`. - thanks @aphillipo
+packages that are using `mochiweb`. - thanks [@aphillipo](https://github.com/aphillipo)
 
 ## [0.10.1] - 2016-08-28
 
 ### Fixed
 
-- Fix sibling search after immediate children - thanks @gmile.
+- Fix sibling search after immediate children - thanks [@gmile](https://github.com/gmile).
 
 ## [0.10.0] - 2016-08-05
 
@@ -88,19 +88,19 @@ packages that are using `mochiweb`. - thanks @aphillipo
 
 ### Fixed
 
-- Fix the search for child elements when is more than two elements deep - thanks @gmile
+- Fix the search for child elements when is more than two elements deep - thanks [@gmile](https://github.com/gmile)
 
 ## [0.9.0] - 2016-06-16
 
 ### Added
 
-- A separator between text when getting text from nodes - thanks @rochdi.
+- A separator between text when getting text from nodes - thanks [@rochdi](https://github.com/rochdi).
 
 ## [0.8.1] - 2016-05-20
 
 ### Added
 
-- Support rendering boolean attributes on `Floki.raw_html/1` - thanks @iamvery.
+- Support rendering boolean attributes on `Floki.raw_html/1` - thanks [@iamvery](https://github.com/iamvery).
 
 ### Changed
 
@@ -111,7 +111,7 @@ packages that are using `mochiweb`. - thanks @aphillipo
 ### Added
 
 - Add possibility to search tags with namespaces.
-- Accept `Floki.Selector` as parameter of `Floki.find/2` instead of only strings - thanks @hansihe.
+- Accept `Floki.Selector` as parameter of `Floki.find/2` instead of only strings - thanks [@hansihe](https://github.com/hansihe).
 
 ### Changed
 
@@ -121,7 +121,7 @@ packages that are using `mochiweb`. - thanks @aphillipo
 
 ### Fixed
 
-- Replace `<br>` nodes by newline (`\n`) in `DeepText` - thanks @maxneuvians.
+- Replace `<br>` nodes by newline (`\n`) in `DeepText` - thanks [@maxneuvians](https://github.com/maxneuvians).
 - Allow `FilterOut` to filter special nodes, like `comment`.
 
 ## [0.7.1] - 2015-11-14
@@ -136,7 +136,7 @@ packages that are using `mochiweb`. - thanks @aphillipo
 
 - Add support for excluding script notes in `Floki.text`.
 By default, it will exclude those nodes, but it can be enabled with
-the flag `js: true` - thanks @vikeri!
+the flag `js: true` - thanks [@vikeri](https://github.com/vikeri)!
 
 ### Fixed
 
@@ -169,7 +169,7 @@ at the end of sibling list - fix [issue #39](https://github.com/philss/floki/iss
 
 - Ignoring other files that are not lexer files (".xrl") under `src/` directory
 in Hex package. This fixes a crash when compiling using OTP 17.5 on Mac OS X.
-Huge thanks for @henrik and @licyeus that pointed the
+Huge thanks to [@henrik](https://github.com/henrik) and [@licyeus](https://github.com/licyeus) that pointed the
 [issue](https://github.com/philss/floki/issues/24)!
 
 ## [0.4.0] - 2015-09-17
@@ -183,8 +183,8 @@ Here is a list with examples of what is possible now:
   - `Floki.find(html, "a.foo[data-action=post]")`
   - `Floki.find(html, ".foo.bar")`
   - `Floki.find(html, "a.foo[href$='.org']")`
-Thanks to @licyeus to point out the [issue](https://github.com/philss/floki/issues/18)!
-- Include mochiweb in the applications list at mix.exs - thanks @EricDykstra
+Thanks to [@licyeus](https://github.com/licyeus) to point out the [issue](https://github.com/philss/floki/issues/18)!
+- Include mochiweb in the applications list at mix.exs - thanks [@EricDykstra](https://github.com/EricDykstra)
 
 ### Changed
 
@@ -222,13 +222,13 @@ It closes the [issue #17](https://github.com/philss/floki/issues/17)
 
 - Add attribute equals selector. This feature enables the user to search using
 HTML attributes other than "class" or "id".
-E.g: Floki.find(html, "[data-model=user]") - @nelsonr
+E.g: Floki.find(html, "[data-model=user]") - [@nelsonr](https://github.com/nelsonr)
 
 ## [0.2.1] - 2015-06-04
 
 ### Fixed
 
-- Fix `parse/1` when parsing a part of HTML without a root node - @antonmi
+- Fix `parse/1` when parsing a part of HTML without a root node - [@antonmi](https://github.com/antonmi)
 
 ## [0.2.0] - 2015-05-03
 
