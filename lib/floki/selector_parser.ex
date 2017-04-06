@@ -158,27 +158,53 @@ defmodule Floki.SelectorParser do
     {t, pseudo_class}
   end
   defp do_parse_pseudo_not(tokens, pseudo_class) do
-    {after_parentesis, before_parentesis} = split_list_for_not_tokens(tokens, [])
+    {after_parentesis, selectors_before_parentesis} = parse_selectors_for_not_tokens(tokens, [], [])
 
-    selector = before_parentesis
-               |> Enum.reverse
-               |> parse
+    response = case Enum.empty?(selectors_before_parentesis) do
+                 true -> nil
+                 false -> %{pseudo_class | value: selectors_before_parentesis}
+               end
+
+    {after_parentesis, response}
+  end
+
+  defp parse_not_selector([]), do: nil
+  defp parse_not_selector(selector_tokens) do
+    selector = selector_tokens
+              |> Enum.reverse
+              |> parse
 
     if selector.combinator do
       Logger.warn("Only simple selectors are allowed in :not() pseudo-class. Ignoring.")
-      {after_parentesis, nil}
+      nil
     else
-      {after_parentesis, %{pseudo_class | value: selector}}
+      selector
     end
   end
 
-  defp split_list_for_not_tokens([{:close_parentesis, _} | t], tokens_before) do
-    {t, tokens_before}
+  defp parse_selectors_for_not_tokens([{:close_parentesis, _} | t], gathered_tokens, not_tokens_list) do
+    not_tokens_list = [gathered_tokens | not_tokens_list]
+    selectors = not_tokens_list
+                |> Enum.map(&(parse_not_selector/1))
+                |> Enum.reject(&(is_nil/1))
+
+    {t, selectors}
   end
-  defp split_list_for_not_tokens([], tokens_before) do
-    {[], tokens_before}
+  defp parse_selectors_for_not_tokens([], gathered_tokens, not_tokens_list) do
+    not_tokens_list = [gathered_tokens | not_tokens_list]
+    selectors = not_tokens_list
+                |> Enum.map(&(parse_not_selector/1))
+                |> Enum.reject(&(is_nil/1))
+
+    {[], selectors}
   end
-  defp split_list_for_not_tokens([h | t], tokens_before) do
-    split_list_for_not_tokens(t, [h | tokens_before])
+  defp parse_selectors_for_not_tokens([{:comma, _} | t], gathered_tokens, not_tokens_list) do
+    parse_selectors_for_not_tokens(t, [], [gathered_tokens | not_tokens_list])
+  end
+  defp parse_selectors_for_not_tokens([{:space, _} | t], gathered_tokens, not_tokens_list) do
+    parse_selectors_for_not_tokens(t, gathered_tokens, not_tokens_list)
+  end
+  defp parse_selectors_for_not_tokens([h | t], gathered_tokens, not_tokens_list) do
+    parse_selectors_for_not_tokens(t, [h | gathered_tokens], not_tokens_list)
   end
 end

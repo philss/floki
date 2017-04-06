@@ -104,7 +104,10 @@ defmodule Floki.Selector do
       "first-child" ->
         PseudoClass.match_nth_child?(tree, html_node, %PseudoClass{name: "nth-child", value: 1})
       "not" ->
-        !Selector.match?(html_node, pseudo_class.value, tree)
+        case pseudo_class.value do
+          selectors when is_list(selectors) -> Enum.all?(selectors, &(!Selector.match?(html_node, &1, tree)))
+          selector -> !Selector.match?(html_node, selector, tree)
+        end
       "fl-contains" ->
         PseudoClass.match_contains?(tree, html_node, pseudo_class)
       unknown_pseudo_class ->

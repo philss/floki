@@ -544,6 +544,32 @@ defmodule FlokiTest do
     assert third_result == expected_result
   end
 
+  test "not pseudo-class with multiple selectors" do
+    html = """
+    <html>
+      <body>
+        <div id="links">
+          <a class="link foo">A foo</a>
+          <a class="link bar">A bar</a>
+          <a class="link baz">A baz</a>
+        </div>
+      </body>
+    </html>
+    """
+    first_result = Floki.find(html, "a.link:not(.bar)")
+    second_result = Floki.find(html, "a.link:not(.bar, .baz)")
+    third_result = Floki.find(html, "a.link:not(.bar,.baz)")
+
+    expected_result = [
+      {"a", [{"class", "link foo"}], ["A foo"]},
+      {"a", [{"class", "link baz"}], ["A baz"]}
+    ]
+
+    assert first_result == expected_result
+    assert second_result == [{"a", [{"class", "link foo"}], ["A foo"]}]
+    assert third_result == [{"a", [{"class", "link foo"}], ["A foo"]}]
+  end
+
   test "pseudo-class selector only" do
     expected = [
       {"channel", [], [{"title", [], ["A podcast"]}, {"link", [], ["www.foo.bar.com"]}]},
