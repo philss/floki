@@ -41,7 +41,7 @@ defmodule Floki.SelectorParser do
 
     do_parse(t, %{selector | attributes: [result | selector.attributes]})
   end
-  defp do_parse([{:pseudo_not, _} | t], %Selector{pseudo_class: pseudo_classes}=selector) when is_list(pseudo_classes) do
+  defp do_parse([{:pseudo_not, _} | t], selector = %Selector{pseudo_class: pseudo_classes}) when is_list(pseudo_classes) do
     {t, pseudo_class} = do_parse_pseudo_not(t, %PseudoClass{name: "not"})
 
     do_parse(t, %{selector | pseudo_class: [pseudo_class | pseudo_classes]})
