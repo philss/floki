@@ -133,27 +133,27 @@ defmodule Floki.SelectorParserTest do
     assert SelectorParser.parse("a.foo:not(.bar)") == %Selector{
       type: "a",
       classes: ["foo"],
-      pseudo_class: %PseudoClass{name: "not", value: [%Selector{classes: ["bar"]}]}
+      pseudo_class: [%PseudoClass{name: "not", value: [%Selector{classes: ["bar"]}]}]
     }
 
     assert SelectorParser.parse("a.foo:not(.bar, .baz)") == %Selector{
       type: "a",
       classes: ["foo"],
-      pseudo_class: %PseudoClass{name: "not", value: [%Selector{classes: ["baz"]}, %Selector{classes: ["bar"]}]}
+      pseudo_class: [%PseudoClass{name: "not", value: [%Selector{classes: ["baz"]}, %Selector{classes: ["bar"]}]}]
     }
 
     assert SelectorParser.parse("li:not(:nth-child(2)) a") == %Selector{
       type: "li",
-      pseudo_class: %PseudoClass{name: "not",
+      pseudo_class: [%PseudoClass{name: "not",
                                  value: [%Selector{pseudo_class: %PseudoClass{name: "nth-child",
-                                                  value: 2}}]},
+                                                  value: 2}}]}],
       combinator: %Combinator{match_type: :descendant, selector: %Selector{type: "a"}}
     }
 
     assert SelectorParser.parse("a.foo:not(.bar > .baz)") == %Selector{
       type: "a",
       classes: ["foo"],
-      pseudo_class: nil
+      pseudo_class: [nil]
     }
 
     assert capture_log(log_capturer("a.foo:not(.bar > .baz)")) =~

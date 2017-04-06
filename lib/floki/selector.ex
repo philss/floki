@@ -97,6 +97,9 @@ defmodule Floki.Selector do
   end
 
   defp pseudo_class_match?(_html_node, nil, _tree), do: true
+  defp pseudo_class_match?(html_node, pseudo_classes, tree) when is_list(pseudo_classes) do
+    Enum.all?(pseudo_classes, &(pseudo_class_match?(html_node, &1, tree)))
+  end
   defp pseudo_class_match?(html_node, pseudo_class, tree) do
     case pseudo_class.name do
       "nth-child" ->
