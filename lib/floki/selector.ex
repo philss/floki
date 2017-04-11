@@ -12,7 +12,7 @@ defmodule Floki.Selector do
             classes: [],
             attributes: [],
             namespace: nil,
-            pseudo_class: nil,
+            pseudo_classes: [],
             combinator: nil
 
   @doc false

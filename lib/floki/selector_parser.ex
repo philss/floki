@@ -41,15 +41,9 @@ defmodule Floki.SelectorParser do
 
     do_parse(t, %{selector | attributes: [result | selector.attributes]})
   end
-  defp do_parse([{:pseudo_not, _} | t], selector = %Selector{pseudo_class: pseudo_classes}) when is_list(pseudo_classes) do
-    {t, pseudo_class} = do_parse_pseudo_not(t, %PseudoClass{name: "not"})
-
-    do_parse(t, %{selector | pseudo_class: [pseudo_class | pseudo_classes]})
-  end
   defp do_parse([{:pseudo_not, _} | t], selector) do
-    {t, pseudo_class} = do_parse_pseudo_not(t, %PseudoClass{name: "not"})
-
-    do_parse(t, %{selector | pseudo_class: [pseudo_class]})
+    pseudo_classes = [%PseudoClass{name: "not"} | selector.pseudo_classes]
+    do_parse(t, %{selector | pseudo_classes: pseudo_classes})
   end
   defp do_parse([{:pseudo, _, pseudo_class} | t], selector) do
     do_parse(t, %{selector | pseudo_class: %PseudoClass{name: to_string(pseudo_class)}})
@@ -73,6 +67,18 @@ defmodule Floki.SelectorParser do
   defp do_parse([{:pseudo_class_quoted, _, pattern} | t], selector) do
     pseudo_class = selector.pseudo_class
     do_parse(t, %{selector | pseudo_class: %{pseudo_class | value: to_string(pattern)}})
+  end
+  defp do_parse([{:pseudo_parentheses, _, char_list} | t], selector) do
+    pseudo_class_selectors = to_string(char_list)
+                             |> String.split(",")
+                             |> Enum.map(&parse(&1))
+                             |> Enum.select(&is_valid_pseudo_selector?(&1))
+
+    pseudo_class = selector.pseudo_classes
+                   |> hd
+                   |> Map.put(:value, pseudo_class_selectors)
+
+    do_parse(t, %{selector | pseudo_classes: [pseudo_class | selector.pseudo_classes]})
   end
   defp do_parse([{:pseudo_class_generic_value, _, value} | t], selector) do
     s = case selector.pseudo_class do
@@ -171,6 +177,12 @@ defmodule Floki.SelectorParser do
                end
 
     {after_parentesis, response}
+  end
+
+  defp is_valid_pseudo_selector?(%Selector{combinator: nil}), do: true
+  defp is_valid_pseudo_selector?(_pseudo_selector) do
+    Logger.warn("Only simple selectors are allowed in pseudo-class. Ignoring.")
+    false
   end
 
   defp parse_not_selector([]), do: nil
