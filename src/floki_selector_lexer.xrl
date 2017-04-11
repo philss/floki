@@ -2,7 +2,7 @@ Definitions.
 
 IDENTIFIER = [-A-Za-z0-9_]+
 QUOTED = (\"[^"]*\"|\'[^']*\')
-PARENTESIS = \([^)]*\)
+PARENTHESES = \([^)]*\)
 INT = [0-9]+
 NOT = (n|N)(o|O)(t|T)
 ODD = (o|O)(d|D)(d|D)
@@ -18,13 +18,14 @@ Rules.
 {SYMBOL}                             : {token, {TokenChars, TokenLine}}.
 #{IDENTIFIER}                        : {token, {hash, TokenLine, tail(TokenChars)}}.
 \.{IDENTIFIER}                       : {token, {class, TokenLine, tail(TokenChars)}}.
-\:{NOT}\(                            : {token, {pseudo_not, TokenLine}}.
+\:{NOT}                              : {token, {pseudo_not, TokenLine}}.
 \:{IDENTIFIER}                       : {token, {pseudo, TokenLine, tail(TokenChars)}}.
 \({INT}\)                            : {token, {pseudo_class_int, TokenLine, list_to_integer(remove_wrapper(TokenChars))}}.
 \({ODD}\)                            : {token, {pseudo_class_odd, TokenLine}}.
 \({EVEN}\)                           : {token, {pseudo_class_even, TokenLine}}.
 \({PSEUDO_PATT}\)                    : {token, {pseudo_class_pattern, TokenLine, remove_wrapper(TokenChars)}}.
 \({QUOTED}\)                         : {token, {pseudo_class_quoted, TokenLine, remove_wrapper(remove_wrapper(TokenChars))}}.
+{PARENTHESES}                        : {token, {pseudo_parentheses, TokenLine, remove_wrapper(TokenChars)}}.
 {W}*\)                               : {token, {close_parentesis, TokenLine}}.
 ~=                                   : {token, {includes, TokenLine}}.
 \|=                                  : {token, {dash_match, TokenLine}}.
