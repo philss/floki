@@ -142,6 +142,15 @@ defmodule Floki.SelectorParserTest do
       pseudo_classes: [%PseudoClass{name: "not", value: [%Selector{classes: ["baz"]}, %Selector{classes: ["bar"]}]}]
     }
 
+    assert SelectorParser.parse("a.foo:not(.bar):not(.baz)") == %Selector{
+      type: "a",
+      classes: ["foo"],
+      pseudo_classes: [
+        %PseudoClass{name: "not", value: [%Selector{classes: ["baz"]}]},
+        %PseudoClass{name: "not", value: [%Selector{classes: ["bar"]}]}
+      ]
+    }
+
     assert SelectorParser.parse("li:not(:nth-child(2)) a") == %Selector{
       type: "li",
       pseudo_classes: [%PseudoClass{name: "not",

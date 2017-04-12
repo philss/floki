@@ -43,7 +43,7 @@ defmodule Floki.SelectorParser do
   end
   defp do_parse([{:pseudo_not, _} | t], selector) do
     {t, pseudo_not_class} = do_parse_pseudo_not(t, %PseudoClass{name: "not", value: []})
-    pseudo_classes = [pseudo_not_class | selector.pseudo_classes] |> Enum.reject(&is_nil(&1))
+    pseudo_classes = Enum.reject([pseudo_not_class | selector.pseudo_classes], &is_nil(&1))
     do_parse(t, %{selector | pseudo_classes: pseudo_classes})
   end
   defp do_parse([{:pseudo, _, pseudo_class} | t], selector) do
