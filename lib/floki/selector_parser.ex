@@ -70,23 +70,6 @@ defmodule Floki.SelectorParser do
     [pseudo_class | pseudo_classes] = selector.pseudo_classes
     do_parse(t, %{selector | pseudo_classes: [%{pseudo_class | value: to_string(pattern)} | pseudo_classes]})
   end
-  defp do_parse([{:pseudo_class_generic_value, _, value} | t], selector) do
-    s = case selector.pseudo_class do
-          %PseudoClass{name: "not"} ->
-            not_selector = parse(to_string(value))
-
-            if not_selector.combinator do
-              Logger.warn("Only simple selectors are allowed in :not() pseudo-class. Ignoring.")
-              selector
-            else
-              %{selector | pseudo_classes: %{selector.pseudo_class | value: not_selector}}
-            end
-          _ ->
-            selector
-        end
-
-    do_parse(t, s)
-  end
   defp do_parse([{:space, _} | t], selector) do
     {t, combinator} = consume_combinator(t, :descendant)
 
