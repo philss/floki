@@ -23,7 +23,7 @@ defmodule Floki.Selector do
                               classes: [],
                               attributes: [],
                               namespace: nil,
-                              pseudo_class: nil,
+                              pseudo_classes: [],
                               combinator: nil}, _tree) do
     false
   end
@@ -38,7 +38,7 @@ defmodule Floki.Selector do
       && type_match?(html_node, selector.type)
       && classes_matches?(html_node, selector.classes)
       && attributes_matches?(html_node, selector.attributes)
-      && pseudo_class_match?(html_node, selector.pseudo_class, tree)
+      && pseudo_classes_match?(html_node, selector.pseudo_classes, tree)
   end
 
   defp id_match?(_node, nil), do: true
@@ -96,10 +96,11 @@ defmodule Floki.Selector do
     end
   end
 
-  defp pseudo_class_match?(_html_node, nil, _tree), do: true
-  defp pseudo_class_match?(html_node, pseudo_classes, tree) when is_list(pseudo_classes) do
-    Enum.all?(pseudo_classes, &(pseudo_class_match?(html_node, &1, tree)))
+  defp pseudo_classes_match?(_html_node, [], _tree), do: true
+  defp pseudo_classes_match?(html_node, pseudo_classes, tree) do
+    Enum.all?(pseudo_classes, &pseudo_class_match?(html_node, &1, tree))
   end
+
   defp pseudo_class_match?(html_node, pseudo_class, tree) do
     case pseudo_class.name do
       "nth-child" ->
@@ -107,10 +108,7 @@ defmodule Floki.Selector do
       "first-child" ->
         PseudoClass.match_nth_child?(tree, html_node, %PseudoClass{name: "nth-child", value: 1})
       "not" ->
-        case pseudo_class.value do
-          selectors when is_list(selectors) -> Enum.all?(selectors, &(!Selector.match?(html_node, &1, tree)))
-          selector -> !Selector.match?(html_node, selector, tree)
-        end
+        Enum.all?(pseudo_class.value, &(!Selector.match?(html_node, &1, tree)))
       "fl-contains" ->
         PseudoClass.match_contains?(tree, html_node, pseudo_class)
       unknown_pseudo_class ->
