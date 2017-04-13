@@ -104,28 +104,28 @@ defmodule Floki.SelectorParserTest do
 
     assert SelectorParser.parse(tokens) == %Selector{
       type: "li",
-      pseudo_class: %PseudoClass{name: "nth-child", value: 2},
+      pseudo_classes: [%PseudoClass{name: "nth-child", value: 2}],
     }
 
     tokens = tokenize("tr:nth-child(odd)")
 
     assert SelectorParser.parse(tokens) == %Selector{
       type: "tr",
-      pseudo_class: %PseudoClass{name: "nth-child", value: "odd"}
+      pseudo_classes: [%PseudoClass{name: "nth-child", value: "odd"}]
     }
 
     tokens = tokenize("td:nth-child(even)")
 
     assert SelectorParser.parse(tokens) == %Selector{
       type: "td",
-      pseudo_class: %PseudoClass{name: "nth-child", value: "even"}
+      pseudo_classes: [%PseudoClass{name: "nth-child", value: "even"}]
     }
 
     tokens = tokenize("div:nth-child(-n+3)")
 
     assert SelectorParser.parse(tokens) == %Selector{
       type: "div",
-      pseudo_class: %PseudoClass{name: "nth-child", value: "-n+3"}
+      pseudo_classes: [%PseudoClass{name: "nth-child", value: "-n+3"}]
     }
   end
 
@@ -133,21 +133,36 @@ defmodule Floki.SelectorParserTest do
     assert SelectorParser.parse("a.foo:not(.bar)") == %Selector{
       type: "a",
       classes: ["foo"],
-      pseudo_class: %PseudoClass{name: "not", value: %Selector{classes: ["bar"]}}
+      pseudo_classes: [%PseudoClass{name: "not", value: [%Selector{classes: ["bar"]}]}]
+    }
+
+    assert SelectorParser.parse("a.foo:not(.bar, .baz)") == %Selector{
+      type: "a",
+      classes: ["foo"],
+      pseudo_classes: [%PseudoClass{name: "not", value: [%Selector{classes: ["baz"]}, %Selector{classes: ["bar"]}]}]
+    }
+
+    assert SelectorParser.parse("a.foo:not(.bar):not(.baz)") == %Selector{
+      type: "a",
+      classes: ["foo"],
+      pseudo_classes: [
+        %PseudoClass{name: "not", value: [%Selector{classes: ["baz"]}]},
+        %PseudoClass{name: "not", value: [%Selector{classes: ["bar"]}]}
+      ]
     }
 
     assert SelectorParser.parse("li:not(:nth-child(2)) a") == %Selector{
       type: "li",
-      pseudo_class: %PseudoClass{name: "not",
-                                 value: %Selector{pseudo_class: %PseudoClass{name: "nth-child",
-                                                  value: 2}}},
+      pseudo_classes: [%PseudoClass{name: "not",
+                                 value: [%Selector{pseudo_classes: [%PseudoClass{name: "nth-child",
+                                                  value: 2}]}]}],
       combinator: %Combinator{match_type: :descendant, selector: %Selector{type: "a"}}
     }
 
     assert SelectorParser.parse("a.foo:not(.bar > .baz)") == %Selector{
       type: "a",
       classes: ["foo"],
-      pseudo_class: nil
+      pseudo_classes: []
     }
 
     assert capture_log(log_capturer("a.foo:not(.bar > .baz)")) =~
