@@ -5,6 +5,13 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 
+## [0.17.0] - 2017-04-12
+
+### Added
+
+- Add support for multiple pseudo-selectors, line :not() and :nth-child() - thanks [@jjcarstens](https://github.com/jjcarstens)
+- Add support for multiple selectors inside the :not() pseudo-class selector - thanks [@jjcarstens](https://github.com/jjcarstens)
+
 ## [0.16.0] - 2017-04-05
 
 ### Added
@@ -282,7 +289,8 @@ of the parent element inside HTML.
 
 - Elixir version requirement from "~> 1.0.0" to ">= 1.0.0".
 
-[unreleased]: https://github.com/philss/floki/compare/v0.16.0...HEAD
+[unreleased]: https://github.com/philss/floki/compare/v0.17.0...HEAD
+[0.17.0]: https://github.com/philss/floki/compare/v0.16.0...v0.17.0
 [0.16.0]: https://github.com/philss/floki/compare/v0.15.0...v0.16.0
 [0.15.0]: https://github.com/philss/floki/compare/v0.14.0...v0.15.0
 [0.14.0]: https://github.com/philss/floki/compare/v0.13.2...v0.14.0
