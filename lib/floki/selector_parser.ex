@@ -9,18 +9,27 @@ defmodule Floki.SelectorParser do
 
   @attr_match_types [:equal, :dash_match, :includes, :prefix_match, :sufix_match, :substring_match]
 
-  # Returns a `Selector` struct with the parsed selector.
-  # Note that this parser does not deal with groups of selectors.
+  # Returns a list of `Selector` structs with the parsed selectors.
 
   def parse(selector) when is_binary(selector) do
     token_list = SelectorTokenizer.tokenize(selector)
     parse(token_list)
   end
   def parse(tokens) do
-    do_parse(tokens, %Selector{})
+    do_parse_all(tokens, [])
   end
 
-  defp do_parse([], selector), do: selector
+  defp do_parse_all([], selectors) do
+    Enum.reverse(selectors)
+  end
+
+  defp do_parse_all(tokens, selectors) do
+    {selector, remaining_tokens} = do_parse(tokens, %Selector{})
+    do_parse_all(remaining_tokens, [selector | selectors])
+  end
+
+  defp do_parse([], selector), do: {selector, []}
+  defp do_parse([{:comma, _}| t], selector), do: {selector, t}
   defp do_parse([{:identifier, _, namespace}, {:namespace_pipe, _} | t], selector) do
     do_parse(t, %{selector | namespace: to_string(namespace)})
   end
@@ -133,9 +142,9 @@ defmodule Floki.SelectorParser do
   end
   defp consume_combinator([], combinator), do: {[], combinator}
   defp consume_combinator(tokens, combinator) do
-    selector = parse(tokens)
+    {selector, remaining_tokens} = do_parse(tokens, %Selector{})
 
-    {[], %{combinator | selector: selector}}
+    {remaining_tokens, %{combinator | selector: selector}}
   end
 
   defp do_parse_pseudo_not([{:close_parentesis, _} | t], pseudo_class) do
@@ -159,7 +168,7 @@ defmodule Floki.SelectorParser do
     do_parse_pseudo_not(t, pseudo_not_selector, pseudo_class)
   end
   defp do_parse_pseudo_not([next_token | t], pseudo_not_selector, pseudo_class) do
-    pseudo_not_selector = do_parse([next_token], pseudo_not_selector)
+    {pseudo_not_selector, _} = do_parse([next_token], pseudo_not_selector)
     do_parse_pseudo_not(t, pseudo_not_selector, pseudo_class)
   end
 

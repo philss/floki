@@ -20,7 +20,6 @@ defmodule Floki.SelectorTokenizerTest do
       {:identifier, 1, 'a'},
       {:class, 1, 'link'},
       {:comma, 1},
-      {:space, 1},
       {:class, 2, 'b'},
       {'[', 2},
         {:identifier, 2, 'title'},
@@ -28,7 +27,6 @@ defmodule Floki.SelectorTokenizerTest do
         {:identifier, 2, 'hello'},
         {']', 2},
       {:comma, 2},
-      {:space, 2},
       {'[', 3},
         {:identifier, 3, 'href'},
         {:includes, 3},
@@ -37,7 +35,6 @@ defmodule Floki.SelectorTokenizerTest do
       {:space, 3},
       {'*', 3},
       {:comma, 3},
-      {:space, 3},
       {:identifier, 4, 'a'},
       {:greater, 4},
       {:identifier, 4, 'b'}
