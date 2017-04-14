@@ -58,12 +58,8 @@ defmodule Floki.Finder do
 
   defp get_selectors(selector_as_string) do
     selector_as_string
-    |> String.split(~r/,(?![^(]*\))/i)
-    |> Enum.map(fn(s) ->
-      tokens = SelectorTokenizer.tokenize(s)
-
-      SelectorParser.parse(tokens)
-    end)
+    |> SelectorTokenizer.tokenize()
+    |> SelectorParser.parse()
   end
 
   defp get_matches_for_selectors(tree, html_node, selectors) do
