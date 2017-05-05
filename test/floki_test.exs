@@ -54,6 +54,15 @@ defmodule FlokiTest do
   <p>Three</p>
   """
 
+  @html_with_wrong_angles_encoding """
+  <html>
+  <head>
+  </head>
+  <body>
+    <span class="method-callseq">mark # => #<Psych::Parser::Mark></span>
+  </body>
+  """
+
   @xml """
   <?xml version="1.0" encoding="UTF-8"?>
   <rss version="2.0">
@@ -746,5 +755,10 @@ defmodule FlokiTest do
     ]
 
     assert Floki.find(html, "table[summary='license-detail'] td.data-view") == expected
+  end
+
+  test "finding doesn't fail when body includes unencoded angles" do
+    [{tag_name, _, _}] = Floki.find(@html_with_wrong_angles_encoding, "span")
+    assert tag_name == "span"
   end
 end

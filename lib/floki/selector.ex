@@ -72,6 +72,7 @@ defmodule Floki.Selector do
         tp == type
       [tp] ->
         tp == type
+      _ -> false
     end
   end
   defp type_match?(_, _), do: false
