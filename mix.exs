@@ -9,7 +9,7 @@ defmodule Floki.Mixfile do
      name: "Floki",
      version: @version,
      description: @description,
-     elixir: ">= 1.2.0",
+     elixir: ">= 1.4.0",
      package: package(),
      deps: deps(),
      source_url: "https://github.com/philss/floki",
@@ -17,12 +17,12 @@ defmodule Floki.Mixfile do
   end
 
   def application do
-    [applications: [:logger, :mochiweb]]
+    [extra_applications: [:logger]]
   end
 
   defp deps do
     [
-      {:mochiweb, "~> 2.15"},
+      {:mochiweb_html, "~> 2.15"},
       {:earmark, "~> 1.0", only: :dev},
       {:ex_doc, "~> 0.14", only: :dev},
       {:credo, ">= 0.0.0", only: [:dev, :test]},
