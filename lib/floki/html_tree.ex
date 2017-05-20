@@ -97,8 +97,10 @@ defmodule Floki.HTMLTree do
   defp get_ids_for_delete_stack(_), do: []
 
   defp build_tree(tree, [], _, []), do: tree
+  defp build_tree(tree, [{:pi, _, _} | children], parent_id, stack), do: build_tree(tree, children, parent_id, stack)
   defp build_tree(tree, [{tag, attrs, child_children} | children], parent_id, stack) do
     new_id = IDSeeder.seed(tree.node_ids)
+
     new_node = %HTMLNode{type: tag,
                          attributes: attrs,
                          node_id: new_id,
@@ -106,7 +108,7 @@ defmodule Floki.HTMLTree do
 
     nodes = put_new_node(tree.nodes, new_node)
 
-   build_tree(%{tree | nodes: nodes, node_ids: [new_id | tree.node_ids]},
+    build_tree(%{tree | nodes: nodes, node_ids: [new_id | tree.node_ids]},
               child_children, new_id, [{parent_id, children} | stack])
   end
   defp build_tree(tree, [{:comment, comment} | children], parent_id, stack) do
