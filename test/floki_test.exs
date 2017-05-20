@@ -761,4 +761,20 @@ defmodule FlokiTest do
     [{tag_name, _, _}] = Floki.find(@html_with_wrong_angles_encoding, "span")
     assert tag_name == "span"
   end
+
+  test "html with xml definition tag in it" do
+    html = """
+      <!DOCTYPE html>
+      <html>
+      <head>
+      </head>
+      <body>
+        <div class="text">test</div>
+        <?xml version="1.0" encoding="utf-8"?>
+      </div>
+      </body>
+      </html>
+    """
+    assert Floki.find(html, ".text") == [{"div", [{"class", "text"}], ["test"]}]
+  end
 end
