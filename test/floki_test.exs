@@ -818,5 +818,4 @@ defmodule FlokiTest do
     assert result == String.replace(expects, "\n", "")
 
   end
-
 end
