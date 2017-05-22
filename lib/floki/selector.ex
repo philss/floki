@@ -43,6 +43,7 @@ defmodule Floki.Selector do
 
   defp id_match?(_node, nil), do: true
   defp id_match?(%HTMLNode{attributes: []}, _), do: false
+  defp id_match?(%HTMLNode{type: :pi}, _), do: false
   defp id_match?(%HTMLNode{attributes: attributes}, id) do
     Enum.any? attributes, fn(attribute) ->
       case attribute do

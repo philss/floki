@@ -77,6 +77,18 @@ defmodule FlokiTest do
   </rss>
   """
 
+  @html_with_xml_prefix """
+    <?xml version="1.0" encoding="UTF-8"?>
+    <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+    <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+    </head>
+    <body>
+      <a id="anchor" href="">useless link</a>
+    </body>
+    </html>
+  """
+
   test "parse simple HTML" do
     parsed = Floki.parse(@html)
 
@@ -778,6 +790,10 @@ defmodule FlokiTest do
     assert Floki.find(html, ".text") == [{"div", [{"class", "text"}], ["test"]}]
   end
 
+  test "finding doesn't fail when body includes xml version prefix" do
+    [{tag_name, _, _}] = Floki.find(@html_with_xml_prefix, "#anchor")
+    assert tag_name == "a"
+  end
 
   test "change tag attributes" do
     html = """

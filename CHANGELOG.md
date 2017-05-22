@@ -5,6 +5,14 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 
+## [0.17.1] - 2017-05-22
+
+### Fixed
+
+- Fix search when body has unencoded angles (`<` and `>`) - thanks [@sergey-kintsel](https://github.com/sergey-kintsel)
+- Fix crash caused by XML declaration inside body - thanks [@erikdsi](https://github.com/erikdsi)
+- Fix issue when finding fails if HTML begins with XML tag - thanks [@sergey-kintsel](https://github.com/sergey-kintsel)
+
 ## [0.17.0] - 2017-04-12
 
 ### Added
@@ -289,7 +297,8 @@ of the parent element inside HTML.
 
 - Elixir version requirement from "~> 1.0.0" to ">= 1.0.0".
 
-[unreleased]: https://github.com/philss/floki/compare/v0.17.0...HEAD
+[unreleased]: https://github.com/philss/floki/compare/v0.17.1...HEAD
+[0.17.1]: https://github.com/philss/floki/compare/v0.17.0...v0.17.1
 [0.17.0]: https://github.com/philss/floki/compare/v0.16.0...v0.17.0
 [0.16.0]: https://github.com/philss/floki/compare/v0.15.0...v0.16.0
 [0.15.0]: https://github.com/philss/floki/compare/v0.14.0...v0.15.0
