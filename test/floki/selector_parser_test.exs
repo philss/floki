@@ -31,21 +31,6 @@ defmodule Floki.SelectorParserTest do
     ]
   end
 
-  # test "multiple selectors with combinators" do
-  #   tokens = tokenize("ol > .foo, ul a[class=bar], a + .baz")
-  #
-  #   assert SelectorParser.parse(tokens) == [
-  #     %Selector{
-  #       type: "ol",
-  #       combinator: %Combinator{match_type: :child, selector: %Selector{attributes: [], classes: ["foo"], pseudo_classes: []}}
-  #     },
-  #     %Selector{
-  #       type: "ul",
-  #       combinator: %Combinator{match_type: :descendant, selector: %Selector{attributes: [%AttributeSelector{attribute: "class", match_type: :equal, value: "bar"}], classes: [], pseudo_classes: [], type: "a"}}
-  #     }
-  #   ]
-  # end
-
   test "type with classes" do
     tokens = tokenize("a.link.button")
 
