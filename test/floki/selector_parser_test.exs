@@ -31,6 +31,21 @@ defmodule Floki.SelectorParserTest do
     ]
   end
 
+  # test "multiple selectors with combinators" do
+  #   tokens = tokenize("ol > .foo, ul a[class=bar], a + .baz")
+  #
+  #   assert SelectorParser.parse(tokens) == [
+  #     %Selector{
+  #       type: "ol",
+  #       combinator: %Combinator{match_type: :child, selector: %Selector{attributes: [], classes: ["foo"], pseudo_classes: []}}
+  #     },
+  #     %Selector{
+  #       type: "ul",
+  #       combinator: %Combinator{match_type: :descendant, selector: %Selector{attributes: [%AttributeSelector{attribute: "class", match_type: :equal, value: "bar"}], classes: [], pseudo_classes: [], type: "a"}}
+  #     }
+  #   ]
+  # end
+
   test "type with classes" do
     tokens = tokenize("a.link.button")
 
@@ -92,6 +107,33 @@ defmodule Floki.SelectorParserTest do
     ]
   end
 
+  test "multiple descendant selectors" do
+    tokens = tokenize("a b.foo c, ul a[class=bar]")
+
+    assert SelectorParser.parse(tokens) == [
+      %Selector{
+        type: "a",
+        combinator: %Combinator{
+          match_type: :descendant,
+          selector: %Selector{type: "b",
+                              classes: ["foo"],
+                              combinator: %Combinator{match_type: :descendant,
+                                                      selector: %Selector{type: "c"}}}
+        }
+      },
+      %Selector{
+        type: "ul",
+        combinator: %Combinator{
+          match_type: :descendant,
+          selector: %Selector{attributes: [%AttributeSelector{attribute: "class", match_type: :equal, value: "bar"}],
+                              classes: [],
+                              pseudo_classes: [],
+                              type: "a"}
+        }
+      }
+    ]
+  end
+
   test "child selector" do
     tokens = tokenize("a > b")
 
@@ -102,6 +144,24 @@ defmodule Floki.SelectorParserTest do
           match_type: :child,
           selector: %Selector{type: "b"}
         }
+      }
+    ]
+  end
+
+  test "multiple child selectors" do
+    tokens = tokenize("a > b, ol > .foo")
+
+    assert SelectorParser.parse(tokens) == [
+      %Selector{
+        type: "a",
+        combinator: %Combinator{
+          match_type: :child,
+          selector: %Selector{type: "b"}
+        }
+      },
+      %Selector{
+        type: "ol",
+        combinator: %Combinator{match_type: :child, selector: %Selector{attributes: [], classes: ["foo"], pseudo_classes: []}}
       }
     ]
   end
