@@ -28,6 +28,15 @@ defmodule Floki.DeepTextTest do
      assert Floki.DeepText.get(nodes) == "This is a text that is divided into tiny pieces. It keeps growing... And ends."
   end
 
+  test "ignores text inside style tag" do
+    nodes =
+      [{"body", [],
+          [{"style", [], ".my-class{ text-algn: center'}"},
+           {"p", [], "Hello world."}]}]
+
+     assert Floki.DeepText.get(nodes) == "Hello world."
+  end
+
   test "text from a list of deep nodes with a separator" do
     nodes =
       [{"div", [],

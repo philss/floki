@@ -21,6 +21,7 @@ defmodule Floki.DeepText do
   end
   defp get_text({:comment, _}, acc, _), do: acc
   defp get_text({"br", _, _}, acc, _), do: acc <> "\n"
+  defp get_text({"style", _, _}, acc, _), do: acc
   defp get_text({_, _, nodes}, acc, sep) do
     get_text(nodes, acc, sep)
   end
