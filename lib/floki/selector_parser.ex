@@ -81,24 +81,24 @@ defmodule Floki.SelectorParser do
     do_parse(t, %{selector | pseudo_classes: [%{pseudo_class | value: to_string(pattern)} | pseudo_classes]})
   end
   defp do_parse([{:space, _} | t], selector) do
-    {t, combinator} = consume_combinator(t, :descendant)
+    {remaining_tokens, combinator} = consume_combinator(t, :descendant)
 
-    do_parse(t, %{selector | combinator: combinator})
+    {%{selector | combinator: combinator}, remaining_tokens}
   end
   defp do_parse([{:greater, _} | t], selector) do
-    {t, combinator} = consume_combinator(t, :child)
+    {remaining_tokens, combinator} = consume_combinator(t, :child)
 
-    do_parse(t, %{selector | combinator: combinator})
+    {%{selector | combinator: combinator}, remaining_tokens}
   end
   defp do_parse([{:plus, _} | t], selector) do
-    {t, combinator} = consume_combinator(t, :sibling)
+    {remaining_tokens, combinator} = consume_combinator(t, :sibling)
 
-    do_parse(t, %{selector | combinator: combinator})
+    {%{selector | combinator: combinator}, remaining_tokens}
   end
   defp do_parse([{:tilde, _} | t], selector) do
-    {t, combinator} = consume_combinator(t, :general_sibling)
+    {remaining_tokens, combinator} = consume_combinator(t, :general_sibling)
 
-    do_parse(t, %{selector | combinator: combinator})
+    {%{selector | combinator: combinator}, remaining_tokens}
   end
   defp do_parse([{:unknown, _, unknown} | t], selector) do
     Logger.warn("Unknown token #{inspect unknown}. Ignoring.")
