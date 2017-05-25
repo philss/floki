@@ -5,6 +5,14 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 
+## [0.17.2] - 2017-05-25
+
+### Fixed
+
+- Fix attribute selectors in :not() - thanks [@jjcarstens](https://github.com/jjcarstens) and [@Eiji7](https://github.com/Eiji7)
+- Fix selector parser to consider combinators across selectors separated by commas.
+For further details, please check the [pull request](https://github.com/philss/floki/pull/115) - thanks [@jjcarstens](https://github.com/jjcarstens) and [@mischov](https://github.com/mischov)
+
 ## [0.17.1] - 2017-05-22
 
 ### Fixed
@@ -297,7 +305,8 @@ of the parent element inside HTML.
 
 - Elixir version requirement from "~> 1.0.0" to ">= 1.0.0".
 
-[unreleased]: https://github.com/philss/floki/compare/v0.17.1...HEAD
+[unreleased]: https://github.com/philss/floki/compare/v0.17.2...HEAD
+[0.17.2]: https://github.com/philss/floki/compare/v0.17.1...v0.17.2
 [0.17.1]: https://github.com/philss/floki/compare/v0.17.0...v0.17.1
 [0.17.0]: https://github.com/philss/floki/compare/v0.16.0...v0.17.0
 [0.16.0]: https://github.com/philss/floki/compare/v0.15.0...v0.16.0
