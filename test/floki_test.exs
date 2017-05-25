@@ -545,7 +545,7 @@ defmodule FlokiTest do
       <body>
         <div id="links">
           <a class="link foo">A foo</a>
-          <a class="link bar">A bar</a>
+          <a class="link bar" style="crazyColor">A bar</a>
           <a class="link baz">A baz</a>
         </div>
       </body>
@@ -554,6 +554,7 @@ defmodule FlokiTest do
     first_result = Floki.find(html, "a.link:not(.bar)")
     second_result = Floki.find(html, "div#links > a.link:not(.bar)")
     third_result = Floki.find(html, "a.link:not(:nth-child(2))")
+    fourth_result = Floki.find(html, "a.link:not([style*=crazy])")
 
     expected_result = [
       {"a", [{"class", "link foo"}], ["A foo"]},
@@ -563,6 +564,7 @@ defmodule FlokiTest do
     assert first_result == expected_result
     assert first_result == second_result
     assert third_result == expected_result
+    assert fourth_result == expected_result
   end
 
   test "not pseudo-class with multiple selectors" do
@@ -571,7 +573,7 @@ defmodule FlokiTest do
       <body>
         <div id="links">
           <a class="link foo">A foo</a>
-          <a class="link bar">A bar</a>
+          <a class="link bar" style="crazyColor">A bar</a>
           <a class="link baz">A baz</a>
           <a class="link bin">A bin</a>
         </div>
@@ -582,6 +584,7 @@ defmodule FlokiTest do
     second_result = Floki.find(html, "a.link:not(.bar,.baz)")
     third_result = Floki.find(html, "a.link:not(.bar):not(.baz)")
     fourth_result = Floki.find(html, "a.link:not(.bar, .bin):not(.baz)")
+    fifth_result = Floki.find(html, "a.link:not([style*=crazy], .bin):not(.baz)")
 
     foo_match = {"a", [{"class", "link foo"}], ["A foo"]}
     bin_match = {"a", [{"class", "link bin"}], ["A bin"]}
@@ -590,6 +593,7 @@ defmodule FlokiTest do
     assert second_result == [foo_match, bin_match]
     assert third_result == [foo_match, bin_match]
     assert fourth_result == [foo_match]
+    assert fifth_result == [foo_match]
   end
 
   test "pseudo-class selector only" do

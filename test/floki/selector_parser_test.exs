@@ -205,6 +205,37 @@ defmodule Floki.SelectorParserTest do
       }
     ]
 
+    assert SelectorParser.parse("a.foo:not([style*=crazy])") == [
+      %Selector{
+        attributes: [],
+        classes: ["foo"],
+        pseudo_classes: [
+          %PseudoClass{
+            name: "not",
+            value: [%Selector{attributes: [%Floki.AttributeSelector{attribute: "style", match_type: :substring_match, value: "crazy"}], classes: [], pseudo_classes: []}]
+          }
+        ],
+        type: "a"
+      }
+    ]
+
+    assert SelectorParser.parse("a.foo:not([style*=crazy], .bar)") == [
+      %Selector{
+        attributes: [],
+        classes: ["foo"],
+        pseudo_classes: [
+          %PseudoClass{
+            name: "not",
+            value: [
+              %Selector{attributes: [], classes: ["bar"], pseudo_classes: []},
+              %Selector{attributes: [%Floki.AttributeSelector{attribute: "style", match_type: :substring_match, value: "crazy"}], classes: [], pseudo_classes: []}
+            ]
+          }
+        ],
+        type: "a"
+      }
+    ]
+
     assert capture_log(log_capturer("a.foo:not(.bar > .baz)")) =~
             "module=Floki.SelectorParser  Only simple selectors are allowed in :not() pseudo-class. Ignoring."
   end
