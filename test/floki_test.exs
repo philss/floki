@@ -814,8 +814,6 @@ defmodule FlokiTest do
       String.replace(inner_html, "changethis", "changed")
     end)
     |> Floki.raw_html
-
     assert result == String.replace(expects, "\n", "")
-
   end
 end

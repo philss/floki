@@ -153,6 +153,18 @@ defmodule Floki do
     Enum.map(results, fn(html_node) -> HTMLTree.to_tuple(tree, html_node) end)
   end
 
+  @doc """
+  Changes the attribute values of the elements matched by `selector`
+  with the function `mutation` and returns the whole element tree
+  """
+  def attr(html_str, selector, attribute_name, mutation) when is_binary(html_str) do
+    attr(parse(html_str), selector, attribute_name, mutation)
+  end
+  def attr(html_tree_list, selector, attribute_name, mutation) when is_list(html_tree_list) do
+    {tree, results} = Finder.find(html_tree_list, selector)
+    mutate_attrs(html_tree_list, tree, results, attribute_name, mutation)
+  end
+
   defp add_nodes_to_tree(tree, [html_node]) do
     nodes = Map.put(tree.nodes, html_node.node_id, html_node)
     Map.put(tree, :nodes, nodes)
@@ -166,7 +178,6 @@ defmodule Floki do
   defp mutate_attrs(html_tree_list, _, [], _, _) do
     html_tree_list
   end
-
   defp mutate_attrs(_, tree, results, attribute_name, mutation) do
 
     mutated_nodes = Enum.map(results, fn(result) ->
@@ -192,18 +203,6 @@ defmodule Floki do
     end)
     |> Enum.filter(fn(el) -> el != nil end)
     |> Enum.map(fn(html_node) -> HTMLTree.to_tuple(tree, html_node) end)
-  end
-  @doc """
-  Changes the attribute values of the elements matched by `selector`
-  with the function `mutation` and returns the whole element tree
-  """
-  def attr(html_str, selector, attribute_name, mutation) when is_binary(html_str) do
-    attr(parse(html_str), selector, attribute_name, mutation)
-  end
-
-  def attr(html_tree_list, selector, attribute_name, mutation) when is_list(html_tree_list) do
-    {tree, results} = Finder.find(html_tree_list, selector)
-    mutate_attrs(html_tree_list, tree, results, attribute_name, mutation)
   end
 
   def transform(html_tree_list, transformation) when is_list(html_tree_list) do
