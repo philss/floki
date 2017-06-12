@@ -157,6 +157,8 @@ defmodule Floki do
   Changes the attribute values of the elements matched by `selector`
   with the function `mutation` and returns the whole element tree
   """
+  @spec attr(binary | html_tree, binary, binary, (binary -> binary)) :: html_tree
+
   def attr(html_str, selector, attribute_name, mutation) when is_binary(html_str) do
     attr(parse(html_str), selector, attribute_name, mutation)
   end
