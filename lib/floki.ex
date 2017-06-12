@@ -156,9 +156,17 @@ defmodule Floki do
   @doc """
   Changes the attribute values of the elements matched by `selector`
   with the function `mutation` and returns the whole element tree
+
+  ## Examples
+    iex> Floki.attr("<div id='a'></div>", "#a", "id", fn(id) -> String.replace(id, "a", "b") end)
+    [{"div", [{"id", "b"}], []}]
+
   """
   @spec attr(binary | html_tree, binary, binary, (binary -> binary)) :: html_tree
 
+  def attr(html_elem_tuple, selector, attribute_name, mutation) when is_tuple(html_elem_tuple) do
+    attr([html_elem_tuple], selector, attribute_name, mutation)
+  end
   def attr(html_str, selector, attribute_name, mutation) when is_binary(html_str) do
     attr(parse(html_str), selector, attribute_name, mutation)
   end
