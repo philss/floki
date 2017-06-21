@@ -153,6 +153,68 @@ defmodule Floki do
     Enum.map(results, fn(html_node) -> HTMLTree.to_tuple(tree, html_node) end)
   end
 
+  @doc """
+  Changes the attribute values of the elements matched by `selector`
+  with the function `mutation` and returns the whole element tree
+
+  ## Examples
+    iex> Floki.attr("<div id='a'></div>", "#a", "id", fn(id) -> String.replace(id, "a", "b") end)
+    [{"div", [{"id", "b"}], []}]
+
+  """
+  @spec attr(binary | html_tree, binary, binary, (binary -> binary)) :: html_tree
+
+  def attr(html_elem_tuple, selector, attribute_name, mutation) when is_tuple(html_elem_tuple) do
+    attr([html_elem_tuple], selector, attribute_name, mutation)
+  end
+  def attr(html_str, selector, attribute_name, mutation) when is_binary(html_str) do
+    attr(parse(html_str), selector, attribute_name, mutation)
+  end
+  def attr(html_tree_list, selector, attribute_name, mutation) when is_list(html_tree_list) do
+    {tree, results} = Finder.find(html_tree_list, selector)
+    mutate_attrs(html_tree_list, tree, results, attribute_name, mutation)
+  end
+
+  defp add_nodes_to_tree(tree, [html_node]) do
+    nodes = Map.put(tree.nodes, html_node.node_id, html_node)
+    Map.put(tree, :nodes, nodes)
+  end
+  defp add_nodes_to_tree(tree, [html_node | tail]) do
+    nodes = Map.put(tree.nodes, html_node.node_id, html_node)
+    Map.put(tree, :nodes, nodes)
+    |> add_nodes_to_tree(tail)
+  end
+
+  defp mutate_attrs(html_tree_list, _, [], _, _) do
+    html_tree_list
+  end
+  defp mutate_attrs(_, tree, results, attribute_name, mutation) do
+
+    mutated_nodes = Enum.map(results, fn(result) ->
+      mutated_attributes = Enum.map(result.attributes, fn(attribute) ->
+        if elem(attribute, 0) == attribute_name do
+          {attribute_name, mutation.(elem(attribute, 1))}
+        else
+          attribute
+        end
+      end)
+      Map.put(result, :attributes, mutated_attributes)
+    end)
+
+    tree = add_nodes_to_tree(tree, mutated_nodes)
+    tree.nodes
+    |> Enum.map(fn(el) ->
+      {_, actual_node} = el
+      if actual_node.parent_node_id == nil do
+        actual_node
+      else
+        nil
+      end
+    end)
+    |> Enum.filter(fn(el) -> el != nil end)
+    |> Enum.map(fn(html_node) -> HTMLTree.to_tuple(tree, html_node) end)
+  end
+
   def transform(html_tree_list, transformation) when is_list(html_tree_list) do
     Enum.map(html_tree_list, fn(html_tree) ->
       Finder.apply_transformation(html_tree, transformation)
