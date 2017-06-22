@@ -810,10 +810,13 @@ defmodule FlokiTest do
     <a href=\"http://not.url/changethisbutnotrly/\">link</a>
     <a class="change" href=\"http://not.url/changed/\">link</a>
     """
-    result = Floki.attr(html, ".change", "href", fn(inner_html) ->
-      String.replace(inner_html, "changethis", "changed")
-    end)
-    |> Floki.raw_html
+    result =
+      html
+      |> Floki.attr(".change", "href", fn(inner_html) ->
+        String.replace(inner_html, "changethis", "changed")
+      end)
+      |> Floki.raw_html
+
     assert result == String.replace(expects, "\n", "")
   end
 end
