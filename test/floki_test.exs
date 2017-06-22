@@ -395,7 +395,7 @@ defmodule FlokiTest do
       {"img", [{"src", "http://facebook.com/logo.png"}], []}
     ]
 
-    html = ~s(
+    html = """
     <div>
       <p>
         <span>
@@ -403,7 +403,7 @@ defmodule FlokiTest do
         </span>
       </p>
     </div>
-    )
+    """
 
     assert Floki.find(html, "div > p > img") == []
     assert Floki.find(html, "div > p > span > img") == expected
@@ -419,7 +419,7 @@ defmodule FlokiTest do
       }
     ]
 
-    html = ~s(
+    html = """
     <div>
       <p>
         <span>
@@ -428,7 +428,7 @@ defmodule FlokiTest do
         </span>
       </p>
     </div>
-    )
+    """
 
     assert Floki.find(html, "div > p > span > img + img") == expected
   end
