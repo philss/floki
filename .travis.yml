@@ -13,6 +13,8 @@ matrix:
   exclude:
     - elixir: 1.3
       otp_release: 20.0
+    - elixir: 1.2
+      otp_release: 20.0
 
 sudo: false
 
