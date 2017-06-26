@@ -77,6 +77,18 @@ defmodule FlokiTest do
   </rss>
   """
 
+  @html_with_xml_prefix """
+    <?xml version="1.0" encoding="UTF-8"?>
+    <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+    <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+    </head>
+    <body>
+      <a id="anchor" href="">useless link</a>
+    </body>
+    </html>
+  """
+
   test "parse simple HTML" do
     parsed = Floki.parse(@html)
 
@@ -533,7 +545,7 @@ defmodule FlokiTest do
       <body>
         <div id="links">
           <a class="link foo">A foo</a>
-          <a class="link bar">A bar</a>
+          <a class="link bar" style="crazyColor">A bar</a>
           <a class="link baz">A baz</a>
         </div>
       </body>
@@ -542,6 +554,7 @@ defmodule FlokiTest do
     first_result = Floki.find(html, "a.link:not(.bar)")
     second_result = Floki.find(html, "div#links > a.link:not(.bar)")
     third_result = Floki.find(html, "a.link:not(:nth-child(2))")
+    fourth_result = Floki.find(html, "a.link:not([style*=crazy])")
 
     expected_result = [
       {"a", [{"class", "link foo"}], ["A foo"]},
@@ -551,6 +564,7 @@ defmodule FlokiTest do
     assert first_result == expected_result
     assert first_result == second_result
     assert third_result == expected_result
+    assert fourth_result == expected_result
   end
 
   test "not pseudo-class with multiple selectors" do
@@ -559,7 +573,7 @@ defmodule FlokiTest do
       <body>
         <div id="links">
           <a class="link foo">A foo</a>
-          <a class="link bar">A bar</a>
+          <a class="link bar" style="crazyColor">A bar</a>
           <a class="link baz">A baz</a>
           <a class="link bin">A bin</a>
         </div>
@@ -570,6 +584,7 @@ defmodule FlokiTest do
     second_result = Floki.find(html, "a.link:not(.bar,.baz)")
     third_result = Floki.find(html, "a.link:not(.bar):not(.baz)")
     fourth_result = Floki.find(html, "a.link:not(.bar, .bin):not(.baz)")
+    fifth_result = Floki.find(html, "a.link:not([style*=crazy], .bin):not(.baz)")
 
     foo_match = {"a", [{"class", "link foo"}], ["A foo"]}
     bin_match = {"a", [{"class", "link bin"}], ["A bin"]}
@@ -578,6 +593,7 @@ defmodule FlokiTest do
     assert second_result == [foo_match, bin_match]
     assert third_result == [foo_match, bin_match]
     assert fourth_result == [foo_match]
+    assert fifth_result == [foo_match]
   end
 
   test "pseudo-class selector only" do
@@ -760,5 +776,44 @@ defmodule FlokiTest do
   test "finding doesn't fail when body includes unencoded angles" do
     [{tag_name, _, _}] = Floki.find(@html_with_wrong_angles_encoding, "span")
     assert tag_name == "span"
+  end
+
+  test "html with xml definition tag in it" do
+    html = """
+      <!DOCTYPE html>
+      <html>
+      <head>
+      </head>
+      <body>
+        <div class="text">test</div>
+        <?xml version="1.0" encoding="utf-8"?>
+      </div>
+      </body>
+      </html>
+    """
+    assert Floki.find(html, ".text") == [{"div", [{"class", "text"}], ["test"]}]
+  end
+
+  test "finding doesn't fail when body includes xml version prefix" do
+    [{tag_name, _, _}] = Floki.find(@html_with_xml_prefix, "#anchor")
+    assert tag_name == "a"
+  end
+
+  test "change tag attributes" do
+    html = """
+    <a class="change" href=\"http://not.url/changethis/\">link</a>
+    <a href=\"http://not.url/changethisbutnotrly/\">link</a>
+    <a class="change" href=\"http://not.url/changethis/\">link</a>
+    """
+    expects = """
+    <a class="change" href=\"http://not.url/changed/\">link</a>
+    <a href=\"http://not.url/changethisbutnotrly/\">link</a>
+    <a class="change" href=\"http://not.url/changed/\">link</a>
+    """
+    result = Floki.attr(html, ".change", "href", fn(inner_html) ->
+      String.replace(inner_html, "changethis", "changed")
+    end)
+    |> Floki.raw_html
+    assert result == String.replace(expects, "\n", "")
   end
 end

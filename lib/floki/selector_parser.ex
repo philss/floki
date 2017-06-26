@@ -29,6 +29,7 @@ defmodule Floki.SelectorParser do
   end
 
   defp do_parse([], selector), do: {selector, []}
+  defp do_parse([{:close_parentesis, _} | t], selector), do: {selector, t}
   defp do_parse([{:comma, _}| t], selector), do: {selector, t}
   defp do_parse([{:identifier, _, namespace}, {:namespace_pipe, _} | t], selector) do
     do_parse(t, %{selector | namespace: to_string(namespace)})
@@ -80,24 +81,24 @@ defmodule Floki.SelectorParser do
     do_parse(t, %{selector | pseudo_classes: [%{pseudo_class | value: to_string(pattern)} | pseudo_classes]})
   end
   defp do_parse([{:space, _} | t], selector) do
-    {t, combinator} = consume_combinator(t, :descendant)
+    {remaining_tokens, combinator} = consume_combinator(t, :descendant)
 
-    do_parse(t, %{selector | combinator: combinator})
+    {%{selector | combinator: combinator}, remaining_tokens}
   end
   defp do_parse([{:greater, _} | t], selector) do
-    {t, combinator} = consume_combinator(t, :child)
+    {remaining_tokens, combinator} = consume_combinator(t, :child)
 
-    do_parse(t, %{selector | combinator: combinator})
+    {%{selector | combinator: combinator}, remaining_tokens}
   end
   defp do_parse([{:plus, _} | t], selector) do
-    {t, combinator} = consume_combinator(t, :sibling)
+    {remaining_tokens, combinator} = consume_combinator(t, :sibling)
 
-    do_parse(t, %{selector | combinator: combinator})
+    {%{selector | combinator: combinator}, remaining_tokens}
   end
   defp do_parse([{:tilde, _} | t], selector) do
-    {t, combinator} = consume_combinator(t, :general_sibling)
+    {remaining_tokens, combinator} = consume_combinator(t, :general_sibling)
 
-    do_parse(t, %{selector | combinator: combinator})
+    {%{selector | combinator: combinator}, remaining_tokens}
   end
   defp do_parse([{:unknown, _, unknown} | t], selector) do
     Logger.warn("Unknown token #{inspect unknown}. Ignoring.")
@@ -147,6 +148,9 @@ defmodule Floki.SelectorParser do
     {remaining_tokens, %{combinator | selector: selector}}
   end
 
+  defp do_parse_pseudo_not([], pseudo_class) do
+    {[], pseudo_class}
+  end
   defp do_parse_pseudo_not([{:close_parentesis, _} | t], pseudo_class) do
     {t, pseudo_class}
   end
@@ -155,6 +159,10 @@ defmodule Floki.SelectorParser do
   end
   defp do_parse_pseudo_not(tokens, pseudo_class) do
     do_parse_pseudo_not(tokens, %Selector{}, pseudo_class)
+  end
+  defp do_parse_pseudo_not([], pseudo_not_selector, pseudo_class) do
+    pseudo_class = update_pseudo_not_value(pseudo_class, pseudo_not_selector)
+    {[], pseudo_class}
   end
   defp do_parse_pseudo_not([{:close_parentesis, _} | t], pseudo_not_selector, pseudo_class) do
     pseudo_class = update_pseudo_not_value(pseudo_class, pseudo_not_selector)
@@ -166,6 +174,11 @@ defmodule Floki.SelectorParser do
   end
   defp do_parse_pseudo_not([{:space, _} | t], pseudo_not_selector, pseudo_class) do
     do_parse_pseudo_not(t, pseudo_not_selector, pseudo_class)
+  end
+  defp do_parse_pseudo_not([{'[', _} | _t]=tokens, pseudo_not_selector, pseudo_class) do
+    {pseudo_not_selector, remaining_tokens} = do_parse(tokens, pseudo_not_selector)
+    pseudo_class = update_pseudo_not_value(pseudo_class, pseudo_not_selector)
+    do_parse_pseudo_not(remaining_tokens, pseudo_class)
   end
   defp do_parse_pseudo_not([next_token | t], pseudo_not_selector, pseudo_class) do
     {pseudo_not_selector, _} = do_parse([next_token], pseudo_not_selector)
