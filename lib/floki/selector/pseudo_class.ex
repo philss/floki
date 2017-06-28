@@ -21,7 +21,10 @@ defmodule Floki.Selector.PseudoClass do
     rem(position, 2) == 1
   end
   def match_nth_child?(_, _, %__MODULE__{value: expression}) do
-    Logger.warn("Pseudo-class nth-child with expressions like #{inspect expression} are not supported yet. Ignoring.")
+    Logger.warn(fn ->
+      "Pseudo-class nth-child with expressions like #{inspect expression} are not supported yet. Ignoring."
+    end)
+
     false
   end
 

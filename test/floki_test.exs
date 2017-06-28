@@ -395,7 +395,7 @@ defmodule FlokiTest do
       {"img", [{"src", "http://facebook.com/logo.png"}], []}
     ]
 
-    html = ~s(
+    html = """
     <div>
       <p>
         <span>
@@ -403,7 +403,7 @@ defmodule FlokiTest do
         </span>
       </p>
     </div>
-    )
+    """
 
     assert Floki.find(html, "div > p > img") == []
     assert Floki.find(html, "div > p > span > img") == expected
@@ -419,7 +419,7 @@ defmodule FlokiTest do
       }
     ]
 
-    html = ~s(
+    html = """
     <div>
       <p>
         <span>
@@ -428,7 +428,7 @@ defmodule FlokiTest do
         </span>
       </p>
     </div>
-    )
+    """
 
     assert Floki.find(html, "div > p > span > img + img") == expected
   end
@@ -810,10 +810,13 @@ defmodule FlokiTest do
     <a href=\"http://not.url/changethisbutnotrly/\">link</a>
     <a class="change" href=\"http://not.url/changed/\">link</a>
     """
-    result = Floki.attr(html, ".change", "href", fn(inner_html) ->
-      String.replace(inner_html, "changethis", "changed")
-    end)
-    |> Floki.raw_html
+    result =
+      html
+      |> Floki.attr(".change", "href", fn(inner_html) ->
+        String.replace(inner_html, "changethis", "changed")
+      end)
+      |> Floki.raw_html
+
     assert result == String.replace(expects, "\n", "")
   end
 end

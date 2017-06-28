@@ -114,7 +114,10 @@ defmodule Floki.Selector do
       "fl-contains" ->
         PseudoClass.match_contains?(tree, html_node, pseudo_class)
       unknown_pseudo_class ->
-        Logger.warn("Pseudo-class #{inspect unknown_pseudo_class} is not implemented. Ignoring.")
+        Logger.warn(fn ->
+          "Pseudo-class #{inspect unknown_pseudo_class} is not implemented. Ignoring."
+        end)
+
         false
     end
   end

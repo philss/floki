@@ -101,7 +101,7 @@ defmodule Floki.SelectorParser do
     {%{selector | combinator: combinator}, remaining_tokens}
   end
   defp do_parse([{:unknown, _, unknown} | t], selector) do
-    Logger.warn("Unknown token #{inspect unknown}. Ignoring.")
+    Logger.warn(fn -> "Unknown token #{inspect unknown}. Ignoring." end)
 
     do_parse(t, selector)
   end
@@ -125,7 +125,7 @@ defmodule Floki.SelectorParser do
     consume_attribute(:done, t, attr_selector)
   end
   defp consume_attribute(:consuming, [unknown | t], attr_selector) do
-    Logger.warn("Unknown token #{inspect unknown}. Ignoring.")
+    Logger.warn(fn -> "Unknown token #{inspect unknown}. Ignoring." end)
     consume_attribute(:consuming, t, attr_selector)
   end
 
@@ -175,7 +175,7 @@ defmodule Floki.SelectorParser do
   defp do_parse_pseudo_not([{:space, _} | t], pseudo_not_selector, pseudo_class) do
     do_parse_pseudo_not(t, pseudo_not_selector, pseudo_class)
   end
-  defp do_parse_pseudo_not([{'[', _} | _t]=tokens, pseudo_not_selector, pseudo_class) do
+  defp do_parse_pseudo_not([{'[', _} | _t] = tokens, pseudo_not_selector, pseudo_class) do
     {pseudo_not_selector, remaining_tokens} = do_parse(tokens, pseudo_not_selector)
     pseudo_class = update_pseudo_not_value(pseudo_class, pseudo_not_selector)
     do_parse_pseudo_not(remaining_tokens, pseudo_class)

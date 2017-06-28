@@ -110,7 +110,8 @@ defmodule Floki.SelectorParserTest do
         type: "ul",
         combinator: %Combinator{
           match_type: :descendant,
-          selector: %Selector{attributes: [%AttributeSelector{attribute: "class", match_type: :equal, value: "bar"}],
+          selector: %Selector{attributes: [%AttributeSelector{attribute: "class",
+                                                              match_type: :equal, value: "bar"}],
                               classes: [],
                               pseudo_classes: [],
                               type: "a"}
@@ -146,7 +147,8 @@ defmodule Floki.SelectorParserTest do
       },
       %Selector{
         type: "ol",
-        combinator: %Combinator{match_type: :child, selector: %Selector{attributes: [], classes: ["foo"], pseudo_classes: []}}
+        combinator: %Combinator{match_type: :child,
+                                selector: %Selector{attributes: [], classes: ["foo"], pseudo_classes: []}}
       }
     ]
   end
@@ -213,7 +215,8 @@ defmodule Floki.SelectorParserTest do
       %Selector{
         type: "a",
         classes: ["foo"],
-        pseudo_classes: [%PseudoClass{name: "not", value: [%Selector{classes: ["baz"]}, %Selector{classes: ["bar"]}]}]
+        pseudo_classes: [%PseudoClass{name: "not",
+                                      value: [%Selector{classes: ["baz"]}, %Selector{classes: ["bar"]}]}]
       }
     ]
 
@@ -257,7 +260,10 @@ defmodule Floki.SelectorParserTest do
         pseudo_classes: [
           %PseudoClass{
             name: "not",
-            value: [%Selector{attributes: [%Floki.AttributeSelector{attribute: "style", match_type: :substring_match, value: "crazy"}], classes: [], pseudo_classes: []}]
+            value: [%Selector{attributes: [%Floki.AttributeSelector{attribute: "style",
+                                                                    match_type: :substring_match,
+                                                                    value: "crazy"}],
+                              classes: [], pseudo_classes: []}]
           }
         ],
         type: "a"
@@ -273,7 +279,10 @@ defmodule Floki.SelectorParserTest do
             name: "not",
             value: [
               %Selector{attributes: [], classes: ["bar"], pseudo_classes: []},
-              %Selector{attributes: [%Floki.AttributeSelector{attribute: "style", match_type: :substring_match, value: "crazy"}], classes: [], pseudo_classes: []}
+              %Selector{attributes: [%Floki.AttributeSelector{attribute: "style",
+                                                              match_type: :substring_match,
+                                                              value: "crazy"}],
+                        classes: [], pseudo_classes: []}
             ]
           }
         ],
