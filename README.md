@@ -3,7 +3,6 @@
 [![Build status](https://travis-ci.org/philss/floki.svg?branch=master)](https://travis-ci.org/philss/floki)
 [![Floki version](https://img.shields.io/hexpm/v/floki.svg)](https://hex.pm/packages/floki)
 [![Hex.pm](https://img.shields.io/hexpm/dt/floki.svg)](https://hex.pm/packages/floki)
-[![Deps Status](https://beta.hexfaktor.org/badge/all/github/philss/floki.svg)](https://beta.hexfaktor.org/github/philss/floki)
 [![Inline docs](https://inch-ci.org/github/philss/floki.svg?branch=master)](https://inch-ci.org/github/philss/floki)
 [![Ebert](https://ebertapp.io/github/philss/floki.svg)](https://ebertapp.io/github/philss/floki)
 
@@ -40,24 +39,6 @@ Floki.find(html, "p.headline")
 Floki.find(html, "p.headline")
 |> Floki.raw_html
 # => <p class="headline">Floki</p>
-
-
-Floki.find(html, "a[href^=https]")
-# => [{"a", [{"href", "https://hex.pm/packages/floki"}], ["Hex package"]}]
-
-
-Floki.find(html, "#content a")
-# => [{"a", [{"href", "https://github.com/philss/floki"}], ["Github page"]}]
-
-
-Floki.find(html, "[data-model=user]")
-# => [{"span", [{"data-model", "user"}], ["philss"]}]
-
-
-Floki.find(html, ".headline:nth-child(1), a")
-# => [{"p", [{"class", "headline"}], ["Floki"]},
-# =>  {"a", [{"href", "https://github.com/philss/floki"}], ["Github page"]},
-# =>  {"a", [{"href", "https://hex.pm/packages/floki"}], ["Hex package"]}]
 ```
 
 Each HTML node is represented by a tuple like:
@@ -199,6 +180,37 @@ Floki.find(html, ".headline")
 
 # => "Floki"
 ```
+
+## Supported selectors
+
+Here you find all the [CSS selectors](https://www.w3.org/TR/selectors/#selectors) supported in the current version:
+
+| Pattern         | Description                  |
+|-----------------|------------------------------|
+| *               | any element                  |
+| E               | an element of type `E`       |
+| E[foo]          | an `E` element with a "foo" attribute |
+| E[foo="bar"]    | an E element whose "foo" attribute value is exactly equal to "bar" |
+| E[foo~="bar"]   | an E element whose "foo" attribute value is a list of whitespace-separated values, one of which is exactly equal to "bar" |
+| E[foo^="bar"]   | an E element whose "foo" attribute value begins exactly with the string "bar" |
+| E[foo$="bar"]   | an E element whose "foo" attribute value ends exactly with the string "bar" |
+| E[foo*="bar"]   | an E element whose "foo" attribute value contains the substring "bar" |
+| E[foo\|="en"]    | an E element whose "foo" attribute has a hyphen-separated list of values beginning (from the left) with "en" |
+| E:nth-child(n)  | an E element, the n-th child of its parent |
+| E:first-child   | an E element, first child of its parent |
+| E.warning       | an E element whose class is "warning" |
+| E#myid          | an E element with ID equal to "myid" |
+| E:not(s)        | an E element that does not match simple selector s |
+| E F             | an F element descendant of an E element |
+| E > F           | an F element child of an E element |
+| E + F           | an F element immediately preceded by an E element |
+| E ~ F           | an F element preceded by an E element |
+
+There are also some selectors based on non-standard specifications. They are:
+
+| Pattern              | Description                                         |
+|----------------------|-----------------------------------------------------|
+| E:fl-contains('foo') | an E element that contains "foo" inside a text node |
 
 ## License
 
