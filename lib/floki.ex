@@ -161,6 +161,9 @@ defmodule Floki do
     iex> Floki.attr("<div id='a'></div>", "#a", "id", fn(id) -> String.replace(id, "a", "b") end)
     [{"div", [{"id", "b"}], []}]
 
+    iex> Floki.attr("<div class='class_name'></div>", "div", "id", fn _ -> "b" end)
+    [{"div", [{"id", "b"}, {"class", "class_name"}], []}]
+
   """
   @spec attr(binary | html_tree, binary, binary, (binary -> binary)) :: html_tree
 
@@ -188,13 +191,18 @@ defmodule Floki do
   end
 
   defp mutate_attrs(html_tree_list, _, [], _, _), do: html_tree_list
-  defp mutate_attrs(_, tree, results, attribute_name, mutation) do
+  defp mutate_attrs(_, tree, results, attribute_name, mutation_fn) do
     mutated_nodes = Enum.map(results, fn(result) ->
-      mutated_attributes = Enum.map(result.attributes, fn(attribute) ->
-        with {^attribute_name, attribute_value} <- attribute do
-          {attribute_name, mutation.(attribute_value)}
+      mutated_attributes =
+        if Enum.any?(result.attributes, & match?({^attribute_name, _}, &1)) do
+          Enum.map(result.attributes, fn(attribute) ->
+            with {^attribute_name, attribute_value} <- attribute do
+              {attribute_name, mutation_fn.(attribute_value)}
+            end
+          end)
+        else
+          [{attribute_name, mutation_fn.(nil)} | result.attributes]
         end
-      end)
 
       Map.put(result, :attributes, mutated_attributes)
     end)
