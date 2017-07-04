@@ -8,6 +8,24 @@ defmodule Floki.AttributeSelector do
 
   defstruct match_type: nil, attribute: nil, value: nil
 
+  defimpl String.Chars do
+    def to_string(selector) do
+      "[#{selector.attribute}#{type(selector.match_type)}'#{selector.value}']"
+    end
+
+    defp type(match_type) do
+      case match_type do
+        :equal -> "="
+        :includes -> "~="
+        :dash_match -> "|="
+        :prefix_match -> "^="
+        :sufix_match -> "$="
+        :substring_match -> "*="
+        _ -> ""
+      end
+    end
+  end
+
   # Returns if attributes of a node matches with a given attribute selector.
   def match?(attributes, s = %AttributeSelector{match_type: nil, value: nil}) do
     attribute_present?(s.attribute, attributes)

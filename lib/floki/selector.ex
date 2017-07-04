@@ -15,6 +15,29 @@ defmodule Floki.Selector do
             pseudo_classes: [],
             combinator: nil
 
+  defimpl String.Chars do
+    def to_string(selector) do
+      Enum.join([
+        namespace(selector),
+        selector.type,
+        id(selector),
+        classes(selector),
+        Enum.join(selector.attributes),
+        Enum.join(selector.pseudo_classes),
+        selector.combinator
+      ])
+    end
+
+    defp namespace(%{namespace: nil}), do: ""
+    defp namespace(%{namespace: ns}), do: "#{ns} | "
+
+    defp id(%{id: nil}), do: ""
+    defp id(%{id: id}), do: "##{id}"
+
+    defp classes(%{classes: []}), do: ""
+    defp classes(%{classes: classes}), do: ".#{Enum.join(classes, ".")}"
+  end
+
   @doc false
 
   # Returns if a given node matches with a given selector.
