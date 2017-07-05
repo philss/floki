@@ -799,6 +799,11 @@ defmodule FlokiTest do
     assert tag_name == "a"
   end
 
+  test "we can produce raw_html if it has an xml version prefix" do
+    processed_html = @html_with_xml_prefix |> Floki.parse |> Floki.raw_html
+    assert String.starts_with?(processed_html, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
+  end
+
   test "change tag attributes" do
     html = """
     <a class="change" href=\"http://not.url/changethis/\">link</a>
