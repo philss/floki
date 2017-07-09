@@ -1,8 +1,8 @@
 defmodule Floki.SelectorTest do
   use ExUnit.Case, async: true
 
-  alias Floki.{AttributeSelector, Selector, Combinator}
-  alias Selector.PseudoClass
+  alias Floki.Selector
+  alias Selector.{AttributeSelector, PseudoClass, Combinator}
 
   test "to_string/1 (String.Chars protocol)" do
     attribute1 = %AttributeSelector{match_type: :equal, attribute: "href", value: "#home"}

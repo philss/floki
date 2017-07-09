@@ -1,4 +1,4 @@
-defmodule Floki.Combinator do
+defmodule Floki.Selector.Combinator do
   @moduledoc false
 
   # Represents the conjunction of a combinator with its selector.

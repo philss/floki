@@ -6,9 +6,8 @@ defmodule Floki.Finder do
   # The finder engine traverse the HTML tree searching for nodes matching
   # selectors.
 
-  alias Floki.{Combinator, Selector, SelectorParser, SelectorTokenizer}
-  alias Floki.HTMLTree
-  alias Floki.HTMLTree.HTMLNode
+  alias Floki.{HTMLTree, Selector}
+  alias HTMLTree.HTMLNode
 
   @type html_tree :: tuple | list
   @type selector :: binary | %Selector{} | [%Selector{}]
@@ -58,8 +57,8 @@ defmodule Floki.Finder do
 
   defp get_selectors(selector_as_string) do
     selector_as_string
-    |> SelectorTokenizer.tokenize()
-    |> SelectorParser.parse()
+    |> Selector.Tokenizer.tokenize()
+    |> Selector.Parser.parse()
   end
 
   defp get_matches_for_selectors(tree, html_node, selectors) do
@@ -89,7 +88,7 @@ defmodule Floki.Finder do
   # So the scope of one combinator is the stack (or acc) or the parent one.
   defp traverse_with(_, _, []), do: []
   defp traverse_with(nil, _, results), do: results
-  defp traverse_with(%Combinator{match_type: :child, selector: s}, tree, stack) do
+  defp traverse_with(%Selector.Combinator{match_type: :child, selector: s}, tree, stack) do
     results =
       Enum.flat_map(stack, fn(html_node) ->
         nodes = html_node.children_nodes_ids
@@ -101,7 +100,7 @@ defmodule Floki.Finder do
 
     traverse_with(s.combinator, tree, results)
   end
-  defp traverse_with(%Combinator{match_type: :sibling, selector: s}, tree, stack) do
+  defp traverse_with(%Selector.Combinator{match_type: :sibling, selector: s}, tree, stack) do
     results =
       Enum.flat_map(stack, fn(html_node) ->
         # It treats sibling as list to easily ignores those that didn't match
@@ -117,7 +116,7 @@ defmodule Floki.Finder do
 
     traverse_with(s.combinator, tree, results)
   end
-  defp traverse_with(%Combinator{match_type: :general_sibling, selector: s}, tree, stack) do
+  defp traverse_with(%Selector.Combinator{match_type: :general_sibling, selector: s}, tree, stack) do
     results =
       Enum.flat_map(stack, fn(html_node) ->
         sibling_ids = get_siblings(html_node, tree)
@@ -130,7 +129,7 @@ defmodule Floki.Finder do
 
     traverse_with(s.combinator, tree, results)
   end
-  defp traverse_with(%Combinator{match_type: :descendant, selector: s}, tree, stack) do
+  defp traverse_with(%Selector.Combinator{match_type: :descendant, selector: s}, tree, stack) do
     results =
       Enum.flat_map(stack, fn(html_node) ->
         ids_to_match = get_descendant_ids(html_node.node_id, tree)

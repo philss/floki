@@ -1,9 +1,9 @@
-defmodule Floki.SelectorTokenizerTest do
+defmodule Floki.Selector.TokenizerTest do
   use ExUnit.Case, async: true
-  alias Floki.SelectorTokenizer
+  alias Floki.Selector.Tokenizer
 
   test "empty selector" do
-    assert SelectorTokenizer.tokenize("") == []
+    assert Tokenizer.tokenize("") == []
   end
 
   test "complex selector" do
@@ -14,7 +14,7 @@ defmodule Floki.SelectorTokenizerTest do
     a > b
     """
 
-    assert SelectorTokenizer.tokenize(complex) == [
+    assert Tokenizer.tokenize(complex) == [
       {:identifier, 1, 'ns'},
       {:namespace_pipe, 1},
       {:identifier, 1, 'a'},
@@ -42,7 +42,7 @@ defmodule Floki.SelectorTokenizerTest do
   end
 
   test "prefix match with quoted val" do
-    assert SelectorTokenizer.tokenize("#about-us[href^='contact']") == [
+    assert Tokenizer.tokenize("#about-us[href^='contact']") == [
       {:hash, 1, 'about-us'},
       {'[', 1},
         {:identifier, 1, 'href'},
@@ -53,48 +53,48 @@ defmodule Floki.SelectorTokenizerTest do
   end
 
   test "an unknown token" do
-    assert SelectorTokenizer.tokenize("&") == [
+    assert Tokenizer.tokenize("&") == [
       {:unknown, 1, '&'}
     ]
   end
 
   test "pseudo classes" do
-    assert SelectorTokenizer.tokenize(":nth-child(3)") == [
+    assert Tokenizer.tokenize(":nth-child(3)") == [
       {:pseudo, 1, 'nth-child'},
       {:pseudo_class_int, 1, 3}
     ]
 
-    assert SelectorTokenizer.tokenize(":nth-child(odd)") == [
+    assert Tokenizer.tokenize(":nth-child(odd)") == [
       {:pseudo, 1, 'nth-child'},
       {:pseudo_class_odd, 1}
     ]
 
-    assert SelectorTokenizer.tokenize(":nth-child(even)") == [
+    assert Tokenizer.tokenize(":nth-child(even)") == [
       {:pseudo, 1, 'nth-child'},
       {:pseudo_class_even, 1}
     ]
 
-    assert SelectorTokenizer.tokenize(":nth-child(2n+1)") == [
+    assert Tokenizer.tokenize(":nth-child(2n+1)") == [
       {:pseudo, 1, 'nth-child'},
       {:pseudo_class_pattern, 1, '2n+1'}
     ]
 
-    assert SelectorTokenizer.tokenize(":nth-child(2n-1)") == [
+    assert Tokenizer.tokenize(":nth-child(2n-1)") == [
       {:pseudo, 1, 'nth-child'},
       {:pseudo_class_pattern, 1, '2n-1'}
     ]
 
-    assert SelectorTokenizer.tokenize(":nth-child(n+0)") == [
+    assert Tokenizer.tokenize(":nth-child(n+0)") == [
       {:pseudo, 1, 'nth-child'},
       {:pseudo_class_pattern, 1, 'n+0'}
     ]
 
-    assert SelectorTokenizer.tokenize(":nth-child(-n+6)") == [
+    assert Tokenizer.tokenize(":nth-child(-n+6)") == [
       {:pseudo, 1, 'nth-child'},
       {:pseudo_class_pattern, 1, '-n+6'}
     ]
 
-    assert SelectorTokenizer.tokenize(":fl-contains('foo')") == [
+    assert Tokenizer.tokenize(":fl-contains('foo')") == [
       {:pseudo, 1, 'fl-contains'},
       {:pseudo_class_quoted, 1, 'foo'}
     ]
