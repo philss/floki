@@ -1,4 +1,4 @@
-defmodule Floki.SelectorTokenizer do
+defmodule Floki.Selector.Tokenizer do
   @moduledoc false
 
   # It decodes a given selector and returns the tokens that represents it.

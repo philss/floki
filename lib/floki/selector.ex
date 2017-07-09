@@ -3,9 +3,9 @@ defmodule Floki.Selector do
   @moduledoc false
   # Represents a CSS selector. It also have functions to match nodes with a given selector.
 
-  alias Floki.{Selector, AttributeSelector}
-  alias Floki.Selector.PseudoClass
-  alias Floki.HTMLTree.{HTMLNode, Text, Comment}
+  alias Floki.{Selector, HTMLTree}
+  alias Selector.{AttributeSelector, PseudoClass}
+  alias HTMLTree.{HTMLNode, Text, Comment}
 
   defstruct id: nil,
             type: nil,

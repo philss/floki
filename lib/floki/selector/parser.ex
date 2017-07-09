@@ -1,18 +1,18 @@
-defmodule Floki.SelectorParser do
+defmodule Floki.Selector.Parser do
   require Logger
 
   @moduledoc false
-  # Parses a list of tokens returned from `SelectorTokenizer` and transfor into a `Selector`.
+  # Parses a list of tokens returned from `Tokenizer` and transfor into a `Selector`.
 
-  alias Floki.{Selector, SelectorTokenizer, AttributeSelector, Combinator}
-  alias Floki.Selector.PseudoClass
+  alias Floki.Selector
+  alias Selector.{Tokenizer, PseudoClass, AttributeSelector, Combinator}
 
   @attr_match_types [:equal, :dash_match, :includes, :prefix_match, :sufix_match, :substring_match]
 
   # Returns a list of `Selector` structs with the parsed selectors.
 
   def parse(selector) when is_binary(selector) do
-    token_list = SelectorTokenizer.tokenize(selector)
+    token_list = Tokenizer.tokenize(selector)
     parse(token_list)
   end
   def parse(tokens) do

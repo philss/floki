@@ -1,11 +1,11 @@
-defmodule Floki.SelectorParserTest do
+defmodule Floki.Selector.ParserTest do
   use ExUnit.Case, async: true
   import ExUnit.CaptureLog
 
   require Logger
 
-  alias Floki.{Selector, Combinator, AttributeSelector, SelectorParser}
-  alias Floki.Selector.PseudoClass
+  alias Floki.Selector
+  alias Selector.{Parser, Combinator, AttributeSelector, PseudoClass}
 
   setup_all do
     :ok = Logger.remove_backend(:console)
@@ -13,19 +13,19 @@ defmodule Floki.SelectorParserTest do
   end
 
   def tokenize(string) do
-    Floki.SelectorTokenizer.tokenize(string)
+    Selector.Tokenizer.tokenize(string)
   end
 
   def log_capturer(string) do
     fn ->
-      SelectorParser.parse(string)
+      Parser.parse(string)
     end
   end
 
   test "multiple selectors" do
     tokens = tokenize("ol, ul")
 
-    assert SelectorParser.parse(tokens) == [
+    assert Parser.parse(tokens) == [
       %Selector{type: "ol"},
       %Selector{type: "ul"}
     ]
@@ -34,13 +34,13 @@ defmodule Floki.SelectorParserTest do
   test "type with classes" do
     tokens = tokenize("a.link.button")
 
-    assert SelectorParser.parse(tokens) == [%Selector{type: "a", classes: ["button", "link"]}]
+    assert Parser.parse(tokens) == [%Selector{type: "a", classes: ["button", "link"]}]
   end
 
   test "type with id" do
     tokens = tokenize("img#logo")
 
-    assert SelectorParser.parse(tokens) == [%Selector{type: "img", id: "logo"}]
+    assert Parser.parse(tokens) == [%Selector{type: "img", id: "logo"}]
   end
 
   test "class with attributes" do
@@ -48,7 +48,7 @@ defmodule Floki.SelectorParserTest do
     .link[href='settings.html'][data-env|=test][section~=admin][page^=pass][page$=auth][title*=chan]
     """)
 
-    assert SelectorParser.parse(tokens) == [
+    assert Parser.parse(tokens) == [
       %Selector{
         classes: ["link"],
         attributes: [
@@ -78,7 +78,7 @@ defmodule Floki.SelectorParserTest do
   test "descendant selector" do
     tokens = tokenize("a b.foo c")
 
-    assert SelectorParser.parse(tokens) == [
+    assert Parser.parse(tokens) == [
       %Selector{
         type: "a",
         combinator: %Combinator{
@@ -95,7 +95,7 @@ defmodule Floki.SelectorParserTest do
   test "multiple descendant selectors" do
     tokens = tokenize("a b.foo c, ul a[class=bar]")
 
-    assert SelectorParser.parse(tokens) == [
+    assert Parser.parse(tokens) == [
       %Selector{
         type: "a",
         combinator: %Combinator{
@@ -123,7 +123,7 @@ defmodule Floki.SelectorParserTest do
   test "child selector" do
     tokens = tokenize("a > b")
 
-    assert SelectorParser.parse(tokens) == [
+    assert Parser.parse(tokens) == [
       %Selector{
         type: "a",
         combinator: %Combinator{
@@ -137,7 +137,7 @@ defmodule Floki.SelectorParserTest do
   test "multiple child selectors" do
     tokens = tokenize("a > b, ol > .foo")
 
-    assert SelectorParser.parse(tokens) == [
+    assert Parser.parse(tokens) == [
       %Selector{
         type: "a",
         combinator: %Combinator{
@@ -156,7 +156,7 @@ defmodule Floki.SelectorParserTest do
   test "namespace" do
     tokens = tokenize("xyz | a")
 
-    assert SelectorParser.parse(tokens) == [
+    assert Parser.parse(tokens) == [
       %Selector{
         type: "a",
         namespace: "xyz"
@@ -167,7 +167,7 @@ defmodule Floki.SelectorParserTest do
   test "nth-child pseudo-class" do
     tokens = tokenize("li:nth-child(2)")
 
-    assert SelectorParser.parse(tokens) == [
+    assert Parser.parse(tokens) == [
       %Selector{
         type: "li",
         pseudo_classes: [%PseudoClass{name: "nth-child", value: 2}],
@@ -176,7 +176,7 @@ defmodule Floki.SelectorParserTest do
 
     tokens = tokenize("tr:nth-child(odd)")
 
-    assert SelectorParser.parse(tokens) == [
+    assert Parser.parse(tokens) == [
       %Selector{
         type: "tr",
         pseudo_classes: [%PseudoClass{name: "nth-child", value: "odd"}]
@@ -185,7 +185,7 @@ defmodule Floki.SelectorParserTest do
 
     tokens = tokenize("td:nth-child(even)")
 
-    assert SelectorParser.parse(tokens) == [
+    assert Parser.parse(tokens) == [
       %Selector{
         type: "td",
         pseudo_classes: [%PseudoClass{name: "nth-child", value: "even"}]
@@ -194,7 +194,7 @@ defmodule Floki.SelectorParserTest do
 
     tokens = tokenize("div:nth-child(-n+3)")
 
-    assert SelectorParser.parse(tokens) == [
+    assert Parser.parse(tokens) == [
       %Selector{
         type: "div",
         pseudo_classes: [%PseudoClass{name: "nth-child", value: "-n+3"}]
@@ -203,7 +203,7 @@ defmodule Floki.SelectorParserTest do
   end
 
   test "not pseudo-class" do
-    assert SelectorParser.parse("a.foo:not(.bar)") == [
+    assert Parser.parse("a.foo:not(.bar)") == [
       %Selector{
         type: "a",
         classes: ["foo"],
@@ -211,7 +211,7 @@ defmodule Floki.SelectorParserTest do
       }
     ]
 
-    assert SelectorParser.parse("a.foo:not(.bar, .baz)") == [
+    assert Parser.parse("a.foo:not(.bar, .baz)") == [
       %Selector{
         type: "a",
         classes: ["foo"],
@@ -220,7 +220,7 @@ defmodule Floki.SelectorParserTest do
       }
     ]
 
-    assert SelectorParser.parse("a.foo:not(.bar):not(.baz)") == [
+    assert Parser.parse("a.foo:not(.bar):not(.baz)") == [
       %Selector{
         type: "a",
         classes: ["foo"],
@@ -231,7 +231,7 @@ defmodule Floki.SelectorParserTest do
       }
     ]
 
-    assert SelectorParser.parse("li:not(:nth-child(2)) a") == [
+    assert Parser.parse("li:not(:nth-child(2)) a") == [
       %Selector{
         type: "li",
         pseudo_classes: [
@@ -245,7 +245,7 @@ defmodule Floki.SelectorParserTest do
       }
     ]
 
-    assert SelectorParser.parse("a.foo:not(.bar > .baz)") == [
+    assert Parser.parse("a.foo:not(.bar > .baz)") == [
       %Selector{
         type: "a",
         classes: ["foo"],
@@ -253,16 +253,16 @@ defmodule Floki.SelectorParserTest do
       }
     ]
 
-    assert SelectorParser.parse("a.foo:not([style*=crazy])") == [
+    assert Parser.parse("a.foo:not([style*=crazy])") == [
       %Selector{
         attributes: [],
         classes: ["foo"],
         pseudo_classes: [
           %PseudoClass{
             name: "not",
-            value: [%Selector{attributes: [%Floki.AttributeSelector{attribute: "style",
-                                                                    match_type: :substring_match,
-                                                                    value: "crazy"}],
+            value: [%Selector{attributes: [%AttributeSelector{attribute: "style",
+                                                              match_type: :substring_match,
+                                                              value: "crazy"}],
                               classes: [], pseudo_classes: []}]
           }
         ],
@@ -270,7 +270,7 @@ defmodule Floki.SelectorParserTest do
       }
     ]
 
-    assert SelectorParser.parse("a.foo:not([style*=crazy], .bar)") == [
+    assert Parser.parse("a.foo:not([style*=crazy], .bar)") == [
       %Selector{
         attributes: [],
         classes: ["foo"],
@@ -279,9 +279,9 @@ defmodule Floki.SelectorParserTest do
             name: "not",
             value: [
               %Selector{attributes: [], classes: ["bar"], pseudo_classes: []},
-              %Selector{attributes: [%Floki.AttributeSelector{attribute: "style",
-                                                              match_type: :substring_match,
-                                                              value: "crazy"}],
+              %Selector{attributes: [%AttributeSelector{attribute: "style",
+                                                        match_type: :substring_match,
+                                                        value: "crazy"}],
                         classes: [], pseudo_classes: []}
             ]
           }
@@ -291,11 +291,11 @@ defmodule Floki.SelectorParserTest do
     ]
 
     assert capture_log(log_capturer("a.foo:not(.bar > .baz)")) =~
-            "module=Floki.SelectorParser  Only simple selectors are allowed in :not() pseudo-class. Ignoring."
+            "module=Floki.Selector.Parser  Only simple selectors are allowed in :not() pseudo-class. Ignoring."
   end
 
   test "warn unknown tokens" do
-    assert capture_log(log_capturer("a { b")) =~ "module=Floki.SelectorParser  Unknown token '{'. Ignoring."
-    assert capture_log(log_capturer("a + b@")) =~ "module=Floki.SelectorParser  Unknown token '@'. Ignoring."
+    assert capture_log(log_capturer("a { b")) =~ "module=Floki.Selector.Parser  Unknown token '{'. Ignoring."
+    assert capture_log(log_capturer("a + b@")) =~ "module=Floki.Selector.Parser  Unknown token '@'. Ignoring."
   end
 end

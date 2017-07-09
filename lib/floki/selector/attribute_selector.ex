@@ -1,10 +1,10 @@
-defmodule Floki.AttributeSelector do
+defmodule Floki.Selector.AttributeSelector do
   @moduledoc false
 
   # It is very similar to the `Selector` module, but is specialized in attributes
   # and attribute selectors.
 
-  alias Floki.AttributeSelector
+  alias Floki.Selector.AttributeSelector
 
   defstruct match_type: nil, attribute: nil, value: nil
 
