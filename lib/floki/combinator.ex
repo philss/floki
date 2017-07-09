@@ -15,4 +15,18 @@ defmodule Floki.Combinator do
   #   e.g.: "a ~ b"
 
   defstruct match_type: nil, selector: nil
+
+  defimpl String.Chars do
+    def to_string(combinator) do
+      match_type = case combinator.match_type do
+        :descendant -> " "
+        :child -> " > "
+        :adjacent_sibling -> " + "
+        :general_sibling -> " ~ "
+        _ -> ""
+      end
+
+      "#{match_type}#{combinator.selector}"
+    end
+  end
 end

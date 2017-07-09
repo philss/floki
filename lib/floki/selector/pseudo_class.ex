@@ -8,6 +8,18 @@ defmodule Floki.Selector.PseudoClass do
 
   alias Floki.HTMLTree.{HTMLNode, Text}
 
+  defimpl String.Chars do
+    def to_string(%{name: name, value: nil}) do
+      ":#{name}"
+    end
+    def to_string(%{name: name, value: selectors}) when is_list(selectors) do
+      ":#{name}(#{Enum.join(selectors)})"
+    end
+    def to_string(pseudo_class) do
+      ":#{pseudo_class.name}(#{pseudo_class.value})"
+    end
+  end
+
   def match_nth_child?(_, %HTMLNode{parent_node_id: nil}, _), do: false
   def match_nth_child?(tree, html_node, %__MODULE__{value: position}) when is_integer(position) do
     node_position(tree, html_node) == position
