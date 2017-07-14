@@ -70,7 +70,7 @@ Add Floki to your `mix.exs`:
 ```elixir
 defp deps do
   [
-    {:floki, "~> 0.17.0"}
+    {:floki, "~> x.x.x"}
   ]
 end
 ```
