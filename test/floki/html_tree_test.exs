@@ -209,4 +209,46 @@ defmodule Floki.HTMLTreeTest do
                                                   children_nodes_ids: [6, 3, 2],
                                                   node_id: 1}) == expected_tuple
   end
+
+  test "Enum functions with a HTMLTree" do
+    html_node1 = %HTMLNode{
+      type: "html",
+      children_nodes_ids: [5, 2],
+      node_id: 1
+    }
+
+    html_node2 = %HTMLNode{
+      type: "a",
+      attributes: [{"href", "/home"}],
+      parent_node_id: 1,
+      children_nodes_ids: [3],
+      node_id: 2
+    }
+
+    html_node3 = %HTMLNode{
+      type: "b",
+      parent_node_id: 2,
+      children_nodes_ids: [4],
+      node_id: 3
+    }
+
+    html_node4 = %Text{content: "click me", parent_node_id: 3, node_id: 4}
+
+    html_tree = %HTMLTree{
+     root_nodes_ids: [1],
+     node_ids: [4, 3, 2, 1],
+     nodes: %{
+       1 => html_node1,
+       2 => html_node2,
+       3 => html_node3,
+       4 => html_node4
+     }
+    }
+
+    assert Enum.map(html_tree, &(&1)) == [html_node1, html_node2, html_node3, html_node4]
+    assert Enum.take(html_tree, 2) == [html_node1, html_node2]
+    assert Enum.count(html_tree) == 4
+    assert Enum.member?(html_tree, html_node3)
+    refute Enum.member?(html_tree, %{html_node3 | type: "marquee"})
+  end
 end
