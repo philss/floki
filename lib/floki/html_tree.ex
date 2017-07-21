@@ -145,4 +145,30 @@ defmodule Floki.HTMLTree do
     |> Map.put(new_node.node_id, new_node)
     |> Map.put(new_node.parent_node_id, updated_parent)
   end
+
+  # Enables using functions from `Enum` and `Stream` modules
+  defimpl Enumerable do
+    def count(html_tree) do
+      {:ok, length(html_tree.node_ids)}
+    end
+
+    def member?(html_tree, html_node) do
+      a_node = Map.get(html_tree.nodes, html_node.node_id)
+
+      {:ok, a_node === html_node}
+    end
+
+    def reduce(html_tree, state, fun) do
+      do_reduce(%{html_tree | node_ids: Enum.reverse(html_tree.node_ids)}, state, fun)
+    end
+
+    defp do_reduce(_, {:halt, acc}, _fun), do: {:halted, acc}
+    defp do_reduce(tree, {:suspend, acc}, fun), do: {:suspended, acc, &do_reduce(tree, &1, fun)}
+    defp do_reduce(%HTMLTree{node_ids: []}, {:cont, acc}, _fun), do: {:done, acc}
+    defp do_reduce(%HTMLTree{node_ids: [h | t]} = html_tree, {:cont, acc}, fun) do
+      tree = %{html_tree | node_ids: t}
+      head_node = Map.get(html_tree.nodes, h)
+      do_reduce(tree, fun.(head_node, acc), fun)
+    end
+  end
 end
