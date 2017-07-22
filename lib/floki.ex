@@ -218,14 +218,24 @@ defmodule Floki do
     |> Enum.map(fn(html_node) -> HTMLTree.to_tuple(tree, html_node) end)
   end
 
-  def transform(html_tree_list, transformation) when is_list(html_tree_list) do
-    Enum.map(html_tree_list, fn(html_tree) ->
-      Finder.apply_transformation(html_tree, transformation)
-    end)
+  @doc """
+  It receives a HTML tree structure as tuple and maps
+  through all nodes with a given function that receives
+  a tuple with {name, attributes}.
+
+  It returns that structure transformed by the function.
+
+  ## Examples
+
+      iex> html = {"div", [{"class", "foo"}], ["text"]}
+      iex> Floki.map(html, fn({name, attrs}) -> {name, [{"data-name", "bar"} | attrs]} end)
+      {"div", [{"data-name", "bar"}, {"class", "foo"}], ["text"]}
+
+  """
+  def map(html_tree_list, fun) when is_list(html_tree_list) do
+    Enum.map(html_tree_list, &(Finder.map(&1, fun)))
   end
-  def transform(html_tree, transformation) do
-    Finder.apply_transformation(html_tree, transformation)
-  end
+  def map(html_tree, fun), do: Finder.map(html_tree, fun)
 
   @doc """
   Returns the text nodes from a HTML tree.
