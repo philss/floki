@@ -152,10 +152,13 @@ defmodule Floki.HTMLTree do
       {:ok, length(html_tree.node_ids)}
     end
 
-    def member?(html_tree, html_node) do
-      a_node = Map.get(html_tree.nodes, html_node.node_id)
+    def member?(html_tree, %{node_id: node_id} = html_node) do
+      a_node = Map.get(html_tree.nodes, node_id)
 
       {:ok, a_node === html_node}
+    end
+    def member?(_, _) do
+      {:ok, false}
     end
 
     def reduce(html_tree, state, fun) do

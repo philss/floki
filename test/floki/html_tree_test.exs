@@ -250,5 +250,6 @@ defmodule Floki.HTMLTreeTest do
     assert Enum.count(html_tree) == 4
     assert Enum.member?(html_tree, html_node3)
     refute Enum.member?(html_tree, %{html_node3 | type: "marquee"})
+    refute Enum.member?(html_tree, 42)
   end
 end
