@@ -156,27 +156,63 @@ defmodule FlokiTest do
   # Floki.raw_html/2
 
   test "raw_html" do
-    raw_html = @basic_html |> Floki.parse |> Floki.raw_html
-    assert raw_html == String.split(@basic_html, "\n") |> Enum.map(&(String.strip(&1))) |> Enum.join("")
+    raw_html =
+      @basic_html
+      |> Floki.parse
+      |> Floki.raw_html
+
+    original_without_spaces =
+      @basic_html
+      |> String.split("\n")
+      |> Enum.map(&(String.trim(&1)))
+      |> Enum.join("")
+
+    assert raw_html == original_without_spaces
   end
 
   test "raw_html (html with data attributes)" do
-    raw_html = @html_with_data_attributes |> Floki.parse |> Floki.raw_html
-    assert raw_html == String.split(raw_html, "\n") |> Enum.map(&(String.strip(&1))) |> Enum.join("")
+    raw_html =
+      @html_with_data_attributes
+      |> Floki.parse
+      |> Floki.raw_html
+
+    raw_without_spaces =
+      raw_html
+      |> String.split("\n")
+      |> Enum.map(&(String.trim(&1)))
+      |> Enum.join("")
+
+    assert raw_html == raw_without_spaces
   end
 
   test "raw_html (with comment)" do
-    raw_html = @html_with_img |> Floki.parse |> Floki.raw_html
-    assert raw_html == String.split(raw_html, "\n") |> Enum.map(&(String.strip(&1))) |> Enum.join("")
+    raw_html =
+      @html_with_img
+      |> Floki.parse
+      |> Floki.raw_html
+
+    raw_without_spaces =
+      raw_html
+      |> String.split("\n")
+      |> Enum.map(&(String.trim(&1)))
+      |> Enum.join("")
+
+    assert raw_html == raw_without_spaces
   end
 
   test "raw_html (after find)" do
-    raw_html = @basic_html |> Floki.parse |> Floki.find("a") |> Floki.raw_html
+    raw_html =
+      @basic_html
+      |> Floki.parse
+      |> Floki.find("a")
+      |> Floki.raw_html
+
     assert raw_html == ~s(<a href="uol.com.br" class="bar"><span>UOL</span><img src="foo.png"/></a>)
   end
 
   test "raw_html (with boolean attribute)" do
     raw_html = Floki.raw_html({"div", ["hidden"], []})
+
     assert raw_html == "<div hidden></div>"
   end
 

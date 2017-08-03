@@ -103,7 +103,7 @@ defmodule Floki do
   defp tag_attrs(attr_list) do
     attr_list
     |> Enum.reduce("", &build_attrs/2)
-    |> String.strip
+    |> String.trim
   end
 
   defp build_attrs({attr, value}, attrs), do: ~s(#{attrs} #{attr}="#{value}")
