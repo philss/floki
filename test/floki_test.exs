@@ -216,6 +216,18 @@ defmodule FlokiTest do
     assert raw_html == "<div hidden></div>"
   end
 
+  test "raw_html (with self closing tag without content)" do
+    raw_html = Floki.raw_html({"link", [{"href", "www.example.com"}], []})
+
+    assert raw_html == "<link href=\"www.example.com\"/>"
+  end
+
+  test "raw_html (with self closing tag with content)" do
+    raw_html = Floki.raw_html({"link", [], ["www.example.com"]})
+
+    assert raw_html == "<link>www.example.com</link>"
+  end
+
   # Floki.find/2 - Classes
 
   test "find elements with a given class" do
