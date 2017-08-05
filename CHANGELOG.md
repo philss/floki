@@ -1,9 +1,32 @@
 # Change log
 
 All notable changes to this project will be documented in this file.
-This project adheres to [Semantic Versioning](http://semver.org/).
+
+The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
+and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased][unreleased]
+
+## [0.18.0] - 2017-08-05
+
+### Added
+
+- Added `Floki.attr/4` that receives a function enabling manipulation of attribute values - thanks [@erikdsi](https://github.com/erikdsi).
+- Implement the String.Chars protocol for Floki.Selector.
+- Implement the Enumerable protocol for Floki.HTMLTree.
+
+### Changed
+
+- Changed `Floki.transform/2` to `Floki.map/2` and `Floki.Finder.apply_transform/2` to `Floki.Finder.map/2` - thanks [@aphillipo](https://github.com/aphillipo).
+
+### Fixed
+
+- Fix `Floki.raw_html/1` to consider XML prefixes - thanks [@sergey-kintsel](https://github.com/sergey-kintsel).
+- Fix `raw_html` for self closing tags with content - thanks [@navinpeiris](https://github.com/navinpeiris).
+
+### Removed
+
+- Removed support for Elixir 1.2.
 
 ## [0.17.2] - 2017-05-25
 
@@ -305,7 +328,8 @@ of the parent element inside HTML.
 
 - Elixir version requirement from "~> 1.0.0" to ">= 1.0.0".
 
-[unreleased]: https://github.com/philss/floki/compare/v0.17.2...HEAD
+[unreleased]: https://github.com/philss/floki/compare/v0.18.0...HEAD
+[0.18.0]: https://github.com/philss/floki/compare/v0.17.2...v0.18.0
 [0.17.2]: https://github.com/philss/floki/compare/v0.17.1...v0.17.2
 [0.17.1]: https://github.com/philss/floki/compare/v0.17.0...v0.17.1
 [0.17.0]: https://github.com/philss/floki/compare/v0.16.0...v0.17.0
