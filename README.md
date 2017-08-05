@@ -70,7 +70,7 @@ Add Floki to your `mix.exs`:
 ```elixir
 defp deps do
   [
-    {:floki, "~> 0.17.0"}
+    {:floki, "~> 0.18.0"}
   ]
 end
 ```
@@ -105,7 +105,7 @@ After setup Rust, you need to add `html5ever` NIF to your dependency list:
 ```elixir
 defp deps do
   [
-    {:floki, "~> 0.17.0"},
+    {:floki, "~> 0.18.0"},
     {:html5ever, "~> 0.5.0"}
   ]
 end
