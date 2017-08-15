@@ -1,6 +1,6 @@
 # Code of Conduct
 
-Contact: Philip Sampaio Silva - philip.sampaio@gmail.com
+Contact: Philip Sampaio Silva - philip.sampaio+flokiconduct@gmail.com
 
 ## Why have a Code of Conduct?
 
@@ -45,7 +45,7 @@ Other Floki related activities (such as conferences, meetups, and other unoffici
 
 Project maintainers may remove, edit, or reject comments, commits, code, wiki edits, issues, and other contributions that are not aligned to this Code of Conduct.
 
-Instances of abusive, harassing, or otherwise unacceptable behavior may be reported by emailing: philip.sampaio@gmail.com. All complaints will be reviewed and investigated and will result in a response that is deemed necessary and appropriate to the circumstances. **All reports will be kept confidential**.
+Instances of abusive, harassing, or otherwise unacceptable behavior may be reported by emailing: philip.sampaio+flokiconduct@gmail.com. All complaints will be reviewed and investigated and will result in a response that is deemed necessary and appropriate to the circumstances. **All reports will be kept confidential**.
 
 **The goal of the Code of Conduct is to resolve conflicts in the most harmonious way possible**. We hope that in most cases issues may be resolved through polite discussion and mutual agreement. Bannings and other forceful measures are to be employed only as a last resort. **Do not** post about the issue publicly or try to rally sentiment against a particular individual or group.
 
