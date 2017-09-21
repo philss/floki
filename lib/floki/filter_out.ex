@@ -30,7 +30,10 @@ defmodule Floki.FilterOut do
 
         case html_tree do
           tree when is_tuple(tree) ->
-            hd(html_as_tuples)
+            case html_as_tuples do
+              [] -> []
+              [head | _] -> head
+            end
           trees when is_list(trees) ->
             html_as_tuples
         end
