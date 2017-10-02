@@ -23,6 +23,8 @@ defmodule Floki.HTMLTree do
 
   def build(html_tuples) when is_list(html_tuples) do
     reducer = fn
+      ({:pi, _}, tree) -> tree
+      ({:pi, _, _}, tree) -> tree
       ({tag, attrs, children}, tree) ->
         root_id = IDSeeder.seed(tree.node_ids)
 

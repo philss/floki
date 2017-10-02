@@ -91,6 +91,29 @@ defmodule Floki.HTMLTreeTest do
     }
   end
 
+  test "builds the tree ignoring XML tag" do
+    xml = [
+      {:pi, "xml", [{"version", "1.0"}]},
+      {"catalog", [], [
+        {"book", [{"id", "bk101"}], [{"author", [], ["Gambardella, Matthew"]}]}]}
+    ]
+
+    assert HTMLTree.build(xml) == %HTMLTree{
+      root_nodes_ids: [1],
+      node_ids: [4, 3, 2, 1],
+      nodes: %{
+        1 => %HTMLNode{type: "catalog", children_nodes_ids: [2], node_id: 1},
+        2 => %HTMLNode{type: "book",
+                       attributes: [{"id", "bk101"}],
+                       children_nodes_ids: [3],
+                       node_id: 2,
+                       parent_node_id: 1},
+        3 => %HTMLNode{type: "author", children_nodes_ids: [4], node_id: 3, parent_node_id: 2},
+        4 => %Text{content: "Gambardella, Matthew", node_id: 4, parent_node_id: 3}
+      }
+    }
+  end
+
   test "builds the root node ids in the right order" do
     tuples = [{"p", [], ["1"]}, {"p", [], ["2"]}]
     tree = HTMLTree.build(tuples)
