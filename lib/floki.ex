@@ -161,11 +161,12 @@ defmodule Floki do
   with the function `mutation` and returns the whole element tree
 
   ## Examples
-    iex> Floki.attr("<div id='a'></div>", "#a", "id", fn(id) -> String.replace(id, "a", "b") end)
-    [{"div", [{"id", "b"}], []}]
 
-    iex> Floki.attr("<div class='class_name'></div>", "div", "id", fn _ -> "b" end)
-    [{"div", [{"id", "b"}, {"class", "class_name"}], []}]
+      iex> Floki.attr("<div id='a'></div>", "#a", "id", fn(id) -> String.replace(id, "a", "b") end)
+      [{"div", [{"id", "b"}], []}]
+
+      iex> Floki.attr("<div class='class_name'></div>", "div", "id", fn _ -> "b" end)
+      [{"div", [{"id", "b"}, {"class", "class_name"}], []}]
 
   """
   @spec attr(binary | html_tree, binary, binary, (binary -> binary)) :: html_tree
