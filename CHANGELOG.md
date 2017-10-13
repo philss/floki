@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased][unreleased]
 
+## [0.18.1] - 2017-10-13
+
+### Added
+
+- Added a Code of Conduct.
+
+### Fixed
+
+- Fix XML tag when building HTML tree.
+- Return empty list when Floki.filter_out/2 result is empty.
+
 ## [0.18.0] - 2017-08-05
 
 ### Added
@@ -328,7 +339,8 @@ of the parent element inside HTML.
 
 - Elixir version requirement from "~> 1.0.0" to ">= 1.0.0".
 
-[unreleased]: https://github.com/philss/floki/compare/v0.18.0...HEAD
+[unreleased]: https://github.com/philss/floki/compare/v0.18.1...HEAD
+[0.18.1]: https://github.com/philss/floki/compare/v0.18.0...v0.18.1
 [0.18.0]: https://github.com/philss/floki/compare/v0.17.2...v0.18.0
 [0.17.2]: https://github.com/philss/floki/compare/v0.17.1...v0.17.2
 [0.17.1]: https://github.com/philss/floki/compare/v0.17.0...v0.17.1
