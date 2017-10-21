@@ -21,6 +21,11 @@ defmodule Floki.Selector.PseudoClass do
   end
 
   def match_nth_child?(_, %HTMLNode{parent_node_id: nil}, _), do: false
+  def match_nth_child?(tree, html_node, %__MODULE__{value: -1}) do
+    children_nodes_ids = get_children_nodes_ids(tree, html_node.parent_node_id)
+    {last_child_id, _} = Enum.max_by(children_nodes_ids, fn({_, pos}) -> pos end)
+    last_child_id == html_node.node_id
+  end
   def match_nth_child?(tree, html_node, %__MODULE__{value: position}) when is_integer(position) do
     node_position(tree, html_node) == position
   end
@@ -52,15 +57,18 @@ defmodule Floki.Selector.PseudoClass do
   end
 
   defp node_position(tree, html_node) do
-    parent_node = Map.get(tree.nodes, html_node.parent_node_id)
-    children_nodes_ids = parent_node.children_nodes_ids
-                         |> Enum.reverse
-                         |> filter_only_html_nodes(tree.nodes)
-                         |> Enum.with_index(1)
-
+    children_nodes_ids = get_children_nodes_ids(tree, html_node.parent_node_id)
     {_node_id, position} = Enum.find(children_nodes_ids, fn({id, _}) -> id == html_node.node_id end)
 
     position
+  end
+
+  defp get_children_nodes_ids(tree, parent_node_id) do
+    parent_node = Map.get(tree.nodes, parent_node_id)
+    parent_node.children_nodes_ids
+    |> Enum.reverse
+    |> filter_only_html_nodes(tree.nodes)
+    |> Enum.with_index(1)
   end
 
   defp filter_only_html_nodes(ids, nodes) do

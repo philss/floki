@@ -587,6 +587,35 @@ defmodule FlokiTest do
     ]
   end
 
+  test "get elements by last-child pseudo-class" do
+    html = """
+    <html>
+    <body>
+      <div>
+        <p>1</p>
+        <p>2</p>
+      </div>
+      ignores this text
+      <!-- also ignores this comment -->
+      <div>
+        <p>3</p>
+        <h2>4</h2>
+      </div>
+      ignores this text
+      <!-- also ignores this comment -->
+    </html>
+    """
+
+    assert Floki.find(html, "p:last-child") == [
+      {"p", [], ["2"]}
+    ]
+
+    assert Floki.find(html, "div :last-child") == [
+      {"p", [], ["2"]},
+      {"h2", [], ["4"]}
+    ]
+  end
+
   test "not pseudo-class" do
     html = """
     <html>
