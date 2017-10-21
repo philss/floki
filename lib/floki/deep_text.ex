@@ -14,13 +14,16 @@ defmodule Floki.DeepText do
 
   defp get_text(text, "", _sep) when is_binary(text), do: text
   defp get_text(text, acc, sep) when is_binary(text), do: Enum.join([acc, text], sep)
+
   defp get_text(nodes, acc, sep) when is_list(nodes) do
-    Enum.reduce nodes, acc, fn(child, istr) ->
+    Enum.reduce(nodes, acc, fn child, istr ->
       get_text(child, istr, sep)
-    end
+    end)
   end
+
   defp get_text({:comment, _}, acc, _), do: acc
   defp get_text({"br", _, _}, acc, _), do: acc <> "\n"
+
   defp get_text({_, _, nodes}, acc, sep) do
     get_text(nodes, acc, sep)
   end
