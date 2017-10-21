@@ -616,6 +616,58 @@ defmodule FlokiTest do
     ]
   end
 
+  test "get elements by nth-of-type, first-of-type, and last-of-type pseudo-classes" do
+    html = """
+    <html>
+    <body>
+      ignores this text
+      <h1>Child 1</h1>
+      <!-- also ignores this comment -->
+      <div>Child 2</div>
+      <div>Child 3</div>
+      <div>Child 4</div>
+      <a href="/a">1</a>
+      ignores this text
+      <a href="/b">2</a>
+      <a href="/c">3</a>
+      <!-- also ignores this comment -->
+      <a href="/d">4</a>
+      <a href="/e">5</a>
+    </html>
+    """
+
+    assert Floki.find(html, "a:nth-of-type(2)") == [
+      {"a", [{"href", "/b"}], ["2"]}
+    ]
+
+    assert Floki.find(html, "a:nth-of-type(even)") == [
+      {"a", [{"href", "/b"}], ["2"]},
+      {"a", [{"href", "/d"}], ["4"]}
+    ]
+
+    assert Floki.find(html, "a:nth-of-type(odd)") == [
+      {"a", [{"href", "/a"}], ["1"]},
+      {"a", [{"href", "/c"}], ["3"]},
+      {"a", [{"href", "/e"}], ["5"]}
+    ]
+
+    assert Floki.find(html, "a:first-of-type") == [
+      {"a", [{"href", "/a"}], ["1"]}
+    ]
+
+    assert Floki.find(html, "body :first-of-type") == [
+      {"h1", [], ["Child 1"]},
+      {"div", [], ["Child 2"]},
+      {"a", [{"href", "/a"}], ["1"]}
+    ]
+
+    assert Floki.find(html, "body :last-of-type") == [
+      {"h1", [], ["Child 1"]},
+      {"div", [], ["Child 4"]},
+      {"a", [{"href", "/e"}], ["5"]}
+    ]
+  end
+
   test "not pseudo-class" do
     html = """
     <html>
