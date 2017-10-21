@@ -198,6 +198,7 @@ Here you find all the [CSS selectors](https://www.w3.org/TR/selectors/#selectors
 | E[foo\|="en"]    | an E element whose "foo" attribute has a hyphen-separated list of values beginning (from the left) with "en" |
 | E:nth-child(n)  | an E element, the n-th child of its parent |
 | E:first-child   | an E element, first child of its parent |
+| E:last-child   | an E element, last child of its parent |
 | E.warning       | an E element whose class is "warning" |
 | E#myid          | an E element with ID equal to "myid" |
 | E:not(s)        | an E element that does not match simple selector s |
