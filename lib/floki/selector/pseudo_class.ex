@@ -21,6 +21,11 @@ defmodule Floki.Selector.PseudoClass do
   end
 
   def match_nth_child?(_, %HTMLNode{parent_node_id: nil}, _), do: false
+  def match_nth_child?(tree, html_node, %__MODULE__{value: -1}) do
+    children_nodes_ids = get_children_nodes_ids(tree, html_node.parent_node_id)
+    {last_child_id, _} = Enum.max_by(children_nodes_ids, fn({_, pos}) -> pos end)
+    last_child_id == html_node.node_id
+  end
   def match_nth_child?(tree, html_node, %__MODULE__{value: position}) when is_integer(position) do
     node_position(tree, html_node) == position
   end
