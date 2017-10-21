@@ -8,6 +8,7 @@ defmodule Floki.HTMLParser.Html5ever do
           {:ok, result} -> result
           {:error, error} -> {:error, error}
         end
+
       {:error, _reason} ->
         raise "Expected module Html5ever to be available."
     end

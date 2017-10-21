@@ -6,8 +6,8 @@ defmodule Floki.Selector.Tokenizer do
   def tokenize(selector) do
     char_list =
       selector
-      |> String.trim
-      |> String.to_charlist
+      |> String.trim()
+      |> String.to_charlist()
 
     {:ok, token_list, _} = :floki_selector_lexer.string(char_list)
 
