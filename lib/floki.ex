@@ -72,7 +72,24 @@ defmodule Floki do
     HTMLParser.parse(html)
   end
 
-  @self_closing_tags ["area", "base", "br", "col", "command", "embed", "hr", "img", "input", "keygen", "link", "meta", "param", "source", "track", "wbr"]
+  @self_closing_tags [
+    "area",
+    "base",
+    "br",
+    "col",
+    "command",
+    "embed",
+    "hr",
+    "img",
+    "input",
+    "keygen",
+    "link",
+    "meta",
+    "param",
+    "source",
+    "track",
+    "wbr"
+  ]
 
   @doc """
   Converts HTML tree to raw HTML.
@@ -91,19 +108,23 @@ defmodule Floki do
   def raw_html(html_tree), do: raw_html(html_tree, "")
   defp raw_html([], html), do: html
   defp raw_html(tuple, html) when is_tuple(tuple), do: raw_html([tuple], html)
-  defp raw_html([string|tail], html) when is_binary(string), do: raw_html(tail, html <> string)
-  defp raw_html([{:comment, comment}|tail], html), do: raw_html(tail, html <> "<!--#{comment}-->")
-  defp raw_html([{:pi, "xml", attrs} |tail], html) do
+  defp raw_html([string | tail], html) when is_binary(string), do: raw_html(tail, html <> string)
+
+  defp raw_html([{:comment, comment} | tail], html),
+    do: raw_html(tail, html <> "<!--#{comment}-->")
+
+  defp raw_html([{:pi, "xml", attrs} | tail], html) do
     raw_html(tail, html <> "<?xml " <> tag_attrs(attrs) <> "?>")
   end
-  defp raw_html([{type, attrs, children}|tail], html) do
+
+  defp raw_html([{type, attrs, children} | tail], html) do
     raw_html(tail, html <> tag_for(type, tag_attrs(attrs), children))
   end
 
   defp tag_attrs(attr_list) do
     attr_list
     |> Enum.reduce("", &build_attrs/2)
-    |> String.trim
+    |> String.trim()
   end
 
   defp build_attrs({attr, value}, attrs), do: ~s(#{attrs} #{attr}="#{value}")
@@ -115,6 +136,7 @@ defmodule Floki do
       _ -> "<#{type} #{attrs}/>"
     end
   end
+
   defp tag_for(type, attrs, children) do
     case attrs do
       "" -> "<#{type}>#{raw_html(children)}</#{type}>"
@@ -148,12 +170,13 @@ defmodule Floki do
 
     {tree, results} = Finder.find(html_as_tuple, selector)
 
-    Enum.map(results, fn(html_node) -> HTMLTree.to_tuple(tree, html_node) end)
+    Enum.map(results, fn html_node -> HTMLTree.to_tuple(tree, html_node) end)
   end
+
   def find(html_tree_as_tuple, selector) do
     {tree, results} = Finder.find(html_tree_as_tuple, selector)
 
-    Enum.map(results, fn(html_node) -> HTMLTree.to_tuple(tree, html_node) end)
+    Enum.map(results, fn html_node -> HTMLTree.to_tuple(tree, html_node) end)
   end
 
   @doc """
@@ -174,9 +197,11 @@ defmodule Floki do
   def attr(html_elem_tuple, selector, attribute_name, mutation) when is_tuple(html_elem_tuple) do
     attr([html_elem_tuple], selector, attribute_name, mutation)
   end
+
   def attr(html_str, selector, attribute_name, mutation) when is_binary(html_str) do
     attr(parse(html_str), selector, attribute_name, mutation)
   end
+
   def attr(html_tree_list, selector, attribute_name, mutation) when is_list(html_tree_list) do
     {tree, results} = Finder.find(html_tree_list, selector)
     mutate_attrs(html_tree_list, tree, results, attribute_name, mutation)
@@ -186,6 +211,7 @@ defmodule Floki do
     nodes = Map.put(tree.nodes, html_node.node_id, html_node)
     Map.put(tree, :nodes, nodes)
   end
+
   defp add_nodes_to_tree(tree, [html_node | tail]) do
     nodes = Map.put(tree.nodes, html_node.node_id, html_node)
 
@@ -195,28 +221,30 @@ defmodule Floki do
   end
 
   defp mutate_attrs(html_tree_list, _, [], _, _), do: html_tree_list
-  defp mutate_attrs(_, tree, results, attribute_name, mutation_fn) do
-    mutated_nodes = Enum.map(results, fn(result) ->
-      mutated_attributes =
-        if Enum.any?(result.attributes, & match?({^attribute_name, _}, &1)) do
-          Enum.map(result.attributes, fn(attribute) ->
-            with {^attribute_name, attribute_value} <- attribute do
-              {attribute_name, mutation_fn.(attribute_value)}
-            end
-          end)
-        else
-          [{attribute_name, mutation_fn.(nil)} | result.attributes]
-        end
 
-      Map.put(result, :attributes, mutated_attributes)
-    end)
+  defp mutate_attrs(_, tree, results, attribute_name, mutation_fn) do
+    mutated_nodes =
+      Enum.map(results, fn result ->
+        mutated_attributes =
+          if Enum.any?(result.attributes, &match?({^attribute_name, _}, &1)) do
+            Enum.map(result.attributes, fn attribute ->
+              with {^attribute_name, attribute_value} <- attribute do
+                {attribute_name, mutation_fn.(attribute_value)}
+              end
+            end)
+          else
+            [{attribute_name, mutation_fn.(nil)} | result.attributes]
+          end
+
+        Map.put(result, :attributes, mutated_attributes)
+      end)
 
     tree = add_nodes_to_tree(tree, mutated_nodes)
 
     tree.nodes
-    |> Map.values
-    |> Enum.filter(fn(actual_node) -> is_nil(actual_node.parent_node_id) end)
-    |> Enum.map(fn(html_node) -> HTMLTree.to_tuple(tree, html_node) end)
+    |> Map.values()
+    |> Enum.filter(fn actual_node -> is_nil(actual_node.parent_node_id) end)
+    |> Enum.map(fn html_node -> HTMLTree.to_tuple(tree, html_node) end)
   end
 
   @doc """
@@ -234,8 +262,9 @@ defmodule Floki do
 
   """
   def map(html_tree_list, fun) when is_list(html_tree_list) do
-    Enum.map(html_tree_list, &(Finder.map(&1, fun)))
+    Enum.map(html_tree_list, &Finder.map(&1, fun))
   end
+
   def map(html_tree, fun), do: Finder.map(html_tree, fun)
 
   @doc """
@@ -296,7 +325,6 @@ defmodule Floki do
       nil -> search_strategy.get(cleaned_html_tree)
       sep -> search_strategy.get(cleaned_html_tree, sep)
     end
-
   end
 
   @doc """
@@ -340,6 +368,7 @@ defmodule Floki do
     |> parse
     |> attribute_values(attribute_name)
   end
+
   def attribute(elements, attribute_name) do
     attribute_values(elements, attribute_name)
   end
@@ -347,23 +376,26 @@ defmodule Floki do
   defp attribute_values(element, attr_name) when is_tuple(element) do
     attribute_values([element], attr_name)
   end
+
   defp attribute_values(elements, attr_name) do
-    values = Enum.reduce elements, [], fn({_, attributes, _}, acc) ->
-      case attribute_match?(attributes, attr_name) do
-        {_attr_name, value} ->
-          [value|acc]
-        _ ->
-          acc
-      end
-    end
+    values =
+      Enum.reduce(elements, [], fn {_, attributes, _}, acc ->
+        case attribute_match?(attributes, attr_name) do
+          {_attr_name, value} ->
+            [value | acc]
+
+          _ ->
+            acc
+        end
+      end)
 
     Enum.reverse(values)
   end
 
   defp attribute_match?(attributes, attribute_name) do
-    Enum.find attributes, fn({attr_name, _}) ->
+    Enum.find(attributes, fn {attr_name, _} ->
       attr_name == attribute_name
-    end
+    end)
   end
 
   @doc """
@@ -389,6 +421,7 @@ defmodule Floki do
     |> parse
     |> FilterOut.filter_out(selector)
   end
+
   def filter_out(elements, selector) do
     FilterOut.filter_out(elements, selector)
   end
