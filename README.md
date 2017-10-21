@@ -199,6 +199,9 @@ Here you find all the [CSS selectors](https://www.w3.org/TR/selectors/#selectors
 | E:nth-child(n)  | an E element, the n-th child of its parent |
 | E:first-child   | an E element, first child of its parent |
 | E:last-child   | an E element, last child of its parent |
+| E:nth-of-type(n)  | an E element, the n-th child of its type among its siblings |
+| E:first-of-type   | an E element, first child of its type among its siblings |
+| E:last-of-type   | an E element, last child of its type among its siblings |
 | E.warning       | an E element whose class is "warning" |
 | E#myid          | an E element with ID equal to "myid" |
 | E:not(s)        | an E element that does not match simple selector s |
