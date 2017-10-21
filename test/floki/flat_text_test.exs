@@ -41,18 +41,10 @@ defmodule Floki.FlatTextTest do
 
   test "text from a list of nodes" do
     nodes = [
-            {"div",
-              [],
-              ["The text start",
-                {"span", [], ["envolves"]},
-                " and end."]},
-            {"div",
-              [],
-              [" Another text",
-                {"a", [], ["With a link"]},
-                " that ignores the link inside"]},
-            "."
-            ]
+      {"div", [], ["The text start", {"span", [], ["envolves"]}, " and end."]},
+      {"div", [], [" Another text", {"a", [], ["With a link"]}, " that ignores the link inside"]},
+      "."
+    ]
 
     expected_text = "The text start and end. Another text that ignores the link inside."
 
@@ -61,18 +53,10 @@ defmodule Floki.FlatTextTest do
 
   test "text from a list of nodes with separator" do
     nodes = [
-            {"div",
-              [],
-              ["The text start",
-                {"span", [], ["envolves"]},
-                " and end."]},
-            {"div",
-              [],
-              [" Another text",
-                {"a", [], ["With a link"]},
-                " that ignores the link inside"]},
-            "."
-            ]
+      {"div", [], ["The text start", {"span", [], ["envolves"]}, " and end."]},
+      {"div", [], [" Another text", {"a", [], ["With a link"]}, " that ignores the link inside"]},
+      "."
+    ]
 
     expected_text = "The text start  and end.  Another text  that ignores the link inside ."
 
