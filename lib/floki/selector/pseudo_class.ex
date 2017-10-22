@@ -7,6 +7,7 @@ defmodule Floki.Selector.PseudoClass do
   defstruct name: "", value: nil
 
   alias Floki.HTMLTree.{HTMLNode, Text}
+  alias Floki.Selector.Functional
 
   defimpl String.Chars do
     def to_string(%{name: name, value: nil}) do
@@ -37,7 +38,11 @@ defmodule Floki.Selector.PseudoClass do
     position = node_position(tree, html_node)
     rem(position, 2) == 1
   end
-  def match_nth_child?(_, _, %__MODULE__{value: expression}) do
+  def match_nth_child?(tree, html_node, %__MODULE__{value: %Functional{stream: s}}) do
+    position = node_position(tree, html_node)
+    position in s
+  end
+  def match_nth_child?(_tree, _html_node, %__MODULE__{value: expression}) do
     Logger.warn(fn ->
       "Pseudo-class nth-child with expressions like #{inspect expression} are not supported yet. Ignoring."
     end)
