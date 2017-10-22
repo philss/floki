@@ -6,11 +6,13 @@ defmodule Floki.Selector.FunctionalTest do
     assert :invalid == Functional.parse("")
     assert :invalid == Functional.parse("not a fn")
     assert :invalid == Functional.parse("odden")
-    assert :invalid == Functional.parse("2n-3")
+    assert :invalid == Functional.parse("2n-")
+    assert :invalid == Functional.parse("10n+-1")
+    assert :invalid == Functional.parse("10n-+1")
+    assert :invalid == Functional.parse("3 n")
+    assert :invalid == Functional.parse("+ 2n")
+    assert :invalid == Functional.parse("+ 2")
   end
-
-  # :nth-child(5n)
-  # Represents elements 5, 10, 15, etc.
 
   test "An" do
     assert {:ok, f} = Functional.parse("5n")
@@ -39,6 +41,15 @@ defmodule Floki.Selector.FunctionalTest do
     end
   end
 
+  test "negative complement" do
+    assert {:ok, f} = Functional.parse("4n-1")
+    assert %Functional{a: 4, b: -1} = f
+
+    for n <- [3, 7, 11, 15] do
+      assert n in f.stream
+    end
+  end
+
   test "complete function" do
     assert {:ok, f} = Functional.parse("3n+4")
     assert %Functional{a: 3, b: 4} = f
@@ -46,5 +57,19 @@ defmodule Floki.Selector.FunctionalTest do
     for n <- [4, 7, 10, 13] do
       assert n in f.stream
     end
+  end
+
+  test "whitespace" do
+    assert {:ok, f} = Functional.parse("  3n + 4  ")
+    assert %Functional{a: 3, b: 4} = f
+
+    assert {:ok, f} = Functional.parse(" 3n + 1 ")
+    assert %Functional{a: 3, b: 1} = f
+
+    assert {:ok, f} = Functional.parse(" +3n - 2 ")
+    assert %Functional{a: 3, b: -2} = f
+
+    assert {:ok, f} = Functional.parse(" -n+ 6")
+    assert %Functional{a: -1, b: 6} = f
   end
 end
