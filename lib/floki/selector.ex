@@ -134,6 +134,12 @@ defmodule Floki.Selector do
         PseudoClass.match_nth_child?(tree, html_node, %PseudoClass{name: "nth-child", value: 1})
       "last-child" ->
         PseudoClass.match_nth_child?(tree, html_node, %PseudoClass{name: "nth-child", value: -1})
+      "nth-of-type" ->
+        PseudoClass.match_nth_of_type?(tree, html_node, pseudo_class)
+      "first-of-type" ->
+        PseudoClass.match_nth_of_type?(tree, html_node, %PseudoClass{name: "nth-of-type", value: 1})
+      "last-of-type" ->
+        PseudoClass.match_nth_of_type?(tree, html_node, %PseudoClass{name: "nth-of-type", value: -1})
       "not" ->
         Enum.all?(pseudo_class.value, &(!Selector.match?(html_node, &1, tree)))
       "fl-contains" ->
