@@ -564,6 +564,8 @@ defmodule FlokiTest do
       <!-- also ignores this comment -->
       <a href="/d">4</a>
       <a href="/e">5</a>
+      <a href="/f">6</a>
+      <a href="/g">7</a>
     </html>
     """
 
@@ -573,17 +575,29 @@ defmodule FlokiTest do
 
     assert Floki.find(html, "a:nth-child(even)") == [
       {"a", [{"href", "/b"}], ["2"]},
-      {"a", [{"href", "/d"}], ["4"]}
+      {"a", [{"href", "/d"}], ["4"]},
+      {"a", [{"href", "/f"}], ["6"]}
     ]
 
     assert Floki.find(html, "a:nth-child(odd)") == [
       {"a", [{"href", "/a"}], ["1"]},
       {"a", [{"href", "/c"}], ["3"]},
-      {"a", [{"href", "/e"}], ["5"]}
+      {"a", [{"href", "/e"}], ["5"]},
+      {"a", [{"href", "/g"}], ["7"]},
     ]
 
     assert Floki.find(html, "a:first-child") == [
       {"a", [{"href", "/a"}], ["1"]}
+    ]
+
+    # same as first-child
+    assert Floki.find(html, "a:nth-child(0n+1)") == [
+      {"a", [{"href", "/a"}], ["1"]}
+    ]
+
+    assert Floki.find(html, "a:nth-child(3n+4)") == [
+      {"a", [{"href", "/d"}], ["4"]},
+      {"a", [{"href", "/g"}], ["7"]},
     ]
   end
 
