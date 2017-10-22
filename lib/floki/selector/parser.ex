@@ -5,7 +5,7 @@ defmodule Floki.Selector.Parser do
   # Parses a list of tokens returned from `Tokenizer` and transfor into a `Selector`.
 
   alias Floki.Selector
-  alias Selector.{Tokenizer, PseudoClass, AttributeSelector, Combinator}
+  alias Selector.{Functional, Tokenizer, PseudoClass, AttributeSelector, Combinator}
 
   @attr_match_types [:equal, :dash_match, :includes, :prefix_match, :sufix_match, :substring_match]
 
@@ -74,7 +74,12 @@ defmodule Floki.Selector.Parser do
   end
   defp do_parse([{:pseudo_class_pattern, _, pattern} | t], selector) do
     [pseudo_class | pseudo_classes] = selector.pseudo_classes
-    do_parse(t, %{selector | pseudo_classes: [%{pseudo_class | value: to_string(pattern)} | pseudo_classes]})
+    value =
+      case Functional.parse(pattern) do
+        :invalid -> to_string(pattern)
+        {:ok, value} -> value
+      end
+    do_parse(t, %{selector | pseudo_classes: [%{pseudo_class | value: value} | pseudo_classes]})
   end
   defp do_parse([{:pseudo_class_quoted, _, pattern} | t], selector) do
     [pseudo_class | pseudo_classes] = selector.pseudo_classes

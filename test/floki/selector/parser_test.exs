@@ -5,7 +5,7 @@ defmodule Floki.Selector.ParserTest do
   require Logger
 
   alias Floki.Selector
-  alias Selector.{Parser, Combinator, AttributeSelector, PseudoClass}
+  alias Selector.{Parser, Functional, Combinator, AttributeSelector, PseudoClass}
 
   setup_all do
     :ok = Logger.remove_backend(:console)
@@ -194,12 +194,13 @@ defmodule Floki.Selector.ParserTest do
 
     tokens = tokenize("div:nth-child(-n+3)")
 
-    assert Parser.parse(tokens) == [
+    assert [
       %Selector{
         type: "div",
-        pseudo_classes: [%PseudoClass{name: "nth-child", value: "-n+3"}]
+        pseudo_classes: [%PseudoClass{name: "nth-child",
+                                      value: %Functional{a: -1, b: 3, stream: _}}]
       }
-    ]
+    ] = Parser.parse(tokens)
   end
 
   test "not pseudo-class" do
