@@ -47,7 +47,7 @@ defmodule Floki.Selector.PseudoClass do
 
   def match_nth_of_type?(_, %HTMLNode{parent_node_id: nil}, _), do: false
   def match_nth_of_type?(tree, html_node, %__MODULE__{value: -1}) do
-    children_nodes_ids = get_children_nodes_indexed_by_type(tree, html_node.parent_node_id, html_node.type)
+    children_nodes_ids = get_children_nodes_indexed_by_type(tree, html_node)
     {last_child_id, _} = Enum.max_by(children_nodes_ids, fn({_, pos}) -> pos end)
     last_child_id == html_node.node_id
   end
@@ -87,7 +87,7 @@ defmodule Floki.Selector.PseudoClass do
   end
 
   defp node_type_position(tree, html_node) do
-    children_nodes_ids = get_children_nodes_indexed_by_type(tree, html_node.parent_node_id, html_node.type)
+    children_nodes_ids = get_children_nodes_indexed_by_type(tree, html_node)
     find_node_position(children_nodes_ids, html_node.node_id)
   end
 
@@ -102,9 +102,9 @@ defmodule Floki.Selector.PseudoClass do
     Enum.with_index(nodes, 1)
   end
 
-  defp get_children_nodes_indexed_by_type(tree, parent_node_id, type) do
-    get_children_nodes(tree, parent_node_id)
-    |> filter_nodes_by_type(tree.nodes, type)
+  defp get_children_nodes_indexed_by_type(tree, html_node) do
+    get_children_nodes(tree, html_node.parent_node_id)
+    |> filter_nodes_by_type(tree.nodes, html_node.type)
     |> Enum.with_index(1)
   end
 
