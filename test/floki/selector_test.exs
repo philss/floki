@@ -20,6 +20,7 @@ defmodule Floki.SelectorTest do
         selector: %Selector{type: "a"}
       }
     }
+
     assert to_string(selector) == "ns | div#main.foo.bar[href='#home']:nth-child(7) + a"
 
     pseudo_class2 = %PseudoClass{name: "first"}

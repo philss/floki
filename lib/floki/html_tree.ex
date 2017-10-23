@@ -15,34 +15,57 @@ defmodule Floki.HTMLTree do
     root_id = IDSeeder.seed([])
     root_node = %HTMLNode{type: tag, attributes: attrs, node_id: root_id}
 
-    build_tree(%HTMLTree{root_nodes_ids: [root_id],
-                         node_ids: [root_id],
-                         nodes: %{root_id => root_node}},
-               children, root_id, [])
+    build_tree(
+      %HTMLTree{root_nodes_ids: [root_id], node_ids: [root_id], nodes: %{root_id => root_node}},
+      children,
+      root_id,
+      []
+    )
   end
 
   def build(html_tuples) when is_list(html_tuples) do
     reducer = fn
-      ({:pi, _}, tree) -> tree
-      ({:pi, _, _}, tree) -> tree
-      ({tag, attrs, children}, tree) ->
+      {:pi, _}, tree ->
+        tree
+
+      {:pi, _, _}, tree ->
+        tree
+
+      {tag, attrs, children}, tree ->
         root_id = IDSeeder.seed(tree.node_ids)
 
         root_node = %HTMLNode{type: tag, attributes: attrs, node_id: root_id}
 
-        build_tree(%{tree | nodes: Map.put(tree.nodes, root_id, root_node),
-                            node_ids: [root_id | tree.node_ids],
-                            root_nodes_ids: tree.root_nodes_ids ++ [root_id]},
-                   children, root_id, [])
-      (text, tree) when is_binary(text) ->
+        build_tree(
+          %{
+            tree
+            | nodes: Map.put(tree.nodes, root_id, root_node),
+              node_ids: [root_id | tree.node_ids],
+              root_nodes_ids: tree.root_nodes_ids ++ [root_id]
+          },
+          children,
+          root_id,
+          []
+        )
+
+      text, tree when is_binary(text) ->
         root_id = IDSeeder.seed(tree.node_ids)
 
         root_node = %Text{content: text, node_id: root_id}
-        build_tree(%{tree | nodes: Map.put(tree.nodes, root_id, root_node),
-                            node_ids: [root_id | tree.node_ids],
-                            root_nodes_ids: tree.root_nodes_ids ++ [root_id]},
-                   [], root_id, [])
-      (_, tree) ->
+
+        build_tree(
+          %{
+            tree
+            | nodes: Map.put(tree.nodes, root_id, root_node),
+              node_ids: [root_id | tree.node_ids],
+              root_nodes_ids: tree.root_nodes_ids ++ [root_id]
+          },
+          [],
+          root_id,
+          []
+        )
+
+      _, tree ->
         tree
     end
 
@@ -55,29 +78,40 @@ defmodule Floki.HTMLTree do
 
   def to_tuple(_tree, %Text{content: text}), do: text
   def to_tuple(_tree, %Comment{content: comment}), do: {:comment, comment}
+
   def to_tuple(tree, html_node) do
-    children = html_node.children_nodes_ids
-               |> Enum.reverse
-               |> Enum.map(fn(id) -> to_tuple(tree, Map.get(tree.nodes, id)) end)
+    children =
+      html_node.children_nodes_ids
+      |> Enum.reverse()
+      |> Enum.map(fn id -> to_tuple(tree, Map.get(tree.nodes, id)) end)
 
     {html_node.type, html_node.attributes, children}
   end
 
   defp do_delete(tree, [], []), do: tree
+
   defp do_delete(tree, [html_node | t], stack_ids) do
     new_tree_nodes = delete_node_from_nodes(tree.nodes, html_node)
 
     ids_for_stack = get_ids_for_delete_stack(html_node)
 
-    do_delete(%{tree | nodes: new_tree_nodes,
-                       node_ids: List.delete(tree.node_ids, html_node.node_id),
-                       root_nodes_ids: List.delete(tree.root_nodes_ids, html_node.node_id)},
-              t, ids_for_stack ++ stack_ids)
+    do_delete(
+      %{
+        tree
+        | nodes: new_tree_nodes,
+          node_ids: List.delete(tree.node_ids, html_node.node_id),
+          root_nodes_ids: List.delete(tree.root_nodes_ids, html_node.node_id)
+      },
+      t,
+      ids_for_stack ++ stack_ids
+    )
   end
+
   defp do_delete(tree, [], stack_ids) do
-    html_nodes = tree.nodes
-                 |> Map.take(stack_ids)
-                 |> Map.values
+    html_nodes =
+      tree.nodes
+      |> Map.take(stack_ids)
+      |> Map.values()
 
     do_delete(tree, html_nodes, [])
   end
@@ -99,41 +133,57 @@ defmodule Floki.HTMLTree do
   defp get_ids_for_delete_stack(_), do: []
 
   defp build_tree(tree, [], _, []), do: tree
-  defp build_tree(tree, [{:pi, _, _} | children], parent_id, stack), do: build_tree(tree, children, parent_id, stack)
+
+  defp build_tree(tree, [{:pi, _, _} | children], parent_id, stack),
+    do: build_tree(tree, children, parent_id, stack)
+
   defp build_tree(tree, [{tag, attrs, child_children} | children], parent_id, stack) do
     new_id = IDSeeder.seed(tree.node_ids)
 
-    new_node = %HTMLNode{type: tag,
-                         attributes: attrs,
-                         node_id: new_id,
-                         parent_node_id: parent_id}
+    new_node = %HTMLNode{type: tag, attributes: attrs, node_id: new_id, parent_node_id: parent_id}
 
     nodes = put_new_node(tree.nodes, new_node)
 
-    build_tree(%{tree | nodes: nodes, node_ids: [new_id | tree.node_ids]},
-              child_children, new_id, [{parent_id, children} | stack])
+    build_tree(
+      %{tree | nodes: nodes, node_ids: [new_id | tree.node_ids]},
+      child_children,
+      new_id,
+      [{parent_id, children} | stack]
+    )
   end
+
   defp build_tree(tree, [{:comment, comment} | children], parent_id, stack) do
     new_id = IDSeeder.seed(tree.node_ids)
     new_node = %Comment{content: comment, node_id: new_id, parent_node_id: parent_id}
 
     nodes = put_new_node(tree.nodes, new_node)
 
-    build_tree(%{tree | nodes: nodes, node_ids: [new_id | tree.node_ids]},
-               children, parent_id, stack)
+    build_tree(
+      %{tree | nodes: nodes, node_ids: [new_id | tree.node_ids]},
+      children,
+      parent_id,
+      stack
+    )
   end
+
   defp build_tree(tree, [text | children], parent_id, stack) when is_binary(text) do
     new_id = IDSeeder.seed(tree.node_ids)
     new_node = %Text{content: text, node_id: new_id, parent_node_id: parent_id}
 
     nodes = put_new_node(tree.nodes, new_node)
 
-    build_tree(%{tree | nodes: nodes, node_ids: [new_id | tree.node_ids]},
-               children, parent_id, stack)
+    build_tree(
+      %{tree | nodes: nodes, node_ids: [new_id | tree.node_ids]},
+      children,
+      parent_id,
+      stack
+    )
   end
+
   defp build_tree(tree, [_other | children], parent_id, stack) do
     build_tree(tree, children, parent_id, stack)
   end
+
   defp build_tree(tree, [], _, [{parent_node_id, children} | stack]) do
     build_tree(tree, children, parent_node_id, stack)
   end
@@ -159,6 +209,7 @@ defmodule Floki.HTMLTree do
 
       {:ok, a_node === html_node}
     end
+
     def member?(_, _) do
       {:ok, false}
     end
@@ -170,6 +221,7 @@ defmodule Floki.HTMLTree do
     defp do_reduce(_, {:halt, acc}, _fun), do: {:halted, acc}
     defp do_reduce(tree, {:suspend, acc}, fun), do: {:suspended, acc, &do_reduce(tree, &1, fun)}
     defp do_reduce(%HTMLTree{node_ids: []}, {:cont, acc}, _fun), do: {:done, acc}
+
     defp do_reduce(%HTMLTree{node_ids: [h | t]} = html_tree, {:cont, acc}, fun) do
       tree = %{html_tree | node_ids: t}
       head_node = Map.get(html_tree.nodes, h)
