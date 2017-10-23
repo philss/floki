@@ -18,13 +18,14 @@ defmodule Floki.Selector.Combinator do
 
   defimpl String.Chars do
     def to_string(combinator) do
-      match_type = case combinator.match_type do
-        :descendant -> " "
-        :child -> " > "
-        :adjacent_sibling -> " + "
-        :general_sibling -> " ~ "
-        _ -> ""
-      end
+      match_type =
+        case combinator.match_type do
+          :descendant -> " "
+          :child -> " > "
+          :adjacent_sibling -> " + "
+          :general_sibling -> " ~ "
+          _ -> ""
+        end
 
       "#{match_type}#{combinator.selector}"
     end
