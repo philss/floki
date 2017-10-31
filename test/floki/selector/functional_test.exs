@@ -36,7 +36,7 @@ defmodule Floki.Selector.FunctionalTest do
     assert {:ok, f} = Functional.parse("n")
     assert %Functional{a: 1, b: 0} = f
 
-    for n <- 0..1_000 do
+    for n <- 0..1000 do
       assert n in f.stream
     end
   end
