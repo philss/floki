@@ -690,6 +690,18 @@ defmodule FlokiTest do
              {"a", [{"href", "/e"}], ["5"]}
            ]
 
+    # same as nth-of-type(odd)
+    assert Floki.find(html, "a:nth-of-type(2n+1)") == [
+             {"a", [{"href", "/a"}], ["1"]},
+             {"a", [{"href", "/c"}], ["3"]},
+             {"a", [{"href", "/e"}], ["5"]}
+           ]
+
+    # same as first-of-type
+    assert Floki.find(html, "a:nth-of-type(0n+1)") == [
+             {"a", [{"href", "/a"}], ["1"]}
+           ]
+
     assert Floki.find(html, "a:first-of-type") == [
              {"a", [{"href", "/a"}], ["1"]}
            ]

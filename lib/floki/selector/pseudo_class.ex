@@ -80,6 +80,11 @@ defmodule Floki.Selector.PseudoClass do
     rem(position, 2) == 1
   end
 
+  def match_nth_of_type?(tree, html_node, %__MODULE__{value: %Functional{stream: s}}) do
+    position = node_type_position(tree, html_node)
+    position in s
+  end
+
   def match_nth_of_type?(_, _, %__MODULE__{value: expression}) do
     Logger.warn(fn ->
       "Pseudo-class nth-of-type with expressions like #{inspect(expression)} are not supported yet. Ignoring."
