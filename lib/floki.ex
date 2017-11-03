@@ -86,10 +86,11 @@ defmodule Floki do
 
   """
 
-  @spec raw_html(html_tree) :: binary
+  @spec raw_html(html_tree | binary) :: binary
 
   def raw_html(html_tree), do: raw_html(html_tree, "")
   defp raw_html([], html), do: html
+  defp raw_html(string, _html) when is_binary(string), do: string
   defp raw_html(tuple, html) when is_tuple(tuple), do: raw_html([tuple], html)
   defp raw_html([string|tail], html) when is_binary(string), do: raw_html(tail, html <> string)
   defp raw_html([{:comment, comment}|tail], html), do: raw_html(tail, html <> "<!--#{comment}-->")
