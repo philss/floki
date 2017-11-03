@@ -179,6 +179,21 @@ defmodule FlokiTest do
     assert raw_html == original_without_spaces
   end
 
+  test "raw_html (with plain text)" do
+    raw_html =
+      "plain text node"
+      |> Floki.parse
+      |> Floki.raw_html
+
+    raw_without_spaces =
+      raw_html
+      |> String.split("\n")
+      |> Enum.map(&(String.trim(&1)))
+      |> Enum.join("")
+
+    assert raw_html == raw_without_spaces
+  end
+
   test "raw_html (html with data attributes)" do
     raw_html =
       @html_with_data_attributes
