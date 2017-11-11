@@ -2,7 +2,7 @@ defmodule Floki.Mixfile do
   use Mix.Project
 
   @description "Floki is a simple HTML parser that enables search for nodes using CSS selectors."
-  @version "0.18.1"
+  @version "0.19.0"
 
   def project do
     [
@@ -38,8 +38,7 @@ defmodule Floki.Mixfile do
       licenses: ["MIT"],
       files: ["lib", "src/*.xrl", "mix.exs", "README.md", "LICENSE"],
       links: %{
-        "GitHub" => "https://github.com/philss/floki",
-        "Docs" => "https://hexdocs.pm/floki"
+        "GitHub" => "https://github.com/philss/floki"
       }
     }
   end

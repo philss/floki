@@ -7,16 +7,30 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased][unreleased]
 
+## [0.19.0] - 2017-11-11
+
+### Added
+
+- Added support for `nth-of-type`, `first-of-type`, `last-of-type` and `last-child` pseudo-classes - thanks @saleem1337.
+- Added support for `nth-child` pseudo-class functional notation - thanks @nirev.
+- Added functional notation support for `nth-of-type` pseudo-class.
+- Added a [Contributing guide](https://github.com/philss/floki/blob/master/CONTRIBUTING.md).
+
+### Fixed
+
+- Format all files according to the Elixir 1.6 formatter - thanks @fcevado.
+- Fix `Floki.raw_html` to support raw text - thanks @craig-day.
+
 ## [0.18.1] - 2017-10-13
 
 ### Added
 
-- Added a Code of Conduct.
+- Added a [Code of Conduct](https://github.com/philss/floki/blob/master/CODE_OF_CONDUCT.md).
 
 ### Fixed
 
 - Fix XML tag when building HTML tree.
-- Return empty list when Floki.filter_out/2 result is empty.
+- Return empty list when `Floki.filter_out/2` result is empty.
 
 ## [0.18.0] - 2017-08-05
 
@@ -339,7 +353,8 @@ of the parent element inside HTML.
 
 - Elixir version requirement from "~> 1.0.0" to ">= 1.0.0".
 
-[unreleased]: https://github.com/philss/floki/compare/v0.18.1...HEAD
+[unreleased]: https://github.com/philss/floki/compare/v0.19.0...HEAD
+[0.19.0]: https://github.com/philss/floki/compare/v0.18.1...v0.19.0
 [0.18.1]: https://github.com/philss/floki/compare/v0.18.0...v0.18.1
 [0.18.0]: https://github.com/philss/floki/compare/v0.17.2...v0.18.0
 [0.17.2]: https://github.com/philss/floki/compare/v0.17.1...v0.17.2
