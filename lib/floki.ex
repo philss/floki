@@ -118,6 +118,16 @@ defmodule Floki do
     raw_html(tail, html <> "<?xml " <> tag_attrs(attrs) <> "?>")
   end
 
+  defp raw_html([{:doctype, type, public, system} | tail], html) do
+    attr =
+      case {public, system} do
+        {"", ""} -> ""
+        {"", system} -> " SYSTEM \"#{system}\""
+        {public, system} -> " PUBLIC \"#{public}\" \"#{system}\""
+      end
+    raw_html(tail, html <> "<!DOCTYPE #{type}#{attr}>")
+  end
+
   defp raw_html([{type, attrs, children} | tail], html) do
     raw_html(tail, html <> tag_for(type, tag_attrs(attrs), children))
   end
