@@ -125,6 +125,7 @@ defmodule Floki do
         {"", system} -> " SYSTEM \"#{system}\""
         {public, system} -> " PUBLIC \"#{public}\" \"#{system}\""
       end
+
     raw_html(tail, html <> "<!DOCTYPE #{type}#{attr}>")
   end
 

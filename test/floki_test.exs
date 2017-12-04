@@ -177,18 +177,34 @@ defmodule FlokiTest do
       |> Enum.join("")
 
     assert raw_html == original_without_spaces
+
+    html_with_doctype =
+      [
+        {:doctype, "html", "", ""},
+        {
+          "html",
+          [],
+          [
+            {"head", [], [{"title", [], ["hello"]}]},
+            {"body", [], [{"h1", [], ["world"]}]}
+          ]
+        }
+      ]
+
+    assert Floki.raw_html(html_with_doctype) ==
+             "<!DOCTYPE html><html><head><title>hello</title></head><body><h1>world</h1></body></html>"
   end
 
   test "raw_html (with plain text)" do
     raw_html =
       "plain text node"
-      |> Floki.parse
-      |> Floki.raw_html
+      |> Floki.parse()
+      |> Floki.raw_html()
 
     raw_without_spaces =
       raw_html
       |> String.split("\n")
-      |> Enum.map(&(String.trim(&1)))
+      |> Enum.map(&String.trim(&1))
       |> Enum.join("")
 
     assert raw_html == raw_without_spaces
