@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased][unreleased]
 
+## [0.19.1] - 2017-12-04
+
+### Fixed
+
+- Fixed doctype serialization for `Floki.raw_html/1` - thanks [@jhchen][https://github.com/jhchen]
+
 ## [0.19.0] - 2017-11-11
 
 ### Added
