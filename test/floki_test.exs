@@ -193,6 +193,9 @@ defmodule FlokiTest do
 
     assert Floki.raw_html(html_with_doctype) ==
              "<!DOCTYPE html><html><head><title>hello</title></head><body><h1>world</h1></body></html>"
+
+    span_with_entities = "<span>&lt;video&gt; São Paulo</span>"
+    assert Floki.parse(span_with_entities) |> Floki.raw_html() == span_with_entities
   end
 
   test "raw_html (with plain text)" do
