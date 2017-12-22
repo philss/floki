@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased][unreleased]
 
+## [0.19.2] - 2017-12-22
+
+### Fixed
+
+- Re-encode HTML entities on `Floki.raw_html/1`.
+
 ## [0.19.1] - 2017-12-04
 
 ### Fixed
@@ -359,7 +365,8 @@ of the parent element inside HTML.
 
 - Elixir version requirement from "~> 1.0.0" to ">= 1.0.0".
 
-[unreleased]: https://github.com/philss/floki/compare/v0.19.1...HEAD
+[unreleased]: https://github.com/philss/floki/compare/v0.19.2...HEAD
+[0.19.2]: https://github.com/philss/floki/compare/v0.19.1...v0.19.2
 [0.19.1]: https://github.com/philss/floki/compare/v0.19.0...v0.19.1
 [0.19.0]: https://github.com/philss/floki/compare/v0.18.1...v0.19.0
 [0.18.1]: https://github.com/philss/floki/compare/v0.18.0...v0.18.1
