@@ -66,7 +66,7 @@ defmodule Floki do
 
   """
 
-  @spec parse(binary) :: html_tree
+  @spec parse(binary) :: html_tree | binary
 
   def parse(html) do
     HTMLParser.parse(html)
