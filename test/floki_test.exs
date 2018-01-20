@@ -272,6 +272,21 @@ defmodule FlokiTest do
     assert raw_html == "<link>www.example.com</link>"
   end
 
+  test "raw_html (with script and style tags)" do
+    tree = {
+      "body",
+      [],
+      [
+        {"div", [], ["< \"test\" >"]},
+        {"script", [], ["alert(\"hello\");"]},
+        {"style", [], [".foo[data-attr=\"bar\"] { width: 100%; }"]}
+      ]
+    }
+
+    assert Floki.raw_html(tree) ==
+             "<body><div>&lt; &quot;test&quot; &gt;</div><script>alert(\"hello\");</script><style>.foo[data-attr=\"bar\"] { width: 100%; }</style></body>"
+  end
+
   # Floki.find/2 - Classes
 
   test "find elements with a given class" do
