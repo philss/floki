@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased][unreleased]
 
+## [0.19.3] - 2018-01-25
+
+### Fixed
+
+- Skip HTML entities encode for `Floki.raw_html/1` for `script` or `style` tags
+- Add `:html_entities` app to the list of OTP applications. It fixes production releases.
+
 ## [0.19.2] - 2017-12-22
 
 ### Fixed
