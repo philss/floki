@@ -243,7 +243,7 @@ defmodule Floki.Selector.Parser do
     do_parse_pseudo_not(t, pseudo_not_selector, pseudo_class)
   end
 
-  defp update_pseudo_not_value(pseudo_class, pseudo_not_selector = %Selector{combinator: nil}) do
+  defp update_pseudo_not_value(pseudo_class, %Selector{combinator: nil} = pseudo_not_selector) do
     pseudo_not_value = [pseudo_not_selector | Map.get(pseudo_class, :value, [])]
     %{pseudo_class | value: pseudo_not_value}
   end

@@ -142,44 +142,49 @@ defmodule Floki.Selector do
     Enum.all?(pseudo_classes, &pseudo_class_match?(html_node, &1, tree))
   end
 
-  defp pseudo_class_match?(html_node, pseudo_class, tree) do
-    case pseudo_class.name do
-      "nth-child" ->
-        PseudoClass.match_nth_child?(tree, html_node, pseudo_class)
+  defp pseudo_class_match?(html_node, %{name: "nth-child"} = pseudo_class, tree) do
+    PseudoClass.match_nth_child?(tree, html_node, pseudo_class)
+  end
 
-      "first-child" ->
-        PseudoClass.match_nth_child?(tree, html_node, %PseudoClass{name: "nth-child", value: 1})
+  defp pseudo_class_match?(html_node, %{name: "first-child"}, tree) do
+    PseudoClass.match_nth_child?(tree, html_node, %PseudoClass{name: "nth-child", value: 1})
+  end
 
-      "last-child" ->
-        PseudoClass.match_nth_child?(tree, html_node, %PseudoClass{name: "nth-child", value: -1})
+  defp pseudo_class_match?(html_node, %{name: "last-child"}, tree) do
+    PseudoClass.match_nth_child?(tree, html_node, %PseudoClass{name: "nth-child", value: -1})
+  end
 
-      "nth-of-type" ->
-        PseudoClass.match_nth_of_type?(tree, html_node, pseudo_class)
+  defp pseudo_class_match?(html_node, %{name: "nth-of-type"} = pseudo_class, tree) do
+    PseudoClass.match_nth_of_type?(tree, html_node, pseudo_class)
+  end
 
-      "first-of-type" ->
-        PseudoClass.match_nth_of_type?(tree, html_node, %PseudoClass{
+  defp pseudo_class_match?(html_node, %{name: "first-of-type"}, tree) do
+    PseudoClass.match_nth_of_type?(tree, html_node, %PseudoClass{
           name: "nth-of-type",
           value: 1
         })
+  end
 
-      "last-of-type" ->
-        PseudoClass.match_nth_of_type?(tree, html_node, %PseudoClass{
-          name: "nth-of-type",
-          value: -1
-        })
+  defp pseudo_class_match?(html_node, %{name: "last-of-type"}, tree) do
+    PseudoClass.match_nth_of_type?(tree, html_node, %PseudoClass{
+      name: "nth-of-type",
+      value: -1
+    })
+  end
 
-      "not" ->
-        Enum.all?(pseudo_class.value, &(!Selector.match?(html_node, &1, tree)))
+  defp pseudo_class_match?(html_node, %{name: "not"} = pseudo_class, tree) do
+    Enum.all?(pseudo_class.value, &(!Selector.match?(html_node, &1, tree)))
+  end
 
-      "fl-contains" ->
-        PseudoClass.match_contains?(tree, html_node, pseudo_class)
+  defp pseudo_class_match?(html_node, %{name: "fl-contains"} = pseudo_class, tree) do
+    PseudoClass.match_contains?(tree, html_node, pseudo_class)
+  end
 
-      unknown_pseudo_class ->
-        Logger.warn(fn ->
-          "Pseudo-class #{inspect(unknown_pseudo_class)} is not implemented. Ignoring."
-        end)
+  defp pseudo_class_match?(_html_node, %{name: unknown_pseudo_class}, _tree) do
+    Logger.warn(fn ->
+      "Pseudo-class #{inspect(unknown_pseudo_class)} is not implemented. Ignoring."
+    end)
 
-        false
-    end
+    false
   end
 end

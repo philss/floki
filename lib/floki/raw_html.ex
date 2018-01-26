@@ -1,4 +1,8 @@
 defmodule Floki.RawHTML do
+  @moduledoc"""
+  Converts html parse trees back into binary html
+  """
+
   @self_closing_tags [
     "area",
     "base",

@@ -34,16 +34,16 @@ defmodule Floki.FilterOut do
 
         case html_tree do
           tree when is_tuple(tree) ->
-            case html_as_tuples do
-              [] -> []
-              [head | _] -> head
-            end
+            first_tuple(html_as_tuples)
 
           trees when is_list(trees) ->
             html_as_tuples
         end
     end
   end
+
+  defp first_tuple([]), do: []
+  defp first_tuple([head | _rest]), do: head
 
   defp filter({nodetext, _, _}, selector) when nodetext === selector, do: false
   defp filter({nodetext, _}, selector) when nodetext === selector, do: false
