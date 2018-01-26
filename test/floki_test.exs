@@ -287,6 +287,16 @@ defmodule FlokiTest do
              "<body><div>&lt; &quot;test&quot; &gt;</div><script>alert(\"hello\");</script><style>.foo[data-attr=\"bar\"] { width: 100%; }</style></body>"
   end
 
+  test "raw_html can configure encoding" do
+    input = "<body>< \"test\" ></body>"
+    encoded_output = "<body>&lt; &quot;test&quot; &gt;</body>"
+    tree = Floki.parse(input)
+
+    assert Floki.raw_html(tree) == encoded_output
+    assert Floki.raw_html(tree, encode: true) == encoded_output
+    assert Floki.raw_html(tree, encode: false) == input
+  end
+
   # Floki.find/2 - Classes
 
   test "find elements with a given class" do
