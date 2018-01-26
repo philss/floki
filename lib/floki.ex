@@ -86,7 +86,7 @@ defmodule Floki do
 
   @spec raw_html(html_tree | binary) :: binary
 
-  defdelegate raw_html(html_tree), to: Floki.RawHTML
+  defdelegate raw_html(html_tree, options \\ []), to: Floki.RawHTML
 
   @doc """
   Find elements inside a HTML tree or string.
