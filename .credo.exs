@@ -8,6 +8,7 @@
       },
       requires: [],
       check_for_updates: false,
+      color: true,
       #
       # You can customize the parameters of any check by adding a second element
       # to the tuple.
