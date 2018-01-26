@@ -84,7 +84,7 @@ defmodule Floki do
 
   """
 
-  @spec raw_html(html_tree | binary) :: binary
+  @spec raw_html(html_tree | binary, keyword) :: binary
 
   defdelegate raw_html(html_tree, options \\ []), to: Floki.RawHTML
 
