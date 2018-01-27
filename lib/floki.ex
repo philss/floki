@@ -77,6 +77,10 @@ defmodule Floki do
   Note that the resultant HTML may be different from the original one.
   Spaces after tags and doctypes are ignored.
 
+  Floki.raw_html/2 accepts a keyword list of options. Currently, the
+  Only supported option is `:encode`, which can be set to `true` or `false`
+
+
   ## Examples
 
       iex> Floki.parse(~s(<div class="wrapper">my content</div>)) |> Floki.raw_html
