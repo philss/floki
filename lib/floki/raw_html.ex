@@ -18,8 +18,6 @@ defmodule Floki.RawHTML do
     "wbr"
   ]
 
-  @doc """
-  """
   def raw_html(html_tree, options) do
     encoder =
       case Keyword.fetch(options, :encode) do
