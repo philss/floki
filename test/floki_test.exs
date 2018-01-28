@@ -178,18 +178,17 @@ defmodule FlokiTest do
 
     assert raw_html == original_without_spaces
 
-    html_with_doctype =
-      [
-        {:doctype, "html", "", ""},
-        {
-          "html",
-          [],
-          [
-            {"head", [], [{"title", [], ["hello"]}]},
-            {"body", [], [{"h1", [], ["world"]}]}
-          ]
-        }
-      ]
+    html_with_doctype = [
+      {:doctype, "html", "", ""},
+      {
+        "html",
+        [],
+        [
+          {"head", [], [{"title", [], ["hello"]}]},
+          {"body", [], [{"h1", [], ["world"]}]}
+        ]
+      }
+    ]
 
     assert Floki.raw_html(html_with_doctype) ==
              "<!DOCTYPE html><html><head><title>hello</title></head><body><h1>world</h1></body></html>"
@@ -1073,8 +1072,8 @@ defmodule FlokiTest do
     result =
       html
       |> Floki.attr(".change", "href", fn inner_html ->
-           String.replace(inner_html, "changethis", "changed")
-         end)
+        String.replace(inner_html, "changethis", "changed")
+      end)
       |> Floki.raw_html()
 
     assert result == String.replace(expects, "\n", "")
