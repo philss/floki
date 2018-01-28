@@ -78,7 +78,10 @@ defmodule Floki do
   Spaces after tags and doctypes are ignored.
 
   Floki.raw_html/2 accepts a keyword list of options. Currently, the
-  only supported option is `:encode`, which can be set to `true` or `false`
+  only supported option is `:encode`, which can be set to `true` or `false`.
+
+  You can also control the encoding behaviour at the application level via
+  `config :floki, :encode_raw_html, true | false`
 
 
   ## Examples

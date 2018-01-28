@@ -18,12 +18,14 @@ defmodule Floki.RawHTML do
     "wbr"
   ]
 
+  @encoder &HtmlEntities.encode/1
+
   def raw_html(html_tree, options) do
     encoder =
       case Keyword.fetch(options, :encode) do
-        {:ok, true} -> &HtmlEntities.encode/1
+        {:ok, true} -> @encoder
         {:ok, false} -> &(&1)
-        :error -> &HtmlEntities.encode/1
+        :error -> default_encoder()
       end
 
     build_raw_html(html_tree, "", encoder)
@@ -89,5 +91,13 @@ defmodule Floki.RawHTML do
 
   defp tag_for(type, attrs, children, encoder) do
     tag_with_attrs(type, attrs, children) <> build_raw_html(children, "", encoder) <> close_end_tag(type, children)
+  end
+
+  defp default_encoder do
+    if Application.get_env(:floki, :encode_raw_html, true) do
+      @encoder
+    else
+      &(&1)
+    end
   end
 end
