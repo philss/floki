@@ -232,7 +232,7 @@ defmodule Floki.Selector.Parser do
     do_parse_pseudo_not(t, pseudo_not_selector, pseudo_class)
   end
 
-  defp do_parse_pseudo_not([{'[', _} | _t] = tokens, pseudo_not_selector, pseudo_class) do
+  defp do_parse_pseudo_not(tokens = [{'[', _} | _t], pseudo_not_selector, pseudo_class) do
     {pseudo_not_selector, remaining_tokens} = do_parse(tokens, pseudo_not_selector)
     pseudo_class = update_pseudo_not_value(pseudo_class, pseudo_not_selector)
     do_parse_pseudo_not(remaining_tokens, pseudo_class)
@@ -243,7 +243,7 @@ defmodule Floki.Selector.Parser do
     do_parse_pseudo_not(t, pseudo_not_selector, pseudo_class)
   end
 
-  defp update_pseudo_not_value(pseudo_class, %Selector{combinator: nil} = pseudo_not_selector) do
+  defp update_pseudo_not_value(pseudo_class, pseudo_not_selector = %Selector{combinator: nil}) do
     pseudo_not_value = [pseudo_not_selector | Map.get(pseudo_class, :value, [])]
     %{pseudo_class | value: pseudo_not_value}
   end

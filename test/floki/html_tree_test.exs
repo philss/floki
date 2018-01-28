@@ -7,16 +7,15 @@ defmodule Floki.HTMLTreeTest do
   test "builds the tuple tree into HTML tree" do
     link_attrs = [{"href", "/home"}]
 
-    html_tuple =
-      {
-        "html",
-        [],
-        [
-          {:comment, "start of the stack"},
-          {"a", link_attrs, [{"b", [], ["click me"]}]},
-          {"span", [], []}
-        ]
-      }
+    html_tuple = {
+      "html",
+      [],
+      [
+        {:comment, "start of the stack"},
+        {"a", link_attrs, [{"b", [], ["click me"]}]},
+        {"span", [], []}
+      ]
+    }
 
     assert HTMLTree.build(html_tuple) == %HTMLTree{
              root_nodes_ids: [1],
@@ -179,16 +178,15 @@ defmodule Floki.HTMLTreeTest do
       }
     }
 
-    expected_tuple =
-      {
-        "html",
-        [],
-        [
-          {:comment, "start of the stack"},
-          {"a", [{"class", "link"}], [{"b", [], ["click me"]}]},
-          {"span", [], []}
-        ]
-      }
+    expected_tuple = {
+      "html",
+      [],
+      [
+        {:comment, "start of the stack"},
+        {"a", [{"class", "link"}], [{"b", [], ["click me"]}]},
+        {"span", [], []}
+      ]
+    }
 
     assert HTMLTree.to_tuple(html_tree, %HTMLNode{
              type: "html",

@@ -16,46 +16,44 @@ defmodule Floki.DeepTextTest do
   end
 
   test "text from a list of deep nodes" do
-    nodes =
-      [
-        {
-          "div",
-          [],
-          [
-            "This is a text",
-            {
-              "p",
-              [],
-              [" that is ", {"strong", [], ["divided into ", {"small", [], ["tiny"]}, " pieces"]}]
-            },
-            "."
-          ]
-        },
-        {"div", [], [" It keeps growing... ", {"span", [], ["And ends."]}]}
-      ]
+    nodes = [
+      {
+        "div",
+        [],
+        [
+          "This is a text",
+          {
+            "p",
+            [],
+            [" that is ", {"strong", [], ["divided into ", {"small", [], ["tiny"]}, " pieces"]}]
+          },
+          "."
+        ]
+      },
+      {"div", [], [" It keeps growing... ", {"span", [], ["And ends."]}]}
+    ]
 
     assert Floki.DeepText.get(nodes) ==
              "This is a text that is divided into tiny pieces. It keeps growing... And ends."
   end
 
   test "text from a list of deep nodes with a separator" do
-    nodes =
-      [
-        {
-          "div",
-          [],
-          [
-            "This is a text",
-            {
-              "p",
-              [],
-              [" that is ", {"strong", [], ["divided into ", {"small", [], ["tiny"]}, " pieces"]}]
-            },
-            "."
-          ]
-        },
-        {"div", [], [" It keeps growing... ", {"span", [], ["And ends."]}]}
-      ]
+    nodes = [
+      {
+        "div",
+        [],
+        [
+          "This is a text",
+          {
+            "p",
+            [],
+            [" that is ", {"strong", [], ["divided into ", {"small", [], ["tiny"]}, " pieces"]}]
+          },
+          "."
+        ]
+      },
+      {"div", [], [" It keeps growing... ", {"span", [], ["And ends."]}]}
+    ]
 
     assert Floki.DeepText.get(nodes, "|") ==
              "This is a text| that is |divided into |tiny| pieces|.| It keeps growing... |And ends."

@@ -204,7 +204,7 @@ defmodule Floki.HTMLTree do
       {:ok, length(html_tree.node_ids)}
     end
 
-    def member?(html_tree, %{node_id: node_id} = html_node) do
+    def member?(html_tree, html_node = %{node_id: node_id}) do
       a_node = Map.get(html_tree.nodes, node_id)
 
       {:ok, a_node === html_node}
@@ -222,7 +222,7 @@ defmodule Floki.HTMLTree do
     defp do_reduce(tree, {:suspend, acc}, fun), do: {:suspended, acc, &do_reduce(tree, &1, fun)}
     defp do_reduce(%HTMLTree{node_ids: []}, {:cont, acc}, _fun), do: {:done, acc}
 
-    defp do_reduce(%HTMLTree{node_ids: [h | t]} = html_tree, {:cont, acc}, fun) do
+    defp do_reduce(html_tree = %HTMLTree{node_ids: [h | t]}, {:cont, acc}, fun) do
       tree = %{html_tree | node_ids: t}
       head_node = Map.get(html_tree.nodes, h)
       do_reduce(tree, fun.(head_node, acc), fun)
