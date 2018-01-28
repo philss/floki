@@ -86,6 +86,11 @@ defmodule Floki do
       iex> Floki.parse(~s(<div class="wrapper">my content</div>)) |> Floki.raw_html
       ~s(<div class="wrapper">my content</div>)
 
+      iex> Floki.parse(~s(<div class="wrapper">10 > 5</div>)) |> Floki.raw_html(encode: true)
+      ~s(<div class="wrapper">10 &gt; 5</div>)
+
+      iex> Floki.parse(~s(<div class="wrapper">10 > 5</div>)) |> Floki.raw_html(encode: false)
+      ~s(<div class="wrapper">10 > 5</div>)
   """
 
   @spec raw_html(html_tree | binary, keyword) :: binary
