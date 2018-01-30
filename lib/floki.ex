@@ -77,16 +77,28 @@ defmodule Floki do
   Note that the resultant HTML may be different from the original one.
   Spaces after tags and doctypes are ignored.
 
+  Floki.raw_html/2 accepts a keyword list of options. Currently, the
+  only supported option is `:encode`, which can be set to `true` or `false`.
+
+  You can also control the encoding behaviour at the application level via
+  `config :floki, :encode_raw_html, true | false`
+
+
   ## Examples
 
       iex> Floki.parse(~s(<div class="wrapper">my content</div>)) |> Floki.raw_html
       ~s(<div class="wrapper">my content</div>)
 
+      iex> Floki.parse(~s(<div class="wrapper">10 > 5</div>)) |> Floki.raw_html(encode: true)
+      ~s(<div class="wrapper">10 &gt; 5</div>)
+
+      iex> Floki.parse(~s(<div class="wrapper">10 > 5</div>)) |> Floki.raw_html(encode: false)
+      ~s(<div class="wrapper">10 > 5</div>)
   """
 
-  @spec raw_html(html_tree | binary) :: binary
+  @spec raw_html(html_tree | binary, keyword) :: binary
 
-  defdelegate raw_html(html_tree), to: Floki.RawHTML
+  defdelegate raw_html(html_tree, options \\ []), to: Floki.RawHTML
 
   @doc """
   Find elements inside a HTML tree or string.
