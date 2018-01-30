@@ -1090,13 +1090,16 @@ defmodule FlokiTest do
   end
 
   test "changing attribute don't change the order of nodes" do
-    html = ~s(<p>a<em>b</em>c<a href="z">d</a></p><p>e</p><p><a href="f"><strong>g</strong></a>.<em>h</em>i</p><p><strong>j</strong>k<a href="m">n</a>o</p><p><em>p</em>q<em>r</em>s<a href="t">u</a></p>)
+    html =
+      ~s(<p>a<em>b</em>c<a href="z">d</a></p><p>e</p><p><a href="f"><strong>g</strong></a>.<em>h</em>i</p><p><strong>j</strong>k<a href="m">n</a>o</p><p><em>p</em>q<em>r</em>s<a href="t">u</a></p>)
+
     result =
       html
       |> Floki.attr("a", "href", fn href ->
         href
       end)
       |> Floki.raw_html()
+
     assert result == html
   end
 end

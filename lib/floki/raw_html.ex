@@ -26,7 +26,7 @@ defmodule Floki.RawHTML do
     encoder =
       case Keyword.fetch(options, :encode) do
         {:ok, true} -> @encoder
-        {:ok, false} -> &(&1)
+        {:ok, false} -> & &1
         :error -> default_encoder()
       end
 
@@ -34,8 +34,7 @@ defmodule Floki.RawHTML do
   end
 
   defp build_raw_html([], html, _encoder), do: html
-  defp build_raw_html(string, _html, encoder) when is_binary(string),
-    do: encoder.(string)
+  defp build_raw_html(string, _html, encoder) when is_binary(string), do: encoder.(string)
 
   defp build_raw_html(tuple, html, encoder) when is_tuple(tuple),
     do: build_raw_html([tuple], html, encoder)
@@ -92,14 +91,15 @@ defmodule Floki.RawHTML do
   end
 
   defp tag_for(type, attrs, children, encoder) do
-    tag_with_attrs(type, attrs, children) <> build_raw_html(children, "", encoder) <> close_end_tag(type, children)
+    tag_with_attrs(type, attrs, children) <>
+      build_raw_html(children, "", encoder) <> close_end_tag(type, children)
   end
 
   defp default_encoder do
     if Application.get_env(:floki, :encode_raw_html, true) do
       @encoder
     else
-      &(&1)
+      & &1
     end
   end
 end

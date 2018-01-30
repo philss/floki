@@ -1,0 +1,3 @@
+engines:
+  credo:
+    enabled: true
