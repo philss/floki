@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased][unreleased]
 
+## [0.20.0] - 2018-02-06
+
+### Added
+
+- Configurable raw_html/2 to allow optional encode of HTML entities - thanks [@davydog187](https://github.com/davydog187)
+
+### Fixed
+
+- Fix serialization of the tree after updating attribute - thanks [@francois2metz](https://github.com/francois2metz)
+
 ## [0.19.3] - 2018-01-25
 
 ### Fixed
@@ -372,7 +382,8 @@ of the parent element inside HTML.
 
 - Elixir version requirement from "~> 1.0.0" to ">= 1.0.0".
 
-[unreleased]: https://github.com/philss/floki/compare/v0.19.3...HEAD
+[unreleased]: https://github.com/philss/floki/compare/v0.20.0...HEAD
+[0.20.0]: https://github.com/philss/floki/compare/v0.19.3...v0.20.0
 [0.19.3]: https://github.com/philss/floki/compare/v0.19.2...v0.19.3
 [0.19.2]: https://github.com/philss/floki/compare/v0.19.1...v0.19.2
 [0.19.1]: https://github.com/philss/floki/compare/v0.19.0...v0.19.1
