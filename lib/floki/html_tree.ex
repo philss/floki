@@ -214,6 +214,10 @@ defmodule Floki.HTMLTree do
       {:ok, false}
     end
 
+    def slice(_) do
+      {:error, __MODULE__}
+    end
+
     def reduce(html_tree, state, fun) do
       do_reduce(%{html_tree | node_ids: Enum.reverse(html_tree.node_ids)}, state, fun)
     end
