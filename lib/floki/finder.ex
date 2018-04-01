@@ -173,7 +173,7 @@ defmodule Floki.Finder do
       if parent do
         get_sibling_ids_from(parent.children_nodes_ids, html_node)
       else
-        get_sibling_ids_from(tree.root_nodes_ids, html_node)
+        get_sibling_ids_from(Enum.reverse(tree.root_nodes_ids), html_node)
       end
 
     Enum.filter(ids, fn id ->

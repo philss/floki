@@ -4,7 +4,7 @@ defmodule Floki.HTMLTreeTest do
   alias Floki.HTMLTree
   alias Floki.HTMLTree.{HTMLNode, Text, Comment}
 
-  test "builds the tuple tree into HTML tree" do
+  test "build/1 builds the tuple tree into HTML tree" do
     link_attrs = [{"href", "/home"}]
 
     html_tuple = {
@@ -37,7 +37,7 @@ defmodule Floki.HTMLTreeTest do
            }
   end
 
-  test "builds HTML tuple list" do
+  test "build/1 builds HTML tuple list" do
     html_tuple_list = [
       {"html", [], [{"a", [{"href", "/home"}], [{"b", [], ["click me"]}]}, {"span", [], []}]}
     ]
@@ -61,11 +61,11 @@ defmodule Floki.HTMLTreeTest do
            }
   end
 
-  test "builds the HTML only with text nodes" do
+  test "build/1 builds the HTML only with text nodes" do
     text_nodes = ["hello", " world"]
 
     assert HTMLTree.build(text_nodes) == %HTMLTree{
-             root_nodes_ids: [1, 2],
+             root_nodes_ids: [2, 1],
              node_ids: [2, 1],
              nodes: %{
                1 => %Text{content: "hello", node_id: 1},
@@ -74,7 +74,7 @@ defmodule Floki.HTMLTreeTest do
            }
   end
 
-  test "builds the tree ignoring XML tag" do
+  test "build/1 builds the tree ignoring XML tag" do
     xml = [
       {:pi, "xml", [{"version", "1.0"}]},
       {"catalog", [], [{"book", [{"id", "bk101"}], [{"author", [], ["Gambardella, Matthew"]}]}]}
@@ -103,12 +103,12 @@ defmodule Floki.HTMLTreeTest do
            }
   end
 
-  test "builds the root node ids in the right order" do
+  test "build/1 builds the root node ids in the right order" do
     tuples = [{"p", [], ["1"]}, {"p", [], ["2"]}]
     tree = HTMLTree.build(tuples)
 
     assert tree == %HTMLTree{
-             root_nodes_ids: [1, 3],
+             root_nodes_ids: [3, 1],
              node_ids: [4, 3, 2, 1],
              nodes: %{
                1 => %HTMLNode{type: "p", children_nodes_ids: [2], node_id: 1},
@@ -158,7 +158,7 @@ defmodule Floki.HTMLTreeTest do
            }
   end
 
-  test "build tuple representation of tree" do
+  test "to_tuple/2 builds tuple representation of tree" do
     html_tree = %HTMLTree{
       root_nodes_ids: [1],
       node_ids: [6, 5, 4, 3, 2, 1],

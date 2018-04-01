@@ -26,7 +26,9 @@ defmodule Floki.FilterOut do
           end)
 
         html_as_tuples =
-          Enum.map(new_tree.root_nodes_ids, fn node_id ->
+          new_tree.root_nodes_ids
+          |> Enum.reverse
+          |> Enum.map(fn node_id ->
             root = Map.get(new_tree.nodes, node_id)
 
             HTMLTree.to_tuple(new_tree, root)
