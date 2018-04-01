@@ -11,6 +11,16 @@ defmodule Floki.HTMLTree do
   alias Floki.HTMLTree
   alias Floki.HTMLTree.{HTMLNode, Text, Comment, IDSeeder}
 
+  def build({:comment, comment}) do
+    %HTMLTree{
+      root_nodes_ids: [1],
+      node_ids: [1],
+      nodes: %{
+        1 => %Comment{content: comment, node_id: 1}
+      }
+    }
+  end
+
   def build({tag, attrs, children}) do
     root_id = IDSeeder.seed([])
     root_node = %HTMLNode{type: tag, attributes: attrs, node_id: root_id}
@@ -65,12 +75,31 @@ defmodule Floki.HTMLTree do
           []
         )
 
+      {:comment, comment}, tree ->
+        root_id = IDSeeder.seed(tree.node_ids)
+
+        root_node = %Comment{content: comment, node_id: root_id}
+
+        build_tree(
+          %{
+            tree
+            | nodes: Map.put(tree.nodes, root_id, root_node),
+              node_ids: [root_id | tree.node_ids],
+              root_nodes_ids: [root_id | tree.root_nodes_ids]
+          },
+          [],
+          root_id,
+          []
+        )
+
       _, tree ->
         tree
     end
 
     Enum.reduce(html_tuples, %HTMLTree{}, reducer)
   end
+
+  def build(_), do: %HTMLTree{}
 
   def delete_node(tree, html_node) do
     do_delete(tree, [html_node], [])

@@ -66,7 +66,8 @@ defmodule Floki.Selector.PseudoClass do
     last_child_id == html_node.node_id
   end
 
-  def match_nth_of_type?(tree, html_node, %__MODULE__{value: position}) when is_integer(position) do
+  def match_nth_of_type?(tree, html_node, %__MODULE__{value: position})
+      when is_integer(position) do
     node_type_position(tree, html_node) == position
   end
 

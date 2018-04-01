@@ -125,7 +125,26 @@ defmodule Floki.HTMLTreeTest do
            }
   end
 
-  test "delete HTML node from tree" do
+  test "build/1 when tree starts with a comment" do
+    assert HTMLTree.build({:comment, "empty example"}) == %HTMLTree{
+             root_nodes_ids: [1],
+             node_ids: [1],
+             nodes: %{
+               1 => %Comment{content: "empty example", node_id: 1}
+             }
+           }
+
+    assert HTMLTree.build([{:comment, "empty example"}, {"span", [], []}]) == %HTMLTree{
+             root_nodes_ids: [2, 1],
+             node_ids: [2, 1],
+             nodes: %{
+               1 => %Comment{content: "empty example", node_id: 1},
+               2 => %HTMLNode{type: "span", node_id: 2}
+             }
+           }
+  end
+
+  test "delete_node/2 delete HTML node from tree" do
     tree = %HTMLTree{
       root_nodes_ids: [1],
       node_ids: [5, 4, 3, 2, 1],
