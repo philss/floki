@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased][unreleased]
 
+### Fixed
+
+- Remove `Enumerable.slice/1` compile warning for `Floki.HTMLTree` - thanks [@thecodeboss][https://github.com/thecodeboss]
+- Fix `Floki.find/2` that was failing on HTML that consists entirely of a comment - thanks [@ShaneWilton](https://github.com/ShaneWilton)
+
 ## [0.20.0] - 2018-02-06
 
 ### Added
