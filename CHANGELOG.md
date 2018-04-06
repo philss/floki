@@ -7,9 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased][unreleased]
 
+## [0.20.1] - 2018-04-05
+
 ### Fixed
 
-- Remove `Enumerable.slice/1` compile warning for `Floki.HTMLTree` - thanks [@thecodeboss][https://github.com/thecodeboss]
+- Remove `Enumerable.slice/1` compile warning for `Floki.HTMLTree` - thanks [@thecodeboss](https://github.com/thecodeboss)
 - Fix `Floki.find/2` that was failing on HTML that consists entirely of a comment - thanks [@ShaneWilton](https://github.com/ShaneWilton)
 
 ## [0.20.0] - 2018-02-06
@@ -387,7 +389,8 @@ of the parent element inside HTML.
 
 - Elixir version requirement from "~> 1.0.0" to ">= 1.0.0".
 
-[unreleased]: https://github.com/philss/floki/compare/v0.20.0...HEAD
+[unreleased]: https://github.com/philss/floki/compare/v0.20.1...HEAD
+[0.20.1]: https://github.com/philss/floki/compare/v0.20.0...v0.20.1
 [0.20.0]: https://github.com/philss/floki/compare/v0.19.3...v0.20.0
 [0.19.3]: https://github.com/philss/floki/compare/v0.19.2...v0.19.3
 [0.19.2]: https://github.com/philss/floki/compare/v0.19.1...v0.19.2
