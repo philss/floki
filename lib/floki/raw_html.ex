@@ -83,7 +83,13 @@ defmodule Floki.RawHTML do
   defp close_end_tag(type, []) when type in @self_closing_tags, do: ""
   defp close_end_tag(type, _), do: "</#{type}>"
 
-  defp build_attrs({attr, value}, attrs), do: ~s(#{attrs} #{attr}="#{value}")
+  defp build_attrs({attr, value}, attrs) do
+    if String.contains?(value, "\"") do
+      ~s(#{attrs} #{attr}='#{value}')
+    else
+      ~s(#{attrs} #{attr}="#{value}")
+    end
+  end
   defp build_attrs(attr, attrs), do: "#{attrs} #{attr}"
 
   defp tag_for(type, attrs, content, _encoder) when type in ["script", "style"] do
