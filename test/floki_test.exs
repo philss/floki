@@ -305,7 +305,11 @@ defmodule FlokiTest do
     raw = Floki.raw_html(tree)
     rerendered_tree = Floki.parse(raw)
     assert Floki.attribute(rerendered_tree, "#double_quoted", "data-action") == ["lol 'cats' lol"]
-    assert Floki.attribute(rerendered_tree, "#single_quoted", "data-action") == ["lol \"cats\" lol"]
+
+    assert Floki.attribute(rerendered_tree, "#single_quoted", "data-action") == [
+             "lol \"cats\" lol"
+           ]
+
     assert rerendered_tree == tree
   end
 

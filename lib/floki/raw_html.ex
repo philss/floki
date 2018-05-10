@@ -90,6 +90,7 @@ defmodule Floki.RawHTML do
       ~s(#{attrs} #{attr}="#{value}")
     end
   end
+
   defp build_attrs(attr, attrs), do: "#{attrs} #{attr}"
 
   defp tag_for(type, attrs, content, _encoder) when type in ["script", "style"] do

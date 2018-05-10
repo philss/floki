@@ -198,7 +198,7 @@ defmodule Floki do
     tree = add_nodes_to_tree(tree, mutated_nodes)
 
     tree.root_nodes_ids
-    |> Enum.reverse
+    |> Enum.reverse()
     |> Enum.map(fn id -> Map.get(tree.nodes, id) end)
     |> Enum.map(fn html_node -> HTMLTree.to_tuple(tree, html_node) end)
   end
