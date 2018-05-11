@@ -41,7 +41,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Fixed
 
-- Re-encode HTML entities on `Floki.raw_html/1`.
+- **(BREAKING CHANGE)** Re-encode HTML entities on `Floki.raw_html/1`.
 
 ## [0.19.1] - 2017-12-04
 
