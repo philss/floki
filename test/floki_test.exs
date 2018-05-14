@@ -313,6 +313,12 @@ defmodule FlokiTest do
     assert rerendered_tree == tree
   end
 
+  test "raw_html (with style tag with comments" do
+    html = "<style><!-- test --></style>"
+
+    assert Floki.parse(html) |> Floki.raw_html() == html
+  end
+
   test "raw_html can configure encoding" do
     input = "<body>< \"test\" ></body>"
     encoded_output = "<body>&lt; &quot;test&quot; &gt;</body>"

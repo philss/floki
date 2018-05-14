@@ -93,8 +93,9 @@ defmodule Floki.RawHTML do
 
   defp build_attrs(attr, attrs), do: "#{attrs} #{attr}"
 
-  defp tag_for(type, attrs, content, _encoder) when type in ["script", "style"] do
-    tag_with_attrs(type, attrs, []) <> Enum.join(content) <> "</#{type}>"
+  defp tag_for(type, attrs, children, _encoder) when type in ["script", "style"] do
+    tag_with_attrs(type, attrs, children) <>
+      build_raw_html(children, "", & &1) <> close_end_tag(type, children)
   end
 
   defp tag_for(type, attrs, children, encoder) do
