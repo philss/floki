@@ -640,7 +640,8 @@ defmodule FlokiTest do
 
   test "find general sibling elements" do
     expected = [
-      {"a", [{"href", "http://elixir-lang.org"}, {"class", "js-elixir js-cool"}], ["Elixir lang"]},
+      {"a", [{"href", "http://elixir-lang.org"}, {"class", "js-elixir js-cool"}],
+       ["Elixir lang"]},
       {"a", [{"href", "http://java.com"}, {"class", "js-java"}], ["Java"]}
     ]
 

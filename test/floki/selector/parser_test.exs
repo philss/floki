@@ -61,7 +61,11 @@ defmodule Floki.Selector.ParserTest do
                  %AttributeSelector{match_type: :sufix_match, attribute: "page", value: "auth"},
                  %AttributeSelector{match_type: :prefix_match, attribute: "page", value: "pass"},
                  %AttributeSelector{match_type: :includes, attribute: "section", value: "admin"},
-                 %AttributeSelector{match_type: :dash_match, attribute: "data-env", value: "test"},
+                 %AttributeSelector{
+                   match_type: :dash_match,
+                   attribute: "data-env",
+                   value: "test"
+                 },
                  %AttributeSelector{match_type: :equal, attribute: "href", value: "settings.html"}
                ]
              }

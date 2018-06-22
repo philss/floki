@@ -94,11 +94,13 @@ defmodule Floki.RawHTML do
   defp build_attrs(attr, attrs), do: "#{attrs} #{attr}"
 
   defp tag_for(type, attrs, children, encoder) do
-    encoder = case type do
-                "script" -> & &1
-                "style"  -> & &1
-                _        -> encoder
-              end
+    encoder =
+      case type do
+        "script" -> & &1
+        "style" -> & &1
+        _ -> encoder
+      end
+
     tag_with_attrs(type, attrs, children) <>
       build_raw_html(children, "", encoder) <> close_end_tag(type, children)
   end
