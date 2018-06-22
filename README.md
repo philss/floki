@@ -106,7 +106,7 @@ After setup Rust, you need to add `html5ever` NIF to your dependency list:
 defp deps do
   [
     {:floki, "~> 0.20.0"},
-    {:html5ever, "~> 0.5.0"}
+    {:html5ever, "~> 0.6.1"}
   ]
 end
 ```
