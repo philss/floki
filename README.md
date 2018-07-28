@@ -1,12 +1,12 @@
-# Floki
-
 [![Build status](https://travis-ci.org/philss/floki.svg?branch=master)](https://travis-ci.org/philss/floki)
 [![Floki version](https://img.shields.io/hexpm/v/floki.svg)](https://hex.pm/packages/floki)
 [![Hex.pm](https://img.shields.io/hexpm/dt/floki.svg)](https://hex.pm/packages/floki)
 [![Inline docs](https://inch-ci.org/github/philss/floki.svg?branch=master)](https://inch-ci.org/github/philss/floki)
 [![Ebert](https://ebertapp.io/github/philss/floki.svg)](https://ebertapp.io/github/philss/floki)
 
-Floki is a simple HTML parser that enables search for nodes using CSS selectors.
+<img src="priv/images/floki-logo-with-type.svg" width="500" alt="Floki logo">
+
+**Floki is a simple HTML parser that enables search for nodes using CSS selectors**.
 
 [Check the documentation](https://hexdocs.pm/floki).
 
@@ -215,6 +215,10 @@ There are also some selectors based on non-standard specifications. They are:
 | Pattern              | Description                                         |
 |----------------------|-----------------------------------------------------|
 | E:fl-contains('foo') | an E element that contains "foo" inside a text node |
+
+## Special thanks
+
+* [@arasatasaygin](https://github.com/arasatasaygin) for Floki's logo from the [Open Logos project](http://openlogos.org/).
 
 ## License
 
