@@ -3,6 +3,12 @@ defmodule Floki.HTML.Tokenizer do
   @upper_ASCII_letters Enum.map(?a..?z, fn l -> <<l::utf8>> end)
   @all_ASCII_letters @lower_ASCII_letters ++ @upper_ASCII_letters
   @space_chars ["\t", "\n", "\f", "\s"]
+
+  @less_than_sign {:char, "\u003C"}
+  @exclamation_mark {:char, "\u0021"}
+  @solidus {:char, "\u002F"}
+  @hyphen_minus {:char, "\u002D"}
+
   # It represents the state of tokenization.
   defmodule State do
     defstruct current: nil,
@@ -140,9 +146,7 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defp tokenize(html, s = %State{current: :tag_open}) do
-    less_than_sign = {:char, "\u003C"}
-
-    tokenize(html, %{s | token: nil, tokens: [less_than_sign | s.tokens], current: :data})
+    tokenize(html, %{s | token: nil, tokens: [@less_than_sign | s.tokens], current: :data})
   end
 
   # § tokenizer-end-tag-open-state
@@ -160,10 +164,8 @@ defmodule Floki.HTML.Tokenizer do
 
   defp tokenize(html = "", s = %State{current: :end_tag_open}) do
     eof = {:eof, s.column, s.line}
-    solidus = {:char, "\u002F"}
-    less_than_sign = {:char, "\u003C"}
 
-    tokens = [eof, solidus, less_than_sign | s.tokens]
+    tokens = [eof, @solidus, @less_than_sign | s.tokens]
     tokenize(html, %{s | token: nil, tokens: tokens, current: :data})
   end
 
@@ -232,9 +234,7 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defp tokenize(html, s = %State{current: :rcdata_less_than_sign}) do
-    less_than_sign = {:char, "\u003C"}
-
-    tokenize(html, %{s | token: nil, tokens: [less_than_sign | s.tokens], current: :rcdata})
+    tokenize(html, %{s | token: nil, tokens: [@less_than_sign | s.tokens], current: :rcdata})
   end
 
   # § tokenizer-rcdata-end-tag-open-state
@@ -249,10 +249,7 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defp tokenize(html, s = %State{current: :rcdata_end_tag_open}) do
-    solidus = {:char, "\u002F"}
-    less_than_sign = {:char, "\u003C"}
-
-    tokens = [solidus, less_than_sign | s.tokens]
+    tokens = [@solidus, @less_than_sign | s.tokens]
     tokenize(html, %{s | tokens: tokens, current: :rcdata})
   end
 
@@ -261,7 +258,12 @@ defmodule Floki.HTML.Tokenizer do
   # § tokenizer-script-data-end-tag-name-state
   # § tokenizer-script-data-escaped-end-tag-name-state
 
-  @raw_end_tag_name_states [:rcdata_end_tag_name, :rawtext_end_tag_name, :script_data_end_tag_name, :script_data_escaped_end_tag_name]
+  @raw_end_tag_name_states [
+    :rcdata_end_tag_name,
+    :rawtext_end_tag_name,
+    :script_data_end_tag_name,
+    :script_data_escaped_end_tag_name
+  ]
 
   defp tokenize(
          html = <<c::bytes-size(1), rest::binary>>,
@@ -283,7 +285,7 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defp tokenize(html = <<"/", rest::binary>>, s = %State{current: state})
-        when state in @raw_end_tag_name_states do
+       when state in @raw_end_tag_name_states do
     if appropriate_tag?(s) do
       tokenize(rest, %{s | current: :self_closing_start_tag, column: s.column + 1})
     else
@@ -296,7 +298,8 @@ defmodule Floki.HTML.Tokenizer do
     end
   end
 
-  defp tokenize(html = <<">", rest::binary>>, s = %State{current: state}) when state in @raw_end_tag_name_states do
+  defp tokenize(html = <<">", rest::binary>>, s = %State{current: state})
+       when state in @raw_end_tag_name_states do
     if appropriate_tag?(s) do
       tokenize(rest, %{
         s
@@ -367,14 +370,68 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defp tokenize(html, s = %State{current: :rawtext_end_tag_open}) do
-    solidus = {:char, "\u002F"}
-    less_than_sign = {:char, "\u003C"}
-
-    tokens = [solidus, less_than_sign | s.tokens]
+    tokens = [@solidus, @less_than_sign | s.tokens]
     tokenize(html, %{s | tokens: tokens, current: :rawtext})
   end
 
-  # TODO: tokenizer-script-data-less-than-sign-state
+  # § tokenizer-script-data-less-than-sign-state
+
+  defp tokenize(<<"/", html::binary>>, s = %State{current: :script_data_less_than_sign}) do
+    tokenize(html, %{s | buffer: "", current: :script_data_end_tag_open_state})
+  end
+
+  defp tokenize(<<"!", html::binary>>, s = %State{current: :script_data_less_than_sign}) do
+    tokens = [@exclamation_mark, @less_than_sign | s.tokens]
+    tokenize(html, %{s | tokens: tokens})
+  end
+
+  defp tokenize(html, s = %State{current: :script_data_less_than_sign}) do
+    tokenize(html, %{s | tokens: [@less_than_sign | s.tokens], current: :script_data})
+  end
+
+  # § tokenizer-script-data-end-tag-open-state
+
+  defp tokenize(
+         html = <<c::bytes-size(1), _rest::binary>>,
+         s = %State{current: :script_data_end_tag_open}
+       )
+       when c in @all_ASCII_letters do
+    end_tag = {:end_tag, "", s.column + 1, s.line}
+
+    tokenize(html, %{s | token: end_tag, current: :script_data_end_tag_name})
+  end
+
+  defp tokenize(html, s = %State{current: :script_data_end_tag_open}) do
+    tokenize(html, %{s | tokens: [@solidus, @less_than_sign | s.tokens], current: :script_data})
+  end
+
+  # § tokenizer-script-data-escape-start-state
+
+  defp tokenize(<<"-", html::binary>>, s = %State{current: :script_data_escape_start}) do
+    tokenize(
+      html,
+      %{s | tokens: [@hyphen_minus | s.tokens], current: :script_data_escape_start_dash}
+    )
+  end
+
+  defp tokenize(html, s = %State{current: :script_data_escape_start}) do
+    tokenize(html, %{s | current: :script_data})
+  end
+
+  # § tokenizer-script-data-escape-start-dash-state
+
+  defp tokenize(<<"-", html::binary>>, s = %State{current: :script_data_escape_start_dash}) do
+    tokenize(
+      html,
+      %{s | tokens: [@hyphen_minus | s.tokens], current: :script_data_escaped_dash_dash}
+    )
+  end
+
+  defp tokenize(html, s = %State{current: :script_data_escape_start_dash}) do
+    tokenize(html, %{s | current: :script_data})
+  end
+
+  # TODO: tokenizer-script-data-escaped-state (next)
 
   defp tokenize(<<"!", html::binary>>, s = %State{current: :markup_declaration_open}) do
     case html do
@@ -614,11 +671,9 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defp tokens_for_inappropriate_end_tag(state) do
-    solidus = {:char, "\u002F"}
-    less_than_sign = {:char, "\u003C"}
     buffer_chars = String.codepoints(state.buffer) |> Enum.map(&{:char, &1})
 
-    tokens = [solidus, less_than_sign | state.tokens]
+    tokens = [@solidus, @less_than_sign | state.tokens]
     Enum.reduce(buffer_chars, tokens, fn char, acc -> [char | acc] end)
   end
 
@@ -626,10 +681,13 @@ defmodule Floki.HTML.Tokenizer do
     case current do
       :rcdata_end_tag_name ->
         :rcdata
+
       :rawtext_end_tag_name ->
         :rawtext
+
       :script_data_end_tag_name ->
         :script_data
+
       :script_data_escaped_end_tag_name ->
         :script_data_escaped
     end
