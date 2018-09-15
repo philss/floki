@@ -1,6 +1,6 @@
 defmodule Floki.HTML.Tokenizer do
   @lower_ASCII_letters Enum.map(?a..?z, fn l -> <<l::utf8>> end)
-  @upper_ASCII_letters Enum.map(?a..?z, fn l -> <<l::utf8>> end)
+  @upper_ASCII_letters Enum.map(?A..?Z, fn l -> <<l::utf8>> end)
   @all_ASCII_letters @lower_ASCII_letters ++ @upper_ASCII_letters
   @space_chars ["\t", "\n", "\f", "\s"]
 
