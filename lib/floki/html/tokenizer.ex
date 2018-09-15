@@ -48,8 +48,8 @@ defmodule Floki.HTML.Tokenizer do
     tokenize(html, %{s | tokens: [{:eof, s.column, s.line} | s.tokens]})
   end
 
-  defp tokenize(<<c::bytes-size(1), html::binary>>, s = %State{current: :data}) do
-    tokenize(html, %{s | tokens: [{:char, c} | s.tokens]})
+  defp tokenize(<<c::utf8, html::binary>>, s = %State{current: :data}) do
+    tokenize(html, %{s | tokens: [{:char, <<c::utf8>>} | s.tokens]})
   end
 
   # § tokenizer-rcdata-state
@@ -70,8 +70,8 @@ defmodule Floki.HTML.Tokenizer do
     tokenize(html, %{s | tokens: [{:eof, s.column, s.line} | s.tokens]})
   end
 
-  defp tokenize(<<c::bytes-size(1), html::binary>>, s = %State{current: :rcdata}) do
-    tokenize(html, %{s | tokens: [{:char, c} | s.tokens], column: s.column + 1})
+  defp tokenize(<<c::utf8, html::binary>>, s = %State{current: :rcdata}) do
+    tokenize(html, %{s | tokens: [{:char, <<c::utf8>>} | s.tokens], column: s.column + 1})
   end
 
   # § tokenizer-rawtext-state
@@ -88,8 +88,8 @@ defmodule Floki.HTML.Tokenizer do
     tokenize(html, %{s | tokens: [{:eof, s.column, s.line} | s.tokens]})
   end
 
-  defp tokenize(<<c::bytes-size(1), html::binary>>, s = %State{current: :rawtext}) do
-    tokenize(html, %{s | tokens: [{:char, c} | s.tokens], column: s.column + 1})
+  defp tokenize(<<c::utf8, html::binary>>, s = %State{current: :rawtext}) do
+    tokenize(html, %{s | tokens: [{:char, <<c::utf8>>} | s.tokens], column: s.column + 1})
   end
 
   # § tokenizer-script-data-state
@@ -106,8 +106,8 @@ defmodule Floki.HTML.Tokenizer do
     tokenize(html, %{s | tokens: [{:eof, s.column, s.line} | s.tokens]})
   end
 
-  defp tokenize(<<c::bytes-size(1), html::binary>>, s = %State{current: :script_data}) do
-    tokenize(html, %{s | tokens: [{:char, c} | s.tokens], column: s.column + 1})
+  defp tokenize(<<c::utf8, html::binary>>, s = %State{current: :script_data}) do
+    tokenize(html, %{s | tokens: [{:char, <<c::utf8>>} | s.tokens], column: s.column + 1})
   end
 
   # § tokenizer-plaintext-state
@@ -120,8 +120,8 @@ defmodule Floki.HTML.Tokenizer do
     tokenize(html, %{s | tokens: [{:eof, s.column, s.line} | s.tokens]})
   end
 
-  defp tokenize(<<c::bytes-size(1), html::binary>>, s = %State{current: :plaintext}) do
-    tokenize(html, %{s | tokens: [{:char, c} | s.tokens], column: s.column + 1})
+  defp tokenize(<<c::utf8, html::binary>>, s = %State{current: :plaintext}) do
+    tokenize(html, %{s | tokens: [{:char, <<c::utf8>>} | s.tokens], column: s.column + 1})
   end
 
   # § tokenizer-tag-open-state
@@ -134,8 +134,8 @@ defmodule Floki.HTML.Tokenizer do
     tokenize(html, %{s | current: :end_tag_open, column: s.column + 1})
   end
 
-  defp tokenize(html = <<c::bytes-size(1), _rest::binary>>, s = %State{current: :tag_open})
-       when c in @all_ASCII_letters do
+  defp tokenize(html = <<c::utf8, _rest::binary>>, s = %State{current: :tag_open})
+       when <<c::utf8>> in @all_ASCII_letters do
     token = {:start_tag, "", s.column, s.line}
 
     tokenize(html, %{s | token: token, current: :tag_name})
@@ -153,8 +153,8 @@ defmodule Floki.HTML.Tokenizer do
 
   # § tokenizer-end-tag-open-state
 
-  defp tokenize(html = <<c::bytes-size(1), _rest::binary>>, s = %State{current: :end_tag_open})
-       when c in @all_ASCII_letters do
+  defp tokenize(html = <<c::utf8, _rest::binary>>, s = %State{current: :end_tag_open})
+       when <<c::utf8>> in @all_ASCII_letters do
     token = {:end_tag, "", s.column, s.line}
 
     tokenize(html, %{s | token: token, current: :tag_name})
@@ -179,9 +179,9 @@ defmodule Floki.HTML.Tokenizer do
 
   # § tokenizer-tag-name-state
 
-  defp tokenize(<<c::bytes-size(1), html::binary>>, s = %State{current: :tag_name})
-       when c in @space_chars do
-    line = line_number(c, s.line)
+  defp tokenize(<<c::utf8, html::binary>>, s = %State{current: :tag_name})
+       when <<c::utf8>> in @space_chars do
+    line = line_number(<<c::utf8>>, s.line)
     tokenize(html, %{s | current: :before_attribute_name, column: s.column + 1, line: line})
   end
 
@@ -200,10 +200,10 @@ defmodule Floki.HTML.Tokenizer do
     })
   end
 
-  defp tokenize(<<c::bytes-size(1), html::binary>>, s = %State{current: :tag_name})
-       when c in @upper_ASCII_letters do
+  defp tokenize(<<c::utf8, html::binary>>, s = %State{current: :tag_name})
+       when <<c::utf8>> in @upper_ASCII_letters do
     {start_or_end_tag, tag_name, col, line} = s.token
-    new_token = {start_or_end_tag, tag_name <> String.downcase(c), col + 1, line}
+    new_token = {start_or_end_tag, tag_name <> String.downcase(<<c::utf8>>), col + 1, line}
 
     tokenize(html, %{s | token: new_token, column: col + 1})
   end
@@ -222,9 +222,9 @@ defmodule Floki.HTML.Tokenizer do
     tokenize(html, %{s | token: nil, tokens: [{:eof, s.column, s.line} | s.tokens]})
   end
 
-  defp tokenize(<<c::bytes-size(1), html::binary>>, s = %State{current: :tag_name}) do
+  defp tokenize(<<c::utf8, html::binary>>, s = %State{current: :tag_name}) do
     {start_or_end_tag, tag_name, col, line} = s.token
-    new_token = {start_or_end_tag, tag_name <> c, col + 1, line}
+    new_token = {start_or_end_tag, tag_name <> <<c::utf8>>, col + 1, line}
 
     tokenize(html, %{s | token: new_token, column: col + 1})
   end
@@ -242,10 +242,10 @@ defmodule Floki.HTML.Tokenizer do
   # § tokenizer-rcdata-end-tag-open-state
 
   defp tokenize(
-         html = <<c::bytes-size(1), _rest::binary>>,
+         html = <<c::utf8, _rest::binary>>,
          s = %State{current: :rcdata_end_tag_open}
        )
-       when c in @all_ASCII_letters do
+       when <<c::utf8>> in @all_ASCII_letters do
     token = {:end_tag, "", s.column, s.line}
     tokenize(html, %{s | token: token, current: :rcdata_end_tag_name})
   end
@@ -268,11 +268,11 @@ defmodule Floki.HTML.Tokenizer do
   ]
 
   defp tokenize(
-         html = <<c::bytes-size(1), rest::binary>>,
+         html = <<c::utf8, rest::binary>>,
          s = %State{current: state}
        )
-       when c in @space_chars and state in @raw_end_tag_name_states do
-    line = line_number(c, s.line)
+       when <<c::utf8>> in @space_chars and state in @raw_end_tag_name_states do
+    line = line_number(<<c::utf8>>, s.line)
 
     if appropriate_tag?(s) do
       tokenize(rest, %{s | current: :before_attribute_name, column: s.column + 1, line: line})
@@ -320,21 +320,23 @@ defmodule Floki.HTML.Tokenizer do
     end
   end
 
-  defp tokenize(<<c::bytes-size(1), html::binary>>, s = %State{current: state})
-       when c in @upper_ASCII_letters and state in @raw_end_tag_name_states do
+  defp tokenize(<<c::utf8, html::binary>>, s = %State{current: state})
+       when <<c::utf8>> in @upper_ASCII_letters and state in @raw_end_tag_name_states do
+    char = <<c::utf8>>
     {:end_tag, end_tag, col, line} = s.token
-    downcase_char = String.downcase(c)
+    downcase_char = String.downcase(char)
     new_token = {:end_tag, end_tag <> downcase_char, col + 1, line}
 
-    tokenize(html, %{s | token: new_token, buffer: s.buffer <> c})
+    tokenize(html, %{s | token: new_token, buffer: s.buffer <> char})
   end
 
-  defp tokenize(<<c::bytes-size(1), html::binary>>, s = %State{current: state})
-       when c in @lower_ASCII_letters and state in @raw_end_tag_name_states do
+  defp tokenize(<<c::utf8, html::binary>>, s = %State{current: state})
+       when <<c::utf8>> in @lower_ASCII_letters and state in @raw_end_tag_name_states do
+    char = <<c::utf8>>
     {:end_tag, end_tag, col, line} = s.token
-    new_token = {:end_tag, end_tag <> c, col + 1, line}
+    new_token = {:end_tag, end_tag <> char, col + 1, line}
 
-    tokenize(html, %{s | token: new_token, buffer: s.buffer <> c})
+    tokenize(html, %{s | token: new_token, buffer: s.buffer <> char})
   end
 
   defp tokenize(html, s = %State{current: state}) when state in @raw_end_tag_name_states do
@@ -363,10 +365,10 @@ defmodule Floki.HTML.Tokenizer do
   # § tokenizer-rawtext-end-tag-open-state
 
   defp tokenize(
-         html = <<c::bytes-size(1), _rest::binary>>,
+         html = <<c::utf8, _rest::binary>>,
          s = %State{current: :rawtext_end_tag_open}
        )
-       when c in @all_ASCII_letters do
+       when <<c::utf8>> in @all_ASCII_letters do
     token = {:end_tag, "", s.column, s.line}
     tokenize(html, %{s | token: token, current: :rawtext_end_tag_name})
   end
@@ -394,10 +396,10 @@ defmodule Floki.HTML.Tokenizer do
   # § tokenizer-script-data-end-tag-open-state
 
   defp tokenize(
-         html = <<c::bytes-size(1), _rest::binary>>,
+         html = <<c::utf8, _rest::binary>>,
          s = %State{current: :script_data_end_tag_open}
        )
-       when c in @all_ASCII_letters do
+       when <<c::utf8>> in @all_ASCII_letters do
     end_tag = {:end_tag, "", s.column + 1, s.line}
 
     tokenize(html, %{s | token: end_tag, current: :script_data_end_tag_name})
@@ -454,8 +456,8 @@ defmodule Floki.HTML.Tokenizer do
     tokenize(html, %{s | tokens: [{:eof, s.column, s.line} | s.tokens]})
   end
 
-  defp tokenize(<<c::bytes-size(1), html::binary>>, s = %State{current: :script_data_escaped}) do
-    tokenize(html, %{s | tokens: [{:char, c} | s.tokens]})
+  defp tokenize(<<c::utf8, html::binary>>, s = %State{current: :script_data_escaped}) do
+    tokenize(html, %{s | tokens: [{:char, <<c::utf8>>} | s.tokens]})
   end
 
   # § tokenizer-script-data-escaped-dash-state
@@ -480,10 +482,10 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defp tokenize(
-         <<c::bytes-size(1), html::binary>>,
+         <<c::utf8, html::binary>>,
          s = %State{current: :script_data_escaped_dash}
        ) do
-    tokenize(html, %{s | tokens: [{:char, c} | s.tokens], current: :script_data_escaped})
+    tokenize(html, %{s | tokens: [{:char, <<c::utf8>>} | s.tokens], current: :script_data_escaped})
   end
 
   # § tokenizer-script-data-escaped-dash-dash-state
@@ -512,10 +514,10 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defp tokenize(
-         <<c::bytes-size(1), html::binary>>,
+         <<c::utf8, html::binary>>,
          s = %State{current: :script_data_escaped_dash_dash}
        ) do
-    tokenize(html, %{s | tokens: [{:char, c} | s.tokens], current: :script_data_escaped})
+    tokenize(html, %{s | tokens: [{:char, <<c::utf8>>} | s.tokens], current: :script_data_escaped})
   end
 
   # § tokenizer-script-data-escaped-less-than-sign-state
@@ -525,10 +527,10 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defp tokenize(
-         html = <<c::bytes-size(1), _rest::binary>>,
+         html = <<c::utf8, _rest::binary>>,
          s = %State{current: :script_data_escaped_less_than_sign}
        )
-       when c in @all_ASCII_letters do
+       when <<c::utf8>> in @all_ASCII_letters do
     tokenize(
       html,
       %{
@@ -547,10 +549,10 @@ defmodule Floki.HTML.Tokenizer do
   # § tokenizer-script-data-escaped-end-tag-open-state
 
   defp tokenize(
-         html = <<c::bytes-size(1), _rest::binary>>,
+         html = <<c::utf8, _rest::binary>>,
          s = %State{current: :script_data_escaped_end_tag_open}
        )
-       when c in @all_ASCII_letters do
+       when <<c::utf8>> in @all_ASCII_letters do
     tokenize(
       html,
       %{
@@ -572,10 +574,10 @@ defmodule Floki.HTML.Tokenizer do
   # § tokenizer-script-data-double-escape-start-state
 
   defp tokenize(
-         <<c::bytes-size(1), html::binary>>,
+         <<c::utf8, html::binary>>,
          s = %State{current: :script_data_escaped_end_tag_open}
        )
-       when c in ["/", ">" | @space_chars] do
+       when <<c::utf8>> in ["/", ">" | @space_chars] do
     next =
       if s.buffer == "script" do
         :script_data_double_escaped
@@ -583,23 +585,30 @@ defmodule Floki.HTML.Tokenizer do
         :script_data_escaped
       end
 
-    tokenize(html, %{s | tokens: [{:char, c} | s.tokens], current: next})
+    tokenize(html, %{s | tokens: [{:char, <<c::utf8>>} | s.tokens], current: next})
   end
 
   defp tokenize(
-         <<c::bytes-size(1), html::binary>>,
+         <<c::utf8, html::binary>>,
          s = %State{current: :script_data_escaped_end_tag_open}
        )
-       when c in @upper_ASCII_letters do
-    tokenize(html, %{s | buffer: s.buffer <> String.downcase(c), tokens: [{:char, c} | s.tokens]})
+       when <<c::utf8>> in @upper_ASCII_letters do
+    char = <<c::utf8>>
+
+    tokenize(html, %{
+      s
+      | buffer: s.buffer <> String.downcase(char),
+        tokens: [{:char, char} | s.tokens]
+    })
   end
 
   defp tokenize(
-         <<c::bytes-size(1), html::binary>>,
+         <<c::utf8, html::binary>>,
          s = %State{current: :script_data_escaped_end_tag_open}
        )
-       when c in @lower_ASCII_letters do
-    tokenize(html, %{s | buffer: s.buffer <> c, tokens: [{:char, c} | s.tokens]})
+       when <<c::utf8>> in @lower_ASCII_letters do
+    char = <<c::utf8>>
+    tokenize(html, %{s | buffer: s.buffer <> char, tokens: [{:char, char} | s.tokens]})
   end
 
   defp tokenize(html, s = %State{current: :script_data_escaped_end_tag_open}) do
@@ -644,7 +653,7 @@ defmodule Floki.HTML.Tokenizer do
     tokenize(html, %{s | current: :comment_start_dash, column: s.column + 1})
   end
 
-  defp tokenize(<<c::bytes-size(1), html::binary>>, s = %State{current: :comment_start}) do
+  defp tokenize(<<c::utf8, html::binary>>, s = %State{current: :comment_start}) do
     {:comment, comment, _, _} = s.token
     new_token = {:comment, comment <> c, s.line, s.column}
 
@@ -658,9 +667,9 @@ defmodule Floki.HTML.Tokenizer do
     tokenize(html, %{s | current: :comment_end_dash, column: s.column + 1})
   end
 
-  defp tokenize(<<c::bytes-size(1), html::binary>>, s = %State{current: :comment}) do
+  defp tokenize(<<c::utf8, html::binary>>, s = %State{current: :comment}) do
     {:comment, comment, l, cl} = s.token
-    new_token = {:comment, comment <> c, l, cl}
+    new_token = {:comment, comment <> <<c::utf8>>, l, cl}
 
     tokenize(
       html,
@@ -700,9 +709,9 @@ defmodule Floki.HTML.Tokenizer do
     tokenize(html, %{s | current: :comment_end_bang})
   end
 
-  defp tokenize(<<c::bytes-size(1), html::binary>>, s = %State{current: :doctype})
-       when c in @space_chars do
-    line = line_number(c, s.line)
+  defp tokenize(<<c::utf8, html::binary>>, s = %State{current: :doctype})
+       when <<c::utf8>> in @space_chars do
+    line = line_number(<<c::utf8>>, s.line)
     tokenize(html, %{s | current: :before_doctype_name, column: s.column + 1, line: line})
   end
 
@@ -716,9 +725,9 @@ defmodule Floki.HTML.Tokenizer do
     tokenize(html, %{s | current: :before_doctype_name})
   end
 
-  defp tokenize(<<c::bytes-size(1), html::binary>>, s = %State{current: :before_doctype_name})
-       when c in @space_chars do
-    line = line_number(c, s.line)
+  defp tokenize(<<c::utf8, html::binary>>, s = %State{current: :before_doctype_name})
+       when <<c::utf8>> in @space_chars do
+    line = line_number(<<c::utf8>>, s.line)
     tokenize(html, %{s | current: :before_doctype_name, column: s.column + 1, line: line})
   end
 
@@ -750,14 +759,14 @@ defmodule Floki.HTML.Tokenizer do
     })
   end
 
-  defp tokenize(<<c::bytes-size(1), html::binary>>, s = %State{current: :before_doctype_name}) do
-    token = {:doctype, String.downcase(c), nil, nil, false, s.line, s.column + 1}
+  defp tokenize(<<c::utf8, html::binary>>, s = %State{current: :before_doctype_name}) do
+    token = {:doctype, String.downcase(<<c::utf8>>), nil, nil, false, s.line, s.column + 1}
     tokenize(html, %{s | current: :doctype_name, token: token, column: s.column + 1})
   end
 
-  defp tokenize(<<c::bytes-size(1), html::binary>>, s = %State{current: :doctype_name})
-       when c in @space_chars do
-    line = line_number(c, s.line)
+  defp tokenize(<<c::utf8, html::binary>>, s = %State{current: :doctype_name})
+       when <<c::utf8>> in @space_chars do
+    line = line_number(<<c::utf8>>, s.line)
     tokenize(html, %{s | current: :after_doctype_name, column: s.column + 1, line: line})
   end
 
@@ -776,13 +785,22 @@ defmodule Floki.HTML.Tokenizer do
 
   defp tokenize(<<"\0", html::binary>>, s = %State{current: :doctype_name}) do
     {:doctype, name, _, _, _, _, column} = s.token
-    new_token = put_elem(s.token, 1, name <> "\uFFFD") |> put_elem(6, column + 1)
+    new_token =
+      s.token
+      |> put_elem(1, name <> "\uFFFD")
+      |> put_elem(6, column + 1)
+
     tokenize(html, %{s | current: :doctype_name, token: new_token, column: s.column + 1})
   end
 
-  defp tokenize(<<c::bytes-size(1), html::binary>>, s = %State{current: :doctype_name}) do
+  defp tokenize(<<c::utf8, html::binary>>, s = %State{current: :doctype_name}) do
     {:doctype, name, _, _, _, _, column} = s.token
-    new_token = put_elem(s.token, 1, name <> String.downcase(c)) |> put_elem(6, column + 1)
+
+    new_token =
+      s.token
+      |> put_elem(1, name <> String.downcase(<<c::utf8>>))
+      |> put_elem(6, column + 1)
+
     tokenize(html, %{s | current: :doctype_name, token: new_token, column: s.column + 1})
   end
 
@@ -797,8 +815,8 @@ defmodule Floki.HTML.Tokenizer do
     })
   end
 
-  defp tokenize(<<c::bytes-size(1), html::binary>>, s = %State{current: :after_doctype_name})
-       when c in @space_chars do
+  defp tokenize(<<c::utf8, html::binary>>, s = %State{current: :after_doctype_name})
+       when <<c::utf8>> in @space_chars do
     line = line_number(c, s.line)
     tokenize(html, %{s | current: :after_doctype_name, column: s.column + 1, line: line})
   end
@@ -846,7 +864,10 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defp tokens_for_inappropriate_end_tag(state) do
-    buffer_chars = String.codepoints(state.buffer) |> Enum.map(&{:char, &1})
+    buffer_chars =
+      state.buffer
+      |> String.codepoints()
+      |> Enum.map(&{:char, &1})
 
     tokens = [@solidus, @less_than_sign | state.tokens]
     Enum.reduce(buffer_chars, tokens, fn char, acc -> [char | acc] end)
