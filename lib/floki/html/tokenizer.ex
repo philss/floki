@@ -615,6 +615,180 @@ defmodule Floki.HTML.Tokenizer do
     tokenize(html, %{s | current: :script_data_escaped})
   end
 
+  # § tokenizer-script-data-double-escaped-state
+
+  defp tokenize(<<"-", html::binary>>, s = %State{current: :script_data_double_escaped}) do
+    tokenize(html, %{
+      s
+      | current: :script_data_double_escaped_dash,
+        tokens: [@hyphen_minus | s.tokens]
+    })
+  end
+
+  defp tokenize(<<"<", html::binary>>, s = %State{current: :script_data_double_escaped}) do
+    tokenize(html, %{
+      s
+      | current: :script_data_double_escaped_less_than_sign,
+        tokens: [@less_than_sign | s.tokens]
+    })
+  end
+
+  defp tokenize(<<"\0", html::binary>>, s = %State{current: :script_data_double_escaped}) do
+    tokenize(html, %{s | tokens: [@replacement_char | s.tokens]})
+  end
+
+  defp tokenize(html = "", s = %State{current: :script_data_double_escaped}) do
+    tokenize(html, %{s | tokens: [{:eof, s.column, s.line} | s.tokens]})
+  end
+
+  defp tokenize(<<c::utf8, html::binary>>, s = %State{current: :script_data_double_escaped}) do
+    tokenize(html, %{s | tokens: [{:char, <<c::utf8>>} | s.tokens]})
+  end
+
+  # § tokenizer-script-data-double-escaped-dash-state
+
+  defp tokenize(<<"-", html::binary>>, s = %State{current: :script_data_double_escaped_dash}) do
+    tokenize(html, %{
+      s
+      | current: :script_data_double_escaped_dash_dash,
+        tokens: [@hyphen_minus | s.tokens]
+    })
+  end
+
+  defp tokenize(<<"<", html::binary>>, s = %State{current: :script_data_double_escaped_dash}) do
+    tokenize(html, %{
+      s
+      | current: :script_data_double_escaped_less_than_sign,
+        tokens: [@less_than_sign | s.tokens]
+    })
+  end
+
+  defp tokenize(<<"\0", html::binary>>, s = %State{current: :script_data_double_escaped_dash}) do
+    tokenize(html, %{
+      s
+      | tokens: [@replacement_char | s.tokens],
+        current: :script_data_double_escaped
+    })
+  end
+
+  defp tokenize(html = "", s = %State{current: :script_data_double_escaped_dash}) do
+    tokenize(html, %{s | tokens: [{:eof, s.column, s.line} | s.tokens]})
+  end
+
+  defp tokenize(<<c::utf8, html::binary>>, s = %State{current: :script_data_double_escaped_dash}) do
+    tokenize(html, %{
+      s
+      | tokens: [{:char, <<c::utf8>>} | s.tokens],
+        current: :script_data_double_escaped
+    })
+  end
+
+  # § tokenizer-script-data-double-escaped-dash-dash-state
+
+  defp tokenize(<<"-", html::binary>>, s = %State{current: :script_data_double_escaped_dash_dash}) do
+    tokenize(html, %{s | tokens: [@hyphen_minus | s.tokens]})
+  end
+
+  defp tokenize(<<"<", html::binary>>, s = %State{current: :script_data_double_escaped_dash_dash}) do
+    tokenize(html, %{
+      s
+      | current: :script_data_double_escaped_less_than_sign,
+        tokens: [@less_than_sign | s.tokens]
+    })
+  end
+
+  defp tokenize(<<">", html::binary>>, s = %State{current: :script_data_double_escaped_dash_dash}) do
+    tokenize(html, %{s | current: :script_data, tokens: [@greater_than_sign | s.tokens]})
+  end
+
+  defp tokenize(
+         <<"\0", html::binary>>,
+         s = %State{current: :script_data_double_escaped_dash_dash}
+       ) do
+    tokenize(html, %{
+      s
+      | tokens: [@replacement_char | s.tokens],
+        current: :script_data_double_escaped
+    })
+  end
+
+  defp tokenize(html = "", s = %State{current: :script_data_double_escaped_dash_dash}) do
+    tokenize(html, %{s | tokens: [{:eof, s.column, s.line} | s.tokens]})
+  end
+
+  defp tokenize(
+         <<c::utf8, html::binary>>,
+         s = %State{current: :script_data_double_escaped_dash_dash}
+       ) do
+    tokenize(html, %{
+      s
+      | tokens: [{:char, <<c::utf8>>} | s.tokens],
+        current: :script_data_double_escaped
+    })
+  end
+
+  # § tokenizer-script-data-double-escaped-less-than-sign-state
+
+  defp tokenize(
+         <<"/", html::binary>>,
+         s = %State{current: :script_data_double_escaped_less_than_sign}
+       ) do
+    tokenize(html, %{
+      s
+      | buffer: "",
+        current: :script_data_double_escape_end,
+        tokens: [@solidus | s.tokens]
+    })
+  end
+
+  defp tokenize(html, s = %State{current: :script_data_double_escaped_less_than_sign}) do
+    tokenize(html, %{s | current: :script_data_double_escaped})
+  end
+
+  # § tokenizer-script-data-double-escape-end-state
+
+  defp tokenize(
+         <<c::utf8, html::binary>>,
+         s = %State{current: :script_data_double_escape_end}
+       )
+       when <<c::utf8>> in ["/", ">" | @space_chars] do
+    next =
+      if s.buffer == "script" do
+        :script_data_escaped
+      else
+        :script_data_double_escaped
+      end
+
+    tokenize(html, %{s | tokens: [{:char, <<c::utf8>>} | s.tokens], current: next})
+  end
+
+  defp tokenize(
+         <<c::utf8, html::binary>>,
+         s = %State{current: :script_data_double_escape_end}
+       )
+       when <<c::utf8>> in @upper_ASCII_letters do
+    char = <<c::utf8>>
+
+    tokenize(html, %{
+      s
+      | buffer: s.buffer <> String.downcase(char),
+        tokens: [{:char, char} | s.tokens]
+    })
+  end
+
+  defp tokenize(
+         <<c::utf8, html::binary>>,
+         s = %State{current: :script_data_double_escape_end}
+       )
+       when <<c::utf8>> in @lower_ASCII_letters do
+    char = <<c::utf8>>
+    tokenize(html, %{s | buffer: s.buffer <> char, tokens: [{:char, char} | s.tokens]})
+  end
+
+  defp tokenize(html, s = %State{current: :script_data_double_escape_end}) do
+    tokenize(html, %{s | current: :script_data_double_escaped})
+  end
+
   # TODO: continue
 
   defp tokenize(<<"!", html::binary>>, s = %State{current: :markup_declaration_open}) do
@@ -785,6 +959,7 @@ defmodule Floki.HTML.Tokenizer do
 
   defp tokenize(<<"\0", html::binary>>, s = %State{current: :doctype_name}) do
     {:doctype, name, _, _, _, _, column} = s.token
+
     new_token =
       s.token
       |> put_elem(1, name <> "\uFFFD")
