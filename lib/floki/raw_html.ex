@@ -83,7 +83,11 @@ defmodule Floki.RawHTML do
   defp close_end_tag(type, []) when type in @self_closing_tags, do: ""
   defp close_end_tag(type, _), do: "</#{type}>"
 
-  defp build_attrs({attr, value}, attrs) do
+  defp build_attrs({attr, iodata}, attrs) when is_list(iodata) do
+    build_attrs({attr, IO.iodata_to_binary(iodata)}, attrs)
+  end
+
+  defp build_attrs({attr, <<value::binary>>}, attrs) do
     if String.contains?(value, "\"") do
       ~s(#{attrs} #{attr}='#{value}')
     else
@@ -91,7 +95,7 @@ defmodule Floki.RawHTML do
     end
   end
 
-  defp build_attrs(attr, attrs), do: "#{attrs} #{attr}"
+  defp build_attrs(<<attr::binary>>, attrs), do: "#{attrs} #{attr}"
 
   defp tag_for(type, attrs, children, encoder) do
     encoder =

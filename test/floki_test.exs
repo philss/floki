@@ -273,6 +273,11 @@ defmodule FlokiTest do
     assert raw_html == "<div hidden></div>"
   end
 
+  test "raw_html with attribute as iodata" do
+    raw_html = Floki.raw_html({"div", [{"class", ["class1", " ", ["class", "2"]]}], []})
+    assert raw_html == ~s(<div class="class1 class2"></div>)
+  end
+
   test "raw_html (with self closing tag without content)" do
     raw_html = Floki.raw_html({"link", [{"href", "www.example.com"}], []})
 
