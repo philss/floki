@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased][unreleased]
 
+## [0.20.4] - 2018-09-24
+
+### Fixed
+
+- Fix `Floki.raw_html` to accept lists as attribute values - thanks [@katehedgpeth](https://github.com/katehedgpeth)
+
 ## [0.20.3] - 2018-06-22
 
 ### Fixed
@@ -401,7 +407,8 @@ of the parent element inside HTML.
 
 - Elixir version requirement from "~> 1.0.0" to ">= 1.0.0".
 
-[unreleased]: https://github.com/philss/floki/compare/v0.20.3...HEAD
+[unreleased]: https://github.com/philss/floki/compare/v0.20.4...HEAD
+[0.20.4]: https://github.com/philss/floki/compare/v0.20.3...v0.20.4
 [0.20.3]: https://github.com/philss/floki/compare/v0.20.2...v0.20.3
 [0.20.2]: https://github.com/philss/floki/compare/v0.20.1...v0.20.2
 [0.20.1]: https://github.com/philss/floki/compare/v0.20.0...v0.20.1
