@@ -28,6 +28,10 @@ matrix:
 
 sudo: false
 
+script:
+  - elixir --version | grep -q '^Elixir 1\.5' || mix format --check-formatted
+  - mix test
+
 after_script:
   - mix deps.get --only docs
   - MIX_ENV=docs mix inch.report
