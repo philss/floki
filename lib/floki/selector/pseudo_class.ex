@@ -51,7 +51,7 @@ defmodule Floki.Selector.PseudoClass do
   end
 
   def match_nth_child?(_tree, _html_node, %__MODULE__{value: expression}) do
-    Logger.warn(fn ->
+    Logger.info(fn ->
       "Pseudo-class nth-child with expressions like #{inspect(expression)} are not supported yet. Ignoring."
     end)
 
@@ -87,7 +87,7 @@ defmodule Floki.Selector.PseudoClass do
   end
 
   def match_nth_of_type?(_, _, %__MODULE__{value: expression}) do
-    Logger.warn(fn ->
+    Logger.info(fn ->
       "Pseudo-class nth-of-type with expressions like #{inspect(expression)} are not supported yet. Ignoring."
     end)
 
