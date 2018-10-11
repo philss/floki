@@ -181,7 +181,7 @@ defmodule Floki.Selector do
   end
 
   defp pseudo_class_match?(_html_node, %{name: unknown_pseudo_class}, _tree) do
-    Logger.warn(fn ->
+    Logger.info(fn ->
       "Pseudo-class #{inspect(unknown_pseudo_class)} is not implemented. Ignoring."
     end)
 
