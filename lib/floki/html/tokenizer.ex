@@ -948,9 +948,6 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   # § tokenizer-attribute-name-state
-  #
-  # TODO: continue
-  # https://w3c.github.io/html/syntax.html#tokenizer-attribute-name-state
 
   defp tokenize(html = <<c::utf8, _rest::binary>>, s = %State{current: :attribute_name})
        when <<c::utf8>> in [@solidus, @greater_than_sign | @space_chars] do
@@ -968,7 +965,8 @@ defmodule Floki.HTML.Tokenizer do
     tokenize(html, %{s | current: :before_attribute_value})
   end
 
-  defp tokenize(<<c::utf8, html::binary>>, s = %State{current: :attribute_name}) when <<c::utf8>> in @upper_ASCII_letters do
+  defp tokenize(<<c::utf8, html::binary>>, s = %State{current: :attribute_name})
+       when <<c::utf8>> in @upper_ASCII_letters do
     current_attr = s.token.current_attribute
     new_attr = %{current_attr | name: current_attr.name <> String.downcase(<<c::utf8>>)}
     new_token = %{s.token | current_attribute: new_attr}
@@ -976,13 +974,19 @@ defmodule Floki.HTML.Tokenizer do
     tokenize(html, %{s | token: new_token, column: s.column + 1})
   end
 
-  defp tokenize(<<c::utf8, html::binary>>, s = %State{current: :attribute_name}) when <<c::utf8>> in ["\"", "'", "<"] do
+  defp tokenize(<<c::utf8, html::binary>>, s = %State{current: :attribute_name})
+       when <<c::utf8>> in ["\"", "'", "<"] do
     col = s.column + 1
     current_attr = s.token.current_attribute
     new_attr = %{current_attr | name: current_attr.name <> <<c::utf8>>}
     new_token = %{s.token | current_attribute: new_attr}
 
-    tokenize(html, %{s | errors: [%ParseError{line: s.line, column: col} | s.errors], token: new_token, column: col})
+    tokenize(html, %{
+      s
+      | errors: [%ParseError{line: s.line, column: col} | s.errors],
+        token: new_token,
+        column: col
+    })
   end
 
   defp tokenize(<<c::utf8, html::binary>>, s = %State{current: :attribute_name}) do
@@ -994,7 +998,81 @@ defmodule Floki.HTML.Tokenizer do
     tokenize(html, %{s | token: new_token, column: col})
   end
 
-  # TODO: continuar: tokenizer-after-attribute-name-state
+  # § tokenizer-after-attribute-name-state
+
+  defp tokenize(<<c::utf8, html::binary>>, s = %State{current: :after_attribute_name})
+       when <<c::utf8>> in @space_chars do
+    line = line_number(<<c::utf8>>, s.line)
+    col = column_number(line, s)
+
+    tokenize(html, %{s | line: line, column: col})
+  end
+
+  defp tokenize(<<"/", html::binary>>, s = %State{current: :after_attribute_name}) do
+    tokenize(html, %{s | current: :self_closing_start_tag, column: s.column + 1})
+  end
+
+  defp tokenize(<<"=", html::binary>>, s = %State{current: :after_attribute_name}) do
+    tokenize(html, %{s | current: :before_attribute_value, column: s.column + 1})
+  end
+
+  defp tokenize(<<">", html::binary>>, s = %State{current: :after_attribute_name}) do
+    tokenize(html, %{
+      s
+      | current: :data,
+        tokens: [s.token | s.tokens],
+        token: nil,
+        column: s.column + 1
+    })
+  end
+
+  defp tokenize(html = "", s = %State{current: :after_attribute_name}) do
+    tokenize(html, %{
+      s
+      | current: :data,
+        errors: [%ParseError{line: s.line, column: s.column} | s.errors],
+        tokens: [%EOF{line: s.line, column: s.column} | s.tokens]
+    })
+  end
+
+  defp tokenize(html, s = %State{current: :after_attribute_name}) do
+    attribute = %Attribute{name: "", value: "", line: s.line, column: s.column}
+    new_token = %{s.token | current_attribute: attribute}
+
+    tokenize(html, %{s | token: new_token})
+  end
+
+  # § tokenizer-before-attribute-value-state
+
+  defp tokenize(<<c::utf8, html::binary>>, s = %State{current: :before_attribute_value})
+       when <<c::utf8>> in @space_chars do
+    line = line_number(<<c::utf8>>, s.line)
+    col = column_number(line, s)
+
+    tokenize(html, %{s | line: line, column: col})
+  end
+
+  defp tokenize(<<"\"", html::binary>>, s = %State{current: :before_attribute_value}) do
+    tokenize(html, %{s | current: :attribute_value_double_quoted, column: s.column + 1})
+  end
+
+  defp tokenize(<<"'", html::binary>>, s = %State{current: :before_attribute_value}) do
+    tokenize(html, %{s | current: :attribute_value_single_quoted, column: s.column + 1})
+  end
+
+  defp tokenize(html = <<">", _rest::binary>>, s = %State{current: :before_attribute_value}) do
+    tokenize(html, %{s | errors: [%ParseError{line: s.line, column: s.column} | s.errors]})
+  end
+
+  defp tokenize(html, s = %State{current: :before_attribute_value}) do
+    tokenize(html, %{s | current: :attribute_value_unquoted})
+  end
+
+  # § tokenizer-attribute-value-double-quoted-state
+
+  defp tokenize(<<"\"", html::binary>>, s = %State{current: :attribute_value_double_quoted}) do
+    tokenize(html, %{s | current: :after_attribute_value_quoted})
+  end
 
   defp tokenize(<<"!", html::binary>>, s = %State{current: :markup_declaration_open}) do
     case html do
