@@ -180,20 +180,26 @@ defmodule Floki do
 
   defp mutate_attrs(_, tree, results, attribute_name, mutation_fn) do
     mutated_nodes =
-      Enum.map(results, fn result ->
-        mutated_attributes =
-          if Enum.any?(result.attributes, &match?({^attribute_name, _}, &1)) do
-            Enum.map(result.attributes, fn attribute ->
-              with {^attribute_name, attribute_value} <- attribute do
-                {attribute_name, mutation_fn.(attribute_value)}
-              end
-            end)
-          else
-            [{attribute_name, mutation_fn.(nil)} | result.attributes]
-          end
+      Enum.map(
+        results,
+        fn result ->
+          mutated_attributes =
+            if Enum.any?(result.attributes, &match?({^attribute_name, _}, &1)) do
+              Enum.map(
+                result.attributes,
+                fn attribute ->
+                  with {^attribute_name, attribute_value} <- attribute do
+                    {attribute_name, mutation_fn.(attribute_value)}
+                  end
+                end
+              )
+            else
+              [{attribute_name, mutation_fn.(nil)} | result.attributes]
+            end
 
-        Map.put(result, :attributes, mutated_attributes)
-      end)
+          Map.put(result, :attributes, mutated_attributes)
+        end
+      )
 
     tree = add_nodes_to_tree(tree, mutated_nodes)
 
@@ -275,12 +281,12 @@ defmodule Floki do
         true -> html_tree
         _ -> filter_out(html_tree, "script")
       end
-      
+
     cleaned_html_tree =
       case opts[:style] do
         true -> cleaned_html_tree
         _ -> filter_out(cleaned_html_tree, "style")
-      end  
+      end
 
     search_strategy =
       case opts[:deep] do
@@ -346,23 +352,30 @@ defmodule Floki do
 
   defp attribute_values(elements, attr_name) do
     values =
-      Enum.reduce(elements, [], fn {_, attributes, _}, acc ->
-        case attribute_match?(attributes, attr_name) do
-          {_attr_name, value} ->
-            [value | acc]
+      Enum.reduce(
+        elements,
+        [],
+        fn {_, attributes, _}, acc ->
+          case attribute_match?(attributes, attr_name) do
+            {_attr_name, value} ->
+              [value | acc]
 
-          _ ->
-            acc
+            _ ->
+              acc
+          end
         end
-      end)
+      )
 
     Enum.reverse(values)
   end
 
   defp attribute_match?(attributes, attribute_name) do
-    Enum.find(attributes, fn {attr_name, _} ->
-      attr_name == attribute_name
-    end)
+    Enum.find(
+      attributes,
+      fn {attr_name, _} ->
+        attr_name == attribute_name
+      end
+    )
   end
 
   @doc """
