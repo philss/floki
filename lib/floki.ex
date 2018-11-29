@@ -252,12 +252,17 @@ defmodule Floki do
 
       iex> Floki.text([{"p", [], ["1"]},{"p", [], ["2"]}])
       "12"
-
+      
+      iex> Floki.text("<div><style>hello</style> world</div>")
+      "hello world"
+      
+      iex> Floki.text("<div><style>hello</style> world</div>", style: false)
+      " world"
   """
 
   @spec text(html_tree | binary) :: binary
 
-  def text(html, opts \\ [deep: true, js: false, sep: ""]) do
+  def text(html, opts \\ [deep: true, js: false, style: true, sep: ""]) do
     html_tree =
       if is_binary(html) do
         parse(html)
@@ -270,6 +275,12 @@ defmodule Floki do
         true -> html_tree
         _ -> filter_out(html_tree, "script")
       end
+      
+    cleaned_html_tree =
+      case opts[:style] do
+        true -> html_tree
+        _ -> filter_out(html_tree, "style")
+      end  
 
     search_strategy =
       case opts[:deep] do
