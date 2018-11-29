@@ -278,8 +278,8 @@ defmodule Floki do
       
     cleaned_html_tree =
       case opts[:style] do
-        true -> html_tree
-        _ -> filter_out(html_tree, "style")
+        true -> cleaned_html_tree
+        _ -> filter_out(cleaned_html_tree, "style")
       end  
 
     search_strategy =
