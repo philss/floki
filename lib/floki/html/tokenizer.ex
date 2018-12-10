@@ -980,353 +980,755 @@ defmodule Floki.HTML.Tokenizer do
     })
   end
 
-  defp tokenize(<<c::utf8, html::binary>>, s = %State{current: :attribute_name}) do
+  defp attribute_name(<<c::utf8, html::binary>>, s) do
     col = s.column + 1
     current_attr = s.token.current_attribute
-    new_attr = %{current_attr | name: current_attr.name <> <<c::utf8>>}
-    new_token = %{s.token | current_attribute: new_attr}
+    new_attr = %Attribute{current_attr | name: current_attr.name <> <<c::utf8>>}
+    new_token = %Tag{s.token | current_attribute: new_attr}
 
-    tokenize(html, %{s | token: new_token, column: col})
+    attribute_name(html, %{s | token: new_token, column: col})
   end
 
   # § tokenizer-after-attribute-name-state
 
-  defp tokenize(<<c::utf8, html::binary>>, s = %State{current: :after_attribute_name})
+  defp after_attribute_name(<<c::utf8, html::binary>>, s)
        when <<c::utf8>> in @space_chars do
     line = line_number(<<c::utf8>>, s.line)
     col = column_number(line, s)
 
-    tokenize(html, %{s | line: line, column: col})
+    after_attribute_name(html, %{s | line: line, column: col})
   end
 
-  defp tokenize(<<"/", html::binary>>, s = %State{current: :after_attribute_name}) do
-    tokenize(html, %{s | current: :self_closing_start_tag, column: s.column + 1})
+  defp after_attribute_name(<<"/", html::binary>>, s) do
+    self_closing_start_tag(html, %{s | column: s.column + 1})
   end
 
-  defp tokenize(<<"=", html::binary>>, s = %State{current: :after_attribute_name}) do
-    tokenize(html, %{s | current: :before_attribute_value, column: s.column + 1})
+  defp after_attribute_name(<<"=", html::binary>>, s) do
+    before_attribute_value(html, %{s | column: s.column + 1})
   end
 
-  defp tokenize(<<">", html::binary>>, s = %State{current: :after_attribute_name}) do
-    tokenize(html, %{
+  defp after_attribute_name(<<">", html::binary>>, s) do
+    data(html, %{
       s
-      | current: :data,
-        tokens: [s.token | s.tokens],
+      | tokens: [s.token | s.tokens],
         token: nil,
         column: s.column + 1
     })
   end
 
-  defp tokenize(html = "", s = %State{current: :after_attribute_name}) do
-    tokenize(html, %{
+  defp after_attribute_name("", s) do
+    eof(:data, %{
       s
-      | current: :data,
-        errors: [%ParseError{line: s.line, column: s.column} | s.errors],
-        tokens: [%EOF{line: s.line, column: s.column} | s.tokens]
+      | errors: [%ParseError{line: s.line, column: s.column} | s.errors]
     })
   end
 
-  defp tokenize(html, s = %State{current: :after_attribute_name}) do
+  defp after_attribute_name(html, s) do
     attribute = %Attribute{name: "", value: "", line: s.line, column: s.column}
-    new_token = %{s.token | current_attribute: attribute}
+    new_token = %Tag{s.token | current_attribute: attribute}
 
-    tokenize(html, %{s | token: new_token})
+    after_attribute_name(html, %{s | token: new_token})
   end
 
   # § tokenizer-before-attribute-value-state
 
-  defp tokenize(<<c::utf8, html::binary>>, s = %State{current: :before_attribute_value})
+  defp before_attribute_value(<<c::utf8, html::binary>>, s)
        when <<c::utf8>> in @space_chars do
     line = line_number(<<c::utf8>>, s.line)
     col = column_number(line, s)
 
-    tokenize(html, %{s | line: line, column: col})
+    before_attribute_value(html, %{s | line: line, column: col})
   end
 
-  defp tokenize(<<"\"", html::binary>>, s = %State{current: :before_attribute_value}) do
-    tokenize(html, %{s | current: :attribute_value_double_quoted, column: s.column + 1})
+  defp before_attribute_value(<<"\"", html::binary>>, s) do
+    attribute_value_double_quoted(html, %{s | column: s.column + 1})
   end
 
-  defp tokenize(<<"'", html::binary>>, s = %State{current: :before_attribute_value}) do
-    tokenize(html, %{s | current: :attribute_value_single_quoted, column: s.column + 1})
+  defp before_attribute_value(<<"'", html::binary>>, s) do
+    attribute_value_single_quoted(html, %{s | column: s.column + 1})
   end
 
-  defp tokenize(html = <<">", _rest::binary>>, s = %State{current: :before_attribute_value}) do
-    tokenize(html, %{s | errors: [%ParseError{line: s.line, column: s.column} | s.errors]})
+  defp before_attribute_value(html = <<">", _rest::binary>>, s) do
+    before_attribute_value(html, %{
+      s
+      | errors: [%ParseError{line: s.line, column: s.column} | s.errors]
+    })
   end
 
-  defp tokenize(html, s = %State{current: :before_attribute_value}) do
-    tokenize(html, %{s | current: :attribute_value_unquoted})
+  defp before_attribute_value(html, s) do
+    attribute_value_unquoted(html, s)
   end
 
   # § tokenizer-attribute-value-double-quoted-state
 
-  defp tokenize(<<"\"", html::binary>>, s = %State{current: :attribute_value_double_quoted}) do
-    tokenize(html, %{s | current: :after_attribute_value_quoted})
+  defp attribute_value_double_quoted(<<"\"", html::binary>>, s) do
+    after_attribute_value_quoted(html, s)
   end
 
-  defp tokenize(<<"!", html::binary>>, s = %State{current: :markup_declaration_open}) do
-    case html do
-      <<"--", rest::binary>> ->
-        token = %Comment{data: "", line: s.line, column: s.column}
-
-        tokenize(
-          rest,
-          %{s | current: :comment_start, token: token, column: s.column + 3}
-        )
-
-      <<"[", cdata::bytes-size(5), "]", rest::binary>> ->
-        if String.match?(cdata, ~r/cdata/i) do
-          # TODO: fix cdata state
-          tokenize(
-            rest,
-            s
-          )
-        end
-
-      <<doctype::bytes-size(7), rest::binary>> when doctype in ["doctype", "DOCTYPE"] ->
-        token = %Doctype{
-          name: nil,
-          public_id: nil,
-          system_id: nil,
-          force_quirks: :off,
-          line: s.line,
-          column: s.column
-        }
-
-        tokenize(
-          rest,
-          %{s | current: :doctype, token: token, column: s.column + 7}
-        )
-
-      _ ->
-        tokenize(html, s)
-    end
+  defp attribute_value_double_quoted(<<"&", html::binary>>, s) do
+    character_reference(html, %{s | return_state: :attribute_value_double_quoted})
   end
 
-  defp tokenize(<<"-", html::binary>>, s = %State{current: :comment_start}) do
-    tokenize(html, %{s | current: :comment_start_dash, column: s.column + 1})
+  defp attribute_value_double_quoted(<<"\0", html::binary>>, s) do
+    attr = s.token.current_attribute
+    new_attr = %Attribute{attr | value: attr.value <> @replacement_char}
+
+    attribute_value_double_quoted(html, %{
+      s
+      | errors: [%ParseError{line: s.line, column: s.column} | s.errors],
+        token: %Tag{s.token | current_attribute: new_attr}
+    })
   end
 
-  defp tokenize(<<c::utf8, html::binary>>, s = %State{current: :comment_start}) do
+  defp attribute_value_double_quoted("", s) do
+    eof(:attribute_value_double_quoted, %{
+      s
+      | errors: [%ParseError{line: s.line, column: s.column} | s.errors]
+    })
+  end
+
+  defp attribute_value_double_quoted(<<c::utf8, html::binary>>, s) do
+    attr = s.token.current_attribute
+    new_attr = %Attribute{attr | value: attr.value <> <<c::utf8>>}
+
+    attribute_value_double_quoted(html, %{
+      s
+      | token: %Tag{s.token | current_attribute: new_attr}
+    })
+  end
+
+  # § tokenizer-attribute-value-single-quoted-state
+
+  defp attribute_value_single_quoted(<<"\'", html::binary>>, s) do
+    after_attribute_value_quoted(html, s)
+  end
+
+  defp attribute_value_single_quoted(<<"&", html::binary>>, s) do
+    character_reference(html, %{s | return_state: :attribute_value_single_quoted})
+  end
+
+  defp attribute_value_single_quoted(<<"\0", html::binary>>, s) do
+    attr = s.token.current_attribute
+    new_attr = %Attribute{attr | value: attr.value <> @replacement_char}
+
+    attribute_value_single_quoted(html, %{
+      s
+      | errors: [%ParseError{line: s.line, column: s.column} | s.errors],
+        token: %Tag{s.token | current_attribute: new_attr}
+    })
+  end
+
+  defp attribute_value_single_quoted("", s) do
+    eof(:attribute_value_single_quoted, %{
+      s
+      | errors: [%ParseError{line: s.line, column: s.column} | s.errors]
+    })
+  end
+
+  defp attribute_value_single_quoted(<<c::utf8, html::binary>>, s) do
+    attr = s.token.current_attribute
+    new_attr = %Attribute{attr | value: attr.value <> <<c::utf8>>}
+
+    attribute_value_single_quoted(html, %{
+      s
+      | token: %Tag{s.token | current_attribute: new_attr}
+    })
+  end
+
+  # § tokenizer-attribute-value-unquoted-state
+
+  defp attribute_value_unquoted(<<c::utf8, html::binary>>, s) when <<c::utf8>> in @space_chars do
+    before_attribute_name(html, s)
+  end
+
+  defp attribute_value_unquoted(<<">", html::binary>>, s) do
+    data(html, %{s | tokens: [s.token | s.tokens], token: nil})
+  end
+
+  defp attribute_value_unquoted(<<"&", html::binary>>, s) do
+    character_reference(html, %{s | return_state: :attribute_value_unquoted})
+  end
+
+  defp attribute_value_unquoted(<<">", html::binary>>, s) do
+    data(html, %{s | tokens: [s.token | s.tokens], token: nil})
+  end
+
+  defp attribute_value_unquoted(<<"\0", html::binary>>, s) do
+    attr = s.token.current_attribute
+    new_attr = %Attribute{attr | value: attr.value <> @replacement_char}
+
+    attribute_value_unquoted(html, %{
+      s
+      | errors: [%ParseError{line: s.line, column: s.column} | s.errors],
+        token: %Tag{s.token | current_attribute: new_attr}
+    })
+  end
+
+  defp attribute_value_unquoted(<<c::utf8, html::binary>>, s)
+       when <<c::utf8>> in ["\"", "'", "<", "=", "`"] do
+    attr = s.token.current_attribute
+    new_attr = %Attribute{attr | value: attr.value <> <<c::utf8>>}
+
+    attribute_value_unquoted(html, %{
+      s
+      | errors: [%ParseError{line: s.line, column: s.column} | s.errors],
+        token: %Tag{s.token | current_attribute: new_attr}
+    })
+  end
+
+  defp attribute_value_unquoted("", s) do
+    eof(:attribute_value_unquoted, %{
+      s
+      | errors: [%ParseError{line: s.line, column: s.column} | s.errors]
+    })
+  end
+
+  defp attribute_value_unquoted(<<c::utf8, html::binary>>, s) do
+    attr = s.token.current_attribute
+    new_attr = %Attribute{attr | value: attr.value <> <<c::utf8>>}
+
+    attribute_value_unquoted(html, %{
+      s
+      | token: %Tag{s.token | current_attribute: new_attr}
+    })
+  end
+
+  # § tokenizer-after-attribute-value-quoted-state
+
+  defp after_attribute_value_quoted(<<c::utf8, html::binary>>, s)
+       when <<c::utf8>> in @space_chars do
+    before_attribute_name(html, s)
+  end
+
+  defp after_attribute_value_quoted(<<"/", html::binary>>, s) do
+    self_closing_start_tag(html, s)
+  end
+
+  defp after_attribute_value_quoted(<<">", html::binary>>, s) do
+    data(html, %{s | tokens: [s.token | s.tokens], token: nil})
+  end
+
+  defp after_attribute_value_quoted("", s) do
+    eof(:after_attribute_value_quoted, %{
+      s
+      | errors: [%ParseError{line: s.line, column: s.column} | s.errors]
+    })
+  end
+
+  defp after_attribute_value_quoted(html, s) do
+    before_attribute_name(html, s)
+  end
+
+  # § tokenizer-self-closing-start-tag-state
+
+  defp self_closing_start_tag(<<">", html::binary>>, s) do
+    tag = %Tag{s.token | self_close: true}
+    data(html, %{s | tokens: [tag | s.tokens], token: nil})
+  end
+
+  defp self_closing_start_tag("", s) do
+    eof(:self_closing_start_tag, %{
+      s
+      | errors: [%ParseError{line: s.line, column: s.column} | s.errors]
+    })
+  end
+
+  defp self_closing_start_tag(html, s) do
+    before_attribute_name(html, %{
+      s
+      | errors: [%ParseError{line: s.line, column: s.column} | s.errors]
+    })
+  end
+
+  # § tokenizer-bogus-comment-state
+
+  defp bogus_comment(<<">", html::binary>>, s) do
+    data(html, %{s | tokens: [s.token | s.tokens], token: nil})
+  end
+
+  defp bogus_comment("", s) do
+    eof(:bogus_comment, %{s | tokens: [s.token | s.tokens], token: nil})
+  end
+
+  defp bogus_comment(<<"\0", html::binary>>, s) do
+    comment = %Comment{s.token | data: s.token.data <> @replacement_char}
+
+    bogus_comment(html, %{s | token: comment})
+  end
+
+  defp bogus_comment(<<c::utf8, html::binary>>, s) do
+    comment = %Comment{s.token | data: s.token.data <> <<c::utf8>>}
+
+    bogus_comment(html, %{s | token: comment})
+  end
+
+  # § tokenizer-markup-declaration-open-state
+
+  defp markup_declaration_open(<<"--", html::binary>>, s) do
+    token = %Comment{data: "", line: s.line, column: s.column}
+
+    comment_start(
+      html,
+      %{s | token: token, column: s.column + 2}
+    )
+  end
+
+  defp markup_declaration_open(
+         <<d::utf8, o::utf8, c::utf8, t::utf8, y::utf8, p::utf8, e::utf8, html::binary>>,
+         s
+       )
+       when <<d::utf8>> in ["D", "d"] and <<o::utf8>> in ["O", "o"] and <<c::utf8>> in ["C", "c"] and
+              <<t::utf8>> in ["T", "t"] and <<y::utf8>> in ["Y", "y"] and
+              <<p::utf8>> in ["P", "p"] and <<e::utf8>> in ["E", "e"] do
+    doctype(html, %{s | column: s.column + 7})
+  end
+
+  # TODO: fix the check for adjusted current node in HTML namespace
+  defp markup_declaration_open(<<"[CDATA[", html::binary>>, s = %State{adjusted_current_node: n})
+       when not is_nil(n) do
+    cdata_section(html, s)
+  end
+
+  defp markup_declaration_open(html, s) do
+    bogus_comment(html, %{s | errors: [%ParseError{line: s.line, column: s.column} | s.errors]})
+  end
+
+  # § tokenizer-comment-start-state
+
+  defp comment_start(<<"-", html::binary>>, s) do
+    comment_start_dash(html, %{s | column: s.column + 1})
+  end
+
+  defp comment_start(<<">", html::binary>>, s) do
+    data(html, %{
+      s
+      | tokens: [s.token | s.tokens],
+        token: nil,
+        column: s.column + 1,
+        errors: [%ParseError{line: s.line, column: s.column} | s.errors]
+    })
+  end
+
+  defp comment_start(html, s) do
+    comment(html, s)
+  end
+
+  # § tokenizer-comment-start-dash-state
+
+  defp comment_start_dash(<<"-", html::binary>>, s) do
+    comment_end(html, %{s | column: s.column + 1})
+  end
+
+  defp comment_start_dash(<<">", html::binary>>, s) do
+    data(html, %{
+      s
+      | tokens: [s.token | s.tokens],
+        token: nil,
+        column: s.column + 1,
+        errors: [%ParseError{line: s.line, column: s.column} | s.errors]
+    })
+  end
+
+  defp comment_start_dash("", s) do
+    eof(:comment_start_dash, %{
+      s
+      | errors: [%ParseError{line: s.line, column: s.column} | s.errors],
+        tokens: [s.token | s.tokens],
+        token: nil
+    })
+  end
+
+  defp comment_start_dash(html, s) do
+    new_comment = %Comment{s.token | data: s.token.data <> "-"}
+
+    comment(html, %{s | token: new_comment})
+  end
+
+  # § tokenizer-comment-state
+
+  defp comment(<<"<", html::binary>>, s) do
+    new_comment = %Comment{s.token | data: s.token.data <> "<"}
+
+    comment_less_than_sign(html, %{s | token: new_comment, column: s.column + 1})
+  end
+
+  defp comment(<<"-", html::binary>>, s) do
+    comment_end_dash(html, s)
+  end
+
+  defp comment(<<"\0", html::binary>>, s) do
+    new_comment = %Comment{s.token | data: s.token.data <> @replacement_char}
+
+    comment(html, %{
+      s
+      | token: new_comment,
+        column: s.column + 1,
+        errors: [%ParseError{line: s.line, column: s.column} | s.errors]
+    })
+  end
+
+  defp comment("", s) do
+    eof(:comment, %{
+      s
+      | errors: [%ParseError{line: s.line, column: s.column} | s.errors],
+        tokens: [s.token | s.tokens],
+        token: nil
+    })
+  end
+
+  defp comment(<<c::utf8, html::binary>>, s) do
     new_token = %{s.token | data: s.token.comment <> <<c::utf8>>}
 
-    tokenize(
+    comment(
       html,
-      %{s | current: :comment, token: new_token, column: s.column + 1}
+      %{s | token: new_token, column: s.column + 1}
     )
   end
 
-  defp tokenize(<<"-", html::binary>>, s = %State{current: :comment}) do
-    tokenize(html, %{s | current: :comment_end_dash, column: s.column + 1})
+  # § tokenizer-comment-less-than-sign-state
+
+  defp comment_less_than_sign(<<"!", html::binary>>, s) do
+    new_comment = %Comment{s.token | data: s.token.data <> "!"}
+
+    comment_less_than_sign_bang(html, %{s | token: new_comment, column: s.column + 1})
   end
 
-  defp tokenize(<<c::utf8, html::binary>>, s = %State{current: :comment}) do
-    new_token = %{s.token | data: s.token.comment <> <<c::utf8>>}
+  defp comment_less_than_sign(<<"<", html::binary>>, s) do
+    new_comment = %Comment{s.token | data: s.token.data <> "<"}
 
-    tokenize(
+    comment_less_than_sign(html, %{s | token: new_comment, column: s.column + 1})
+  end
+
+  defp comment_less_than_sign(html, s) do
+    comment(html, s)
+  end
+
+  # § tokenizer-comment-less-than-sign-bang-state
+
+  defp comment_less_than_sign_bang(<<"-", html::binary>>, s) do
+    comment_less_than_sign_bang_dash(html, s)
+  end
+
+  defp comment_less_than_sign_bang(html, s) do
+    comment(html, s)
+  end
+
+  # § tokenizer-comment-less-than-sign-bang-dash-state
+
+  defp comment_less_than_sign_bang_dash(<<"-", html::binary>>, s) do
+    comment_less_than_sign_bang_dash_dash(html, s)
+  end
+
+  defp comment_less_than_sign_bang_dash(html, s) do
+    comment_end_dash(html, s)
+  end
+
+  # § tokenizer-comment-less-than-sign-bang-dash-dash-state
+
+  defp comment_less_than_sign_bang_dash_dash(html = <<">", _rest::binary>>, s) do
+    comment_end(html, s)
+  end
+
+  defp comment_less_than_sign_bang_dash_dash(html = "", s) do
+    comment_end(html, s)
+  end
+
+  defp comment_less_than_sign_bang_dash_dash(html, s) do
+    comment_end(html, %{s | errors: [%ParseError{line: s.line, column: s.column} | s.errors]})
+  end
+
+  # § tokenizer-comment-end-dash-state
+
+  defp comment_end_dash(<<"-", html::binary>>, s) do
+    comment_end(html, %{s | column: s.column + 1})
+  end
+
+  defp comment_end_dash("", s) do
+    eof(:comment_end_dash, %{
+      s
+      | tokens: [s.token | s.tokens],
+        token: nil,
+        errors: [%ParseError{line: s.line, column: s.column} | s.errors]
+    })
+  end
+
+  defp comment_end_dash(html, s) do
+    new_comment = %Comment{s.token | data: s.token.data <> "-"}
+
+    comment(html, %{s | token: new_comment})
+  end
+
+  # § tokenizer-comment-end-state
+
+  defp comment_end(<<">", html::binary>>, s) do
+    data(
       html,
-      %{s | current: :comment, token: new_token, column: s.column + 1}
+      %{s | tokens: [s.token | s.tokens], token: nil, column: s.column + 1}
     )
   end
 
-  defp tokenize(<<"-", html::binary>>, s = %State{current: :comment_start_dash}) do
-    tokenize(html, %{s | current: :comment_end, column: s.column + 1})
+  defp comment_end(<<"!", html::binary>>, s) do
+    comment_end_bang(html, s)
   end
 
-  defp tokenize(<<"-", html::binary>>, s = %State{current: :comment_end_dash}) do
-    tokenize(html, %{s | current: :comment_end, column: s.column + 1})
+  defp comment_end(<<"-", html::binary>>, s) do
+    new_comment = %Comment{s.token | data: s.token.data <> "-"}
+
+    comment_end(html, %{s | token: new_comment})
   end
 
-  defp tokenize(<<">", html::binary>>, s = %State{current: :comment_end}) do
-    tokenize(
-      html,
-      %{s | current: :data, tokens: [s.token | s.tokens], token: nil, column: s.column + 1}
-    )
+  defp comment_end("", s) do
+    eof(:comment_end, %{
+      s
+      | tokens: [s.token | s.tokens],
+        token: nil,
+        errors: [%ParseError{line: s.line, column: s.column} | s.errors]
+    })
   end
 
-  defp tokenize(html = "", s = %State{current: :comment_end}) do
-    tokenize(
-      html,
-      %{
-        s
-        | current: :data,
-          tokens: [%EOF{line: s.line, column: s.column} | [s.token | s.tokens]],
-          token: nil
-      }
-    )
+  defp comment_end(html, s) do
+    new_comment = %Comment{s.token | data: s.token.data <> "-"}
+
+    comment(html, %{s | token: new_comment})
   end
 
-  defp tokenize(<<"!", html::binary>>, s = %State{current: :comment_end}) do
-    tokenize(html, %{s | current: :comment_end_bang})
+  # § tokenizer-comment-end-bang-state
+
+  defp comment_end_bang(<<"-", html::binary>>, s) do
+    new_comment = %Comment{s.token | data: s.token.data <> "--!"}
+
+    comment_end_dash(html, %{s | token: new_comment})
   end
 
-  defp tokenize(<<c::utf8, html::binary>>, s = %State{current: :doctype})
+  defp comment_end_bang(<<">", html::binary>>, s) do
+    data(html, %{
+      s
+      | tokens: [s.token | s.tokens],
+        token: nil,
+        errors: [%ParseError{line: s.line, column: s.column} | s.errors]
+    })
+  end
+
+  defp comment_end_bang("", s) do
+    eof(:comment_end_bang, %{
+      s
+      | tokens: [s.token | s.tokens],
+        token: nil,
+        errors: [%ParseError{line: s.line, column: s.column} | s.errors]
+    })
+  end
+
+  defp comment_end_bang(html, s) do
+    new_comment = %Comment{s.token | data: s.token.data <> "--!"}
+
+    comment(html, %{s | token: new_comment})
+  end
+
+  # § tokenizer-doctype-state
+
+  defp doctype(<<c::utf8, html::binary>>, s)
        when <<c::utf8>> in @space_chars do
     line = line_number(<<c::utf8>>, s.line)
     col = column_number(line, s)
-    tokenize(html, %{s | current: :before_doctype_name, column: col, line: line})
+    before_doctype_name(html, %{s | column: col, line: line})
   end
 
-  # This is a case of error, when there is no token left. It shouldn't be executed because
-  # of the base function that stops the recursion.
-  # TODO: implement me, since the problem describe was solved.
-  # defp tokenize("", s = %State{current: :doctype}) do
-  # end
-
-  defp tokenize(html, s = %State{current: :doctype}) do
-    tokenize(html, %{s | current: :before_doctype_name})
+  defp doctype("", s) do
+    doctype_token = %Doctype{force_quirks: :on}
+    eof(:doctype, %{s | tokens: [doctype_token | s.tokens], token: nil})
   end
 
-  defp tokenize(<<c::utf8, html::binary>>, s = %State{current: :before_doctype_name})
+  defp doctype(html, s) do
+    before_doctype_name(html, %{
+      s
+      | errors: [%ParseError{line: s.line, column: s.column} | s.errors]
+    })
+  end
+
+  # § tokenizer-before-doctype-name-state
+
+  defp before_doctype_name(<<c::utf8, html::binary>>, s)
        when <<c::utf8>> in @space_chars do
     line = line_number(<<c::utf8>>, s.line)
-    tokenize(html, %{s | current: :before_doctype_name, column: s.column + 1, line: line})
+    col = column_number(line, s)
+    before_doctype_name(html, %{s | column: col, line: line})
   end
 
-  defp tokenize(<<">", html::binary>>, s = %State{current: :before_doctype_name}) do
+  defp before_doctype_name(<<c::utf8, html::binary>>, s)
+       when <<c::utf8>> in @upper_ASCII_letters do
+    token = %Doctype{name: String.downcase(<<c::utf8>>), line: s.line, column: s.column}
+
+    doctype_name(html, %{s | token: token, column: s.column + 1})
+  end
+
+  defp before_doctype_name(<<"\0", html::binary>>, s) do
     token = %Doctype{
-      name: nil,
-      public_id: nil,
-      system_id: nil,
+      name: @replacement_char,
       force_quirks: :on,
       line: s.line,
       column: s.column
     }
 
-    tokenize(html, %{
+    doctype_name(html, %{s | token: token})
+  end
+
+  defp before_doctype_name(<<">", html::binary>>, s) do
+    token = %Doctype{
+      force_quirks: :on,
+      line: s.line,
+      column: s.column
+    }
+
+    data(html, %{
       s
-      | current: :data,
-        tokens: [token | s.tokens],
+      | tokens: [token | s.tokens],
         token: nil,
+        errors: [%ParseError{line: s.line, column: s.column} | s.errors],
         column: s.column + 1
     })
   end
 
-  defp tokenize(<<"\0", html::binary>>, s = %State{current: :before_doctype_name}) do
+  defp before_doctype_name("", s) do
     token = %Doctype{
-      name: "\uFFFD",
-      public_id: nil,
-      system_id: nil,
       force_quirks: :on,
       line: s.line,
       column: s.column
     }
 
-    tokenize(html, %{s | current: :doctype_name, token: token})
-  end
-
-  defp tokenize("", s = %State{current: :before_doctype_name}) do
-    token = %Doctype{
-      name: nil,
-      public_id: nil,
-      system_id: nil,
-      force_quirks: :on,
-      line: s.line,
-      column: s.column
-    }
-
-    tokenize("", %{
+    eof(:before_doctype_name, %{
       s
-      | tokens: [%EOF{line: s.column, column: s.line} | [token | s.tokens]],
-        token: nil
+      | tokens: [token | s.tokens],
+        token: nil,
+        errors: [%ParseError{line: s.line, column: s.column} | s.errors]
     })
   end
 
-  defp tokenize(<<c::utf8, html::binary>>, s = %State{current: :before_doctype_name}) do
+  defp before_doctype_name(<<c::utf8, html::binary>>, s) do
     line = line_number(<<c::utf8>>, s.line)
     col = column_number(line, s)
 
     token = %Doctype{
-      name: String.downcase(<<c::utf8>>),
-      public_id: nil,
-      system_id: nil,
-      force_quirks: :off,
+      name: <<c::utf8>>,
       line: line,
       column: col
     }
 
-    tokenize(html, %{s | current: :doctype_name, token: token, column: col, line: line})
+    doctype_name(html, %{s | token: token, column: col, line: line})
   end
 
-  defp tokenize(<<c::utf8, html::binary>>, s = %State{current: :doctype_name})
+  # § tokenizer-doctype-name-state
+
+  defp doctype_name(<<c::utf8, html::binary>>, s)
        when <<c::utf8>> in @space_chars do
     line = line_number(<<c::utf8>>, s.line)
     col = column_number(line, s)
 
-    tokenize(html, %{s | current: :after_doctype_name, column: col, line: line})
+    after_doctype_name(html, %{s | column: col, line: line})
   end
 
-  defp tokenize(<<">", html::binary>>, s = %State{current: :doctype_name}) do
+  defp doctype_name(<<">", html::binary>>, s) do
     col = s.column + 1
-    token = %{s.token | column: col}
+    token = %Doctype{s.token | column: col}
 
-    tokenize(html, %{
+    data(html, %{
       s
-      | current: :data,
-        tokens: [token | s.tokens],
+      | tokens: [token | s.tokens],
         token: nil,
         column: col
     })
   end
 
-  defp tokenize(<<"\0", html::binary>>, s = %State{current: :doctype_name}) do
-    new_token = %{s.token | name: s.token.name <> "\uFFFD"}
-
-    tokenize(html, %{s | current: :doctype_name, token: new_token})
-  end
-
-  defp tokenize(<<c::utf8, html::binary>>, s = %State{current: :doctype_name}) do
+  defp doctype_name(<<c::utf8, html::binary>>, s) when <<c::utf8>> in @upper_ASCII_letters do
     col = s.column + 1
-    new_token = %{s.token | name: s.token.name <> String.downcase(<<c::utf8>>), column: col}
 
-    tokenize(html, %{s | current: :doctype_name, token: new_token, column: col})
+    new_token = %Doctype{
+      s.token
+      | name: s.token.name <> String.downcase(<<c::utf8>>),
+        column: col
+    }
+
+    doctype_name(html, %{s | token: new_token, column: col})
   end
 
-  defp tokenize("", s = %State{current: :doctype_name}) do
-    new_token = %{s.token | force_quirks: :on}
+  defp doctype_name(<<"\0", html::binary>>, s) do
+    new_token = %Doctype{s.token | name: s.token.name <> "\uFFFD"}
 
-    tokenize("", %{
+    doctype_name(html, %{
       s
-      | tokens: [%EOF{line: s.column, column: s.line} | [new_token | s.tokens]],
-        token: nil
+      | token: new_token,
+        errors: [%ParseError{line: s.line, column: s.column} | s.errors]
     })
   end
 
-  defp tokenize(<<c::utf8, html::binary>>, s = %State{current: :after_doctype_name})
+  defp doctype_name("", s) do
+    new_token = %Doctype{s.token | force_quirks: :on}
+
+    eof(:doctype_name, %{
+      s
+      | tokens: [new_token | s.tokens],
+        token: nil,
+        errors: [%ParseError{line: s.line, column: s.column} | s.errors]
+    })
+  end
+
+  defp doctype_name(<<c::utf8, html::binary>>, s) do
+    col = s.column + 1
+    new_token = %Doctype{s.token | name: s.token.name <> <<c::utf8>>, column: col}
+
+    doctype_name(html, %{s | token: new_token, column: col})
+  end
+
+  # § tokenizer-after-doctype-name-state
+
+  defp after_doctype_name(<<c::utf8, html::binary>>, s)
        when <<c::utf8>> in @space_chars do
     line = line_number(c, s.line)
     col = column_number(line, s)
 
-    tokenize(html, %{s | current: :after_doctype_name, column: col, line: line})
+    after_doctype_name(html, %{s | column: col, line: line})
   end
 
-  defp tokenize(<<">", html::binary>>, s = %State{current: :after_doctype_name}) do
+  defp after_doctype_name(<<">", html::binary>>, s) do
     col = s.column + 1
     token = %{s.token | column: col}
 
-    tokenize(html, %{
+    data(html, %{
       s
-      | current: :data,
-        tokens: [token | s.tokens],
+      | tokens: [token | s.tokens],
         token: nil,
         column: col
     })
   end
 
-  defp tokenize("", s = %State{current: :after_doctype_name}) do
-    token = %{s.token | force_quirks: :on}
+  defp after_doctype_name("", s) do
+    token = %Doctype{s.token | force_quirks: :on}
 
-    tokenize("", %{
+    eof(:after_doctype_name, %{
       s
-      | tokens: [%EOF{line: s.column, column: s.line} | [token | s.tokens]],
-        token: nil
+      | tokens: [token | s.tokens],
+        token: nil,
+        errors: [%ParseError{line: s.line, column: s.column} | s.errors]
     })
   end
 
-  defp tokenize(<<public::bytes-size(6), html::binary>>, s = %State{current: :after_doctype_name})
-       when public in ["public", "PUBLIC"] do
-    tokenize(html, %{s | current: :after_doctype_public_keyword, column: s.column + 6})
+  defp after_doctype_name(
+         <<p::utf8, u::utf8, b::utf8, l::utf8, i::utf8, c::utf8, html::binary>>,
+         s
+       )
+       when <<p::utf8>> in ["P", "p"] and <<u::utf8>> in ["U", "u"] and <<b::utf8>> in ["B", "b"] and
+              <<l::utf8>> in ["L", "l"] and <<i::utf8>> in ["I", "i"] and
+              <<c::utf8>> in ["C", "c"] do
+    after_doctype_public_keyword(html, %{s | column: s.column + 6})
+  end
+
+  defp after_doctype_name(<<s1::utf8, y::utf8, s2::utf8, t::utf8, e::utf8, m::utf8, html::binary>>, s) when <<s1::utf8>> in ["S", "s"] and <<y::utf8>> in ["Y", "y"] and <<s2::utf8>> in ["S", "s"] and <<t::utf8>> in ["T", "t"] and <<e::utf8>> in ["E", "e"] and <<m::utf8>> in ["M", "m"] do
+    after_doctype_system_keyword(html, %{s | column: s.column + 6})
+  end
+
+  defp after_doctype_name(html, s) do
+    token = %Doctype{s.token | force_quirks: :on}
+
+    bogus_doctype(html, %{s | token: token, errors: [%ParseError{line: s.line, column: s.column} | s.errors]})
   end
 
   defp line_number("\n", current_line), do: current_line + 1
