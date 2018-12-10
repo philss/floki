@@ -41,8 +41,9 @@ defmodule Floki.HTML.Tokenizer do
 
   # It represents the state of tokenization.
   defmodule State do
-    defstruct current: nil,
-              return_state: nil,
+    defstruct return_state: nil,
+              eof_last_state: nil,
+              adjusted_current_node: nil,
               token: nil,
               tokens: [],
               buffer: "",
@@ -74,203 +75,211 @@ defmodule Floki.HTML.Tokenizer do
   @hyphen_minus "\u002D"
   @replacement_char "\uFFFD"
 
+  # EMPTY functions that needs to be defined
+  def character_reference(_y, _z), do: nil
+  def cdata_section(_html, _s), do: nil
+  def after_doctype_public_keyword(_y, _z), do: nil
+
   # TODO:
-  # 1. Keep replacing tokens from tuples to Structs
+  # 1. ~~Keep replacing tokens from tuples to Structs~~
   # 2. Use `s.emit.(token)` before append it to list of tokens
   # 3. Keep adding the state that you was working.
-  # 4. Consider inverting the order of args to state, html
 
   def tokenize(html) do
-    tokenize(html, %State{current: :data, emit: fn token -> token end})
+    data(html, %State{emit: fn token -> token end})
   end
 
-  defp tokenize(_, %State{tokens: [%EOF{} | tokens]}), do: Enum.reverse(tokens)
+  defp eof(last_state, s) do
+    %{s | eof_last_state: last_state, tokens: [%EOF{line: s.line, column: s.column} | s.tokens]}
+  end
 
   # § tokenizer-data-state
 
-  defp tokenize(<<"&", html::binary>>, s = %State{current: :data}) do
-    tokenize(html, %{s | return_state: :data, current: :char_ref, column: s.column + 1})
+  defp data(<<"&", html::binary>>, s) do
+    character_reference(html, %{s | return_state: :data, column: s.column + 1})
   end
 
-  defp tokenize(<<"<", html::binary>>, s = %State{current: :data}) do
-    tokenize(html, %{s | current: :tag_open, column: s.column + 1})
+  defp data(<<"<", html::binary>>, s) do
+    tag_open(html, %{s | column: s.column + 1})
   end
 
-  defp tokenize(<<"\0", html::binary>>, s = %State{current: :data}) do
-    tokenize(html, %{s | tokens: [%Char{data: "\0"} | s.tokens]})
+  defp data(<<"\0", html::binary>>, s) do
+    data(html, %{s | tokens: [%Char{data: "\0"} | s.tokens]})
   end
 
-  defp tokenize(html = "", s = %State{current: :data}) do
-    tokenize(html, %{s | tokens: [%EOF{line: s.line, column: s.column} | s.tokens]})
+  defp data("", s) do
+    eof(:data, s)
   end
 
-  defp tokenize(<<c::utf8, html::binary>>, s = %State{current: :data}) do
-    tokenize(html, %{s | tokens: [%Char{data: <<c::utf8>>} | s.tokens]})
+  defp data(<<c::utf8, html::binary>>, s) do
+    data(html, %{s | tokens: [%Char{data: <<c::utf8>>} | s.tokens]})
   end
 
   # § tokenizer-rcdata-state
 
-  defp tokenize(<<"&", html::binary>>, s = %State{current: :rcdata}) do
-    tokenize(html, %{s | return_state: :rcdata, current: :char_ref, column: s.column + 1})
+  defp rcdata(<<"&", html::binary>>, s) do
+    character_reference(html, %{s | return_state: :rcdata, column: s.column + 1})
   end
 
-  defp tokenize(<<"<", html::binary>>, s = %State{current: :rcdata}) do
-    tokenize(html, %{s | current: :rcdata_less_than_sign, column: s.column + 1})
+  defp rcdata(<<"<", html::binary>>, s) do
+    rcdata_less_than_sign(html, %{s | column: s.column + 1})
   end
 
-  defp tokenize(<<"\0", html::binary>>, s = %State{current: :rcdata}) do
-    tokenize(html, %{s | tokens: [%Char{data: @replacement_char} | s.tokens]})
+  defp rcdata(<<"\0", html::binary>>, s) do
+    rcdata(html, %{s | tokens: [%Char{data: @replacement_char} | s.tokens]})
   end
 
-  defp tokenize(html = "", s = %State{current: :rcdata}) do
-    tokenize(html, %{s | tokens: [%EOF{line: s.line, column: s.column} | s.tokens]})
+  defp rcdata("", s) do
+    eof(:rcdata, s)
   end
 
-  defp tokenize(<<c::utf8, html::binary>>, s = %State{current: :rcdata}) do
-    tokenize(html, %{s | tokens: [%Char{data: <<c::utf8>>} | s.tokens], column: s.column + 1})
+  defp rcdata(<<c::utf8, html::binary>>, s) do
+    rcdata(html, %{s | tokens: [%Char{data: <<c::utf8>>} | s.tokens], column: s.column + 1})
   end
 
   # § tokenizer-rawtext-state
 
-  defp tokenize(<<"<", html::binary>>, s = %State{current: :rawtext}) do
-    tokenize(html, %{s | current: :rawtext_less_than_sign})
+  defp rawtext(<<"<", html::binary>>, s) do
+    rawtext_less_than_sign(html, s)
   end
 
-  defp tokenize(<<"\0", html::binary>>, s = %State{current: :rawtext}) do
-    tokenize(html, %{s | tokens: [%Char{data: @replacement_char} | s.tokens]})
+  defp rawtext(<<"\0", html::binary>>, s) do
+    rawtext(html, %{s | tokens: [%Char{data: @replacement_char} | s.tokens]})
   end
 
-  defp tokenize(html = "", s = %State{current: :rawtext}) do
-    tokenize(html, %{s | tokens: [%EOF{line: s.line, column: s.column} | s.tokens]})
+  defp rawtext("", s) do
+    eof(:rawtext, s)
   end
 
-  defp tokenize(<<c::utf8, html::binary>>, s = %State{current: :rawtext}) do
-    tokenize(html, %{s | tokens: [%Char{data: <<c::utf8>>} | s.tokens], column: s.column + 1})
+  defp rawtext(<<c::utf8, html::binary>>, s) do
+    rawtext(html, %{s | tokens: [%Char{data: <<c::utf8>>} | s.tokens], column: s.column + 1})
   end
 
   # § tokenizer-script-data-state
 
-  defp tokenize(<<"<", html::binary>>, s = %State{current: :script_data}) do
-    tokenize(html, %{s | current: :script_data_less_than_sign})
+  defp script_data(<<"<", html::binary>>, s) do
+    script_data_less_than_sign(html, s)
   end
 
-  defp tokenize(<<"\0", html::binary>>, s = %State{current: :script_data}) do
-    tokenize(html, %{s | tokens: [%Char{data: @replacement_char} | s.tokens]})
+  defp script_data(<<"\0", html::binary>>, s) do
+    script_data(html, %{s | tokens: [%Char{data: @replacement_char} | s.tokens]})
   end
 
-  defp tokenize(html = "", s = %State{current: :script_data}) do
-    tokenize(html, %{s | tokens: [%EOF{line: s.line, column: s.column} | s.tokens]})
+  defp script_data("", s) do
+    eof(:script_data, s)
   end
 
-  defp tokenize(<<c::utf8, html::binary>>, s = %State{current: :script_data}) do
-    tokenize(html, %{s | tokens: [%Char{data: <<c::utf8>>} | s.tokens], column: s.column + 1})
+  defp script_data(<<c::utf8, html::binary>>, s) do
+    script_data(html, %{s | tokens: [%Char{data: <<c::utf8>>} | s.tokens], column: s.column + 1})
   end
 
   # § tokenizer-plaintext-state
 
-  defp tokenize(<<"\0", html::binary>>, s = %State{current: :plaintext}) do
-    tokenize(html, %{s | tokens: [%Char{data: @replacement_char} | s.tokens]})
+  defp plaintext(<<"\0", html::binary>>, s) do
+    plaintext(html, %{s | tokens: [%Char{data: @replacement_char} | s.tokens]})
   end
 
-  defp tokenize(html = "", s = %State{current: :plaintext}) do
-    tokenize(html, %{s | tokens: [%EOF{line: s.line, column: s.column} | s.tokens]})
+  defp plaintext("", s) do
+    eof(:plaintext, s)
   end
 
-  defp tokenize(<<c::utf8, html::binary>>, s = %State{current: :plaintext}) do
-    tokenize(html, %{s | tokens: [%Char{data: <<c::utf8>>} | s.tokens], column: s.column + 1})
+  defp plaintext(<<c::utf8, html::binary>>, s) do
+    plaintext(html, %{s | tokens: [%Char{data: <<c::utf8>>} | s.tokens], column: s.column + 1})
   end
 
   # § tokenizer-tag-open-state
 
-  defp tokenize(<<"!", html::binary>>, s = %State{current: :tag_open}) do
-    tokenize(html, %{s | current: :markup_declaration_open, column: s.column + 1})
+  defp tag_open(<<"!", html::binary>>, s) do
+    markup_declaration_open(html, %{s | column: s.column + 1})
   end
 
-  defp tokenize(<<"/", html::binary>>, s = %State{current: :tag_open}) do
-    tokenize(html, %{s | current: :end_tag_open, column: s.column + 1})
+  defp tag_open(<<"/", html::binary>>, s) do
+    end_tag_open(html, %{s | column: s.column + 1})
   end
 
-  defp tokenize(html = <<c::utf8, _rest::binary>>, s = %State{current: :tag_open})
+  defp tag_open(html = <<c::utf8, _rest::binary>>, s)
        when <<c::utf8>> in @all_ASCII_letters do
     token = %Tag{type: :start, name: "", line: s.line, column: s.column}
 
-    tokenize(html, %{s | token: token, current: :tag_name})
+    tag_name(html, %{s | token: token})
   end
 
-  defp tokenize(html = <<"?", _rest::binary>>, s = %State{current: :tag_open}) do
+  defp tag_open(html = <<"?", _rest::binary>>, s) do
     token = %Comment{data: "", line: s.line, column: s.column}
 
-    tokenize(html, %{s | token: token, current: :bogus_comment, column: s.column + 1})
+    bogus_comment(html, %{s | token: token, column: s.column + 1})
   end
 
-  defp tokenize(html, s = %State{current: :tag_open}) do
-    tokenize(html, %{
+  defp tag_open(html, s) do
+    data(html, %{
       s
       | token: nil,
-        tokens: [%Char{data: @less_than_sign} | s.tokens],
-        current: :data
+        tokens: [%Char{data: @less_than_sign} | s.tokens]
     })
   end
 
   # § tokenizer-end-tag-open-state
 
-  defp tokenize(html = <<c::utf8, _rest::binary>>, s = %State{current: :end_tag_open})
+  defp end_tag_open(html = <<c::utf8, _rest::binary>>, s)
        when <<c::utf8>> in @all_ASCII_letters do
     token = %Tag{type: :end, name: "", line: s.line, column: s.column}
 
-    tokenize(html, %{s | token: token, current: :tag_name})
+    tag_name(html, %{s | token: token})
   end
 
-  defp tokenize(<<">", html::binary>>, s = %State{current: :end_tag_open}) do
-    tokenize(html, %{s | token: nil, current: :data})
+  defp end_tag_open(<<">", html::binary>>, s) do
+    data(html, %{s | token: nil})
   end
 
-  defp tokenize(html = "", s = %State{current: :end_tag_open}) do
-    eof = %EOF{line: s.line, column: s.column}
+  defp end_tag_open("", s) do
+    tokens = [%Char{data: @solidus}, %Char{data: @less_than_sign} | s.tokens]
 
-    tokens = [eof, %Char{data: @solidus}, %Char{data: @less_than_sign} | s.tokens]
-    tokenize(html, %{s | token: nil, tokens: tokens, current: :data})
+    eof(:data, %{
+      s
+      | token: nil,
+        tokens: tokens,
+        errors: [%ParseError{line: s.line, column: s.column} | s.errors]
+    })
   end
 
-  defp tokenize(html, s = %State{current: :end_tag_open}) do
+  defp end_tag_open(html, s) do
     token = %Comment{data: "", line: s.line, column: s.column}
 
-    tokenize(html, %{s | token: token, current: :bogus_comment})
+    bogus_comment(html, %{s | token: token})
   end
 
   # § tokenizer-tag-name-state
 
-  defp tokenize(<<c::utf8, html::binary>>, s = %State{current: :tag_name})
+  defp tag_name(<<c::utf8, html::binary>>, s)
        when <<c::utf8>> in @space_chars do
     line = line_number(<<c::utf8>>, s.line)
     col = column_number(line, s)
-    tokenize(html, %{s | current: :before_attribute_name, column: col, line: line})
+    before_attribute_name(html, %{s | column: col, line: line})
   end
 
-  defp tokenize(<<"/", html::binary>>, s = %State{current: :tag_name}) do
-    tokenize(html, %{s | current: :self_closing_start_tag, column: s.column + 1})
+  defp tag_name(<<"/", html::binary>>, s) do
+    self_closing_start_tag(html, %{s | column: s.column + 1})
   end
 
-  defp tokenize(<<">", html::binary>>, s = %State{current: :tag_name}) do
-    tokenize(html, %{
+  defp tag_name(<<">", html::binary>>, s) do
+    data(html, %{
       s
-      | current: :data,
-        last_start_tag: s.token,
+      | last_start_tag: s.token,
         tokens: [s.token | s.tokens],
         token: nil,
         column: s.column + 1
     })
   end
 
-  defp tokenize(<<c::utf8, html::binary>>, s = %State{current: :tag_name})
+  defp tag_name(<<c::utf8, html::binary>>, s)
        when <<c::utf8>> in @upper_ASCII_letters do
     new_token = %{s.token | name: s.token.name <> String.downcase(<<c::utf8>>)}
 
-    tokenize(html, %{s | token: new_token, column: s.column + 1})
+    tag_name(html, %{s | token: new_token, column: s.column + 1})
   end
 
-  defp tokenize(<<"\0", html::binary>>, s = %State{current: :tag_name}) do
-    tokenize(html, %{
+  defp tag_name(<<"\0", html::binary>>, s) do
+    tag_name(html, %{
       s
       | token: %{s.token | name: s.token.name <> "\uFFFD"},
         errors: [
@@ -280,49 +289,47 @@ defmodule Floki.HTML.Tokenizer do
     })
   end
 
-  defp tokenize(html = "", s = %State{current: :tag_name}) do
-    tokenize(html, %{
+  defp tag_name("", s) do
+    eof(:tag_name, %{
       s
-      | errors: [%ParseError{id: "eof-in-tag", line: s.line, column: s.column} | s.errors],
-        tokens: [%EOF{line: s.line, column: s.column} | s.tokens]
+      | errors: [%ParseError{id: "eof-in-tag", line: s.line, column: s.column} | s.errors]
     })
   end
 
-  defp tokenize(<<c::utf8, html::binary>>, s = %State{current: :tag_name}) do
+  defp tag_name(<<c::utf8, html::binary>>, s) do
     new_token = %{s.token | name: s.token.name <> <<c::utf8>>}
 
-    tokenize(html, %{s | token: new_token, column: s.column + 1})
+    tag_name(html, %{s | token: new_token, column: s.column + 1})
   end
 
   # § tokenizer-rcdata-less-than-sign-state
 
-  defp tokenize(<<"/", html::binary>>, s = %State{current: :rcdata_less_than_sign}) do
-    tokenize(html, %{s | buffer: "", current: :rcdata_end_tag_open, column: s.column + 1})
+  defp rcdata_less_than_sign(<<"/", html::binary>>, s) do
+    rcdata_end_tag_open(html, %{s | buffer: "", column: s.column + 1})
   end
 
-  defp tokenize(html, s = %State{current: :rcdata_less_than_sign}) do
-    tokenize(html, %{
+  defp rcdata_less_than_sign(html, s) do
+    rcdata(html, %{
       s
       | token: nil,
-        tokens: [%Char{data: @less_than_sign} | s.tokens],
-        current: :rcdata
+        tokens: [%Char{data: @less_than_sign} | s.tokens]
     })
   end
 
   # § tokenizer-rcdata-end-tag-open-state
 
-  defp tokenize(
+  defp rcdata_end_tag_open(
          html = <<c::utf8, _rest::binary>>,
-         s = %State{current: :rcdata_end_tag_open}
+         s
        )
        when <<c::utf8>> in @all_ASCII_letters do
     token = %Tag{type: :end, name: "", line: s.line, column: s.column}
-    tokenize(html, %{s | token: token, current: :rcdata_end_tag_name})
+    rcdata_end_tag_name(html, %{s | token: token})
   end
 
-  defp tokenize(html, s = %State{current: :rcdata_end_tag_open}) do
+  defp rcdata_end_tag_open(html, s) do
     tokens = [%Char{data: @solidus}, %Char{data: @less_than_sign} | s.tokens]
-    tokenize(html, %{s | tokens: tokens, current: :rcdata})
+    rcdata(html, %{s | tokens: tokens})
   end
 
   # § tokenizer-rcdata-end-tag-name-state
@@ -337,651 +344,635 @@ defmodule Floki.HTML.Tokenizer do
     :script_data_escaped_end_tag_name
   ]
 
-  defp tokenize(
-         html = <<c::utf8, rest::binary>>,
-         s = %State{current: state}
-       )
-       when <<c::utf8>> in @space_chars and state in @raw_end_tag_name_states do
-    line = line_number(<<c::utf8>>, s.line)
+  Enum.each(@raw_end_tag_name_states, fn state ->
+    next_state =
+      case state do
+        :rcdata_end_tag_name ->
+          :rcdata
 
-    if appropriate_tag?(s) do
-      tokenize(rest, %{s | current: :before_attribute_name, column: s.column + 1, line: line})
-    else
-      tokenize(html, %{
+        :rawtext_end_tag_name ->
+          :rawtext
+
+        :script_data_end_tag_name ->
+          :script_data
+
+        :script_data_escaped_end_tag_name ->
+          :script_data_escaped
+      end
+
+    defp unquote(state)(html = <<c::utf8, rest::binary>>, s)
+         when <<c::utf8>> in @space_chars do
+      line = line_number(<<c::utf8>>, s.line)
+
+      if appropriate_tag?(s) do
+        before_attribute_name(rest, %{s | column: s.column + 1, line: line})
+      else
+        unquote(next_state)(html, %{
+          s
+          | tokens: tokens_for_inappropriate_end_tag(s),
+            buffer: ""
+        })
+      end
+    end
+
+    defp unquote(state)(html = <<"/", rest::binary>>, s) do
+      if appropriate_tag?(s) do
+        self_closing_start_tag(rest, %{s | column: s.column + 1})
+      else
+        unquote(next_state)(html, %{
+          s
+          | tokens: tokens_for_inappropriate_end_tag(s),
+            buffer: ""
+        })
+      end
+    end
+
+    defp unquote(html = <<">", rest::binary>>, s) do
+      if appropriate_tag?(s) do
+        data(rest, %{
+          s
+          | token: nil,
+            tokens: [s.token | s.tokens],
+            column: s.column + 1
+        })
+      else
+        unquote(next_state)(html, %{
+          s
+          | tokens: tokens_for_inappropriate_end_tag(s),
+            buffer: ""
+        })
+      end
+    end
+
+    defp unquote(state)(<<c::utf8, html::binary>>, s)
+         when <<c::utf8>> in @upper_ASCII_letters do
+      col = s.col + 1
+      char = <<c::utf8>>
+      new_token = %{s.token | name: s.name <> String.downcase(char), column: col}
+
+      unquote(next_state)(html, %{s | token: new_token, buffer: s.buffer <> char, col: col})
+    end
+
+    defp unquote(state)(<<c::utf8, html::binary>>, s)
+         when <<c::utf8>> in @lower_ASCII_letters do
+      col = s.col + 1
+      char = <<c::utf8>>
+      new_token = %{s.token | name: s.name <> char, column: col}
+
+      unquote(state)(html, %{s | token: new_token, buffer: s.buffer <> char, col: col})
+    end
+
+    defp unquote(state)(html, s) do
+      unquote(next_state)(html, %{
         s
         | tokens: tokens_for_inappropriate_end_tag(s),
-          buffer: "",
-          current: next_state_for_raw_end_tag(state)
+          buffer: ""
       })
     end
-  end
-
-  defp tokenize(html = <<"/", rest::binary>>, s = %State{current: state})
-       when state in @raw_end_tag_name_states do
-    if appropriate_tag?(s) do
-      tokenize(rest, %{s | current: :self_closing_start_tag, column: s.column + 1})
-    else
-      tokenize(html, %{
-        s
-        | tokens: tokens_for_inappropriate_end_tag(s),
-          buffer: "",
-          current: next_state_for_raw_end_tag(state)
-      })
-    end
-  end
-
-  defp tokenize(html = <<">", rest::binary>>, s = %State{current: state})
-       when state in @raw_end_tag_name_states do
-    if appropriate_tag?(s) do
-      tokenize(rest, %{
-        s
-        | current: :data,
-          token: nil,
-          tokens: [s.token | s.tokens],
-          column: s.column + 1
-      })
-    else
-      tokenize(html, %{
-        s
-        | tokens: tokens_for_inappropriate_end_tag(s),
-          buffer: "",
-          current: next_state_for_raw_end_tag(state)
-      })
-    end
-  end
-
-  defp tokenize(<<c::utf8, html::binary>>, s = %State{current: state})
-       when <<c::utf8>> in @upper_ASCII_letters and state in @raw_end_tag_name_states do
-    col = s.col + 1
-    char = <<c::utf8>>
-    new_token = %{s.token | name: s.name <> String.downcase(char), column: col}
-
-    tokenize(html, %{s | token: new_token, buffer: s.buffer <> char, col: col})
-  end
-
-  defp tokenize(<<c::utf8, html::binary>>, s = %State{current: state})
-       when <<c::utf8>> in @lower_ASCII_letters and state in @raw_end_tag_name_states do
-    col = s.col + 1
-    char = <<c::utf8>>
-    new_token = %{s.token | name: s.name <> char, column: col}
-
-    tokenize(html, %{s | token: new_token, buffer: s.buffer <> char, col: col})
-  end
-
-  defp tokenize(html, s = %State{current: state}) when state in @raw_end_tag_name_states do
-    tokenize(html, %{
-      s
-      | tokens: tokens_for_inappropriate_end_tag(s),
-        buffer: "",
-        current: next_state_for_raw_end_tag(state)
-    })
-  end
+  end)
 
   # § tokenizer-rawtext-less-than-sign-state
 
-  defp tokenize(<<"/", html::binary>>, s = %State{current: :rawtext_less_than_sign}) do
-    tokenize(html, %{s | buffer: "", current: :rawtext_end_tag_open})
+  defp rawtext_less_than_sign(<<"/", html::binary>>, s) do
+    rawtext_end_tag_open(html, %{s | buffer: ""})
   end
 
-  defp tokenize(html, s = %State{current: :rawtext_less_than_sign}) do
-    tokenize(html, %{
-      s
-      | tokens: [%Char{data: "\u003C"} | s.tokens],
-        current: :rawtext
-    })
+  defp rawtext_less_than_sign(html, s) do
+    rawtext(html, %{s | tokens: [%Char{data: "\u003C"} | s.tokens]})
   end
 
   # § tokenizer-rawtext-end-tag-open-state
 
-  defp tokenize(
+  defp rawtext_end_tag_open(
          html = <<c::utf8, _rest::binary>>,
-         s = %State{current: :rawtext_end_tag_open}
+         s
        )
        when <<c::utf8>> in @all_ASCII_letters do
     token = %Tag{type: :end, name: "", line: s.line, column: s.column}
-    tokenize(html, %{s | token: token, current: :rawtext_end_tag_name})
+    rawtext_end_tag_name(html, %{s | token: token})
   end
 
-  defp tokenize(html, s = %State{current: :rawtext_end_tag_open}) do
+  defp rawtext_end_tag_open(html, s) do
     tokens = [%Char{data: @solidus}, %Char{data: @less_than_sign} | s.tokens]
-    tokenize(html, %{s | tokens: tokens, current: :rawtext})
+    rawtext(html, %{s | tokens: tokens})
   end
 
   # § tokenizer-script-data-less-than-sign-state
 
-  defp tokenize(<<"/", html::binary>>, s = %State{current: :script_data_less_than_sign}) do
-    tokenize(html, %{s | buffer: "", current: :script_data_end_tag_open_state})
+  defp script_data_less_than_sign(<<"/", html::binary>>, s) do
+    script_data_end_tag_open_state(html, %{s | buffer: ""})
   end
 
-  defp tokenize(<<"!", html::binary>>, s = %State{current: :script_data_less_than_sign}) do
+  defp script_data_less_than_sign(<<"!", html::binary>>, s) do
     tokens = [%Char{data: @exclamation_mark}, %Char{data: @less_than_sign} | s.tokens]
-    tokenize(html, %{s | tokens: tokens})
+    script_data_less_than_sign(html, %{s | tokens: tokens})
   end
 
-  defp tokenize(html, s = %State{current: :script_data_less_than_sign}) do
-    tokenize(html, %{s | tokens: [%Char{data: @less_than_sign} | s.tokens], current: :script_data})
+  defp script_data_less_than_sign(html, s) do
+    script_data(html, %{s | tokens: [%Char{data: @less_than_sign} | s.tokens]})
   end
 
   # § tokenizer-script-data-end-tag-open-state
 
-  defp tokenize(
+  defp script_data_end_tag_open(
          html = <<c::utf8, _rest::binary>>,
-         s = %State{current: :script_data_end_tag_open}
+         s
        )
        when <<c::utf8>> in @all_ASCII_letters do
     col = s.column + 1
     end_tag = %Tag{type: :end, name: "", line: s.line, column: col}
-    tokenize(html, %{s | token: end_tag, current: :script_data_end_tag_name, column: col})
+    script_data_end_tag_name(html, %{s | token: end_tag, column: col})
   end
 
-  defp tokenize(html, s = %State{current: :script_data_end_tag_open}) do
-    tokenize(html, %{
+  defp script_data_end_tag_open(html, s) do
+    script_data(html, %{
       s
-      | tokens: [%Char{data: @solidus}, %Char{data: @less_than_sign} | s.tokens],
-        current: :script_data
+      | tokens: [%Char{data: @solidus}, %Char{data: @less_than_sign} | s.tokens]
     })
   end
 
   # § tokenizer-script-data-escape-start-state
 
-  defp tokenize(<<"-", html::binary>>, s = %State{current: :script_data_escape_start}) do
-    tokenize(
+  defp script_data_escape_start(<<"-", html::binary>>, s) do
+    script_data_escape_start_dash(
       html,
       %{
         s
-        | tokens: [%Char{data: @hyphen_minus} | s.tokens],
-          current: :script_data_escape_start_dash
+        | tokens: [%Char{data: @hyphen_minus} | s.tokens]
       }
     )
   end
 
-  defp tokenize(html, s = %State{current: :script_data_escape_start}) do
-    tokenize(html, %{s | current: :script_data})
+  defp script_data_escape_start(html, s) do
+    script_data(html, s)
   end
 
   # § tokenizer-script-data-escape-start-dash-state
 
-  defp tokenize(<<"-", html::binary>>, s = %State{current: :script_data_escape_start_dash}) do
-    tokenize(
+  defp script_data_escape_start_dash(<<"-", html::binary>>, s) do
+    script_data_escaped_dash_dash(
       html,
       %{
         s
-        | tokens: [%Char{data: @hyphen_minus} | s.tokens],
-          current: :script_data_escaped_dash_dash
+        | tokens: [%Char{data: @hyphen_minus} | s.tokens]
       }
     )
   end
 
-  defp tokenize(html, s = %State{current: :script_data_escape_start_dash}) do
-    tokenize(html, %{s | current: :script_data})
+  defp script_data_escape_start_dash(html, s) do
+    script_data(html, s)
   end
 
   # § tokenizer-script-data-escaped-state
 
-  defp tokenize(<<"-", html::binary>>, s = %State{current: :script_data_escaped}) do
-    tokenize(
-      html,
-      %{s | tokens: [%Char{data: @hyphen_minus} | s.tokens], current: :script_data_escaped_dash}
-    )
-  end
-
-  defp tokenize(<<"<", html::binary>>, s = %State{current: :script_data_escaped}) do
-    tokenize(html, %{s | current: :script_data_escaped_less_than_sign})
-  end
-
-  defp tokenize(<<"\0", html::binary>>, s = %State{current: :script_data_escaped}) do
-    tokenize(html, %{s | tokens: [%Char{data: @replacement_char} | s.tokens]})
-  end
-
-  defp tokenize(html = "", s = %State{current: :script_data_escaped}) do
-    tokenize(html, %{s | tokens: [%EOF{line: s.line, column: s.column} | s.tokens]})
-  end
-
-  defp tokenize(<<c::utf8, html::binary>>, s = %State{current: :script_data_escaped}) do
-    tokenize(html, %{s | tokens: [%Char{data: <<c::utf8>>} | s.tokens]})
-  end
-
-  # § tokenizer-script-data-escaped-dash-state
-
-  defp tokenize(<<"-", html::binary>>, s = %State{current: :script_data_escaped_dash}) do
-    tokenize(
-      html,
-      %{
-        s
-        | tokens: [%Char{data: @hyphen_minus} | s.tokens],
-          current: :script_data_escaped_dash_dash
-      }
-    )
-  end
-
-  defp tokenize(<<"<", html::binary>>, s = %State{current: :script_data_escaped_dash}) do
-    tokenize(html, %{s | current: :script_data_escaped_less_than_sign})
-  end
-
-  defp tokenize(<<"\0", html::binary>>, s = %State{current: :script_data_escaped_dash}) do
-    tokenize(html, %{
-      s
-      | tokens: [%Char{data: @replacement_char} | s.tokens],
-        current: :script_data_escaped
-    })
-  end
-
-  defp tokenize(html = "", s = %State{current: :script_data_escaped_dash}) do
-    tokenize(html, %{s | tokens: [%EOF{line: s.line, column: s.column} | s.tokens]})
-  end
-
-  defp tokenize(
-         <<c::utf8, html::binary>>,
-         s = %State{current: :script_data_escaped_dash}
-       ) do
-    tokenize(html, %{
-      s
-      | tokens: [%Char{data: <<c::utf8>>} | s.tokens],
-        current: :script_data_escaped
-    })
-  end
-
-  # § tokenizer-script-data-escaped-dash-dash-state
-
-  defp tokenize(<<"-", html::binary>>, s = %State{current: :script_data_escaped_dash_dash}) do
-    tokenize(
+  defp script_data_escaped(<<"-", html::binary>>, s) do
+    script_data_escaped_dash(
       html,
       %{s | tokens: [%Char{data: @hyphen_minus} | s.tokens]}
     )
   end
 
-  defp tokenize(<<"<", html::binary>>, s = %State{current: :script_data_escaped_dash_dash}) do
-    tokenize(html, %{s | current: :script_data_escaped_less_than_sign})
+  defp script_data_escaped(<<"<", html::binary>>, s) do
+    script_data_escaped_less_than_sign(html, s)
   end
 
-  defp tokenize(<<">", html::binary>>, s = %State{current: :script_data_escaped_dash_dash}) do
-    tokenize(html, %{
+  defp script_data_escaped(<<"\0", html::binary>>, s) do
+    script_data_escaped(html, %{s | tokens: [%Char{data: @replacement_char} | s.tokens]})
+  end
+
+  defp script_data_escaped("", s) do
+    eof(:script_data_escaped, s)
+  end
+
+  defp script_data_escaped(<<c::utf8, html::binary>>, s) do
+    script_data_escaped(html, %{s | tokens: [%Char{data: <<c::utf8>>} | s.tokens]})
+  end
+
+  # § tokenizer-script-data-escaped-dash-state
+
+  defp script_data_escaped_dash(<<"-", html::binary>>, s) do
+    script_data_escaped_dash_dash(
+      html,
+      %{
+        s
+        | tokens: [%Char{data: @hyphen_minus} | s.tokens]
+      }
+    )
+  end
+
+  defp script_data_escaped_dash(<<"<", html::binary>>, s) do
+    script_data_escaped_less_than_sign(html, s)
+  end
+
+  defp script_data_escaped_dash(<<"\0", html::binary>>, s) do
+    script_data_escaped(html, %{
       s
-      | tokens: [%Char{data: @greater_than_sign} | s.tokens],
-        current: :script_data
+      | tokens: [%Char{data: @replacement_char} | s.tokens]
     })
   end
 
-  defp tokenize(<<"\0", html::binary>>, s = %State{current: :script_data_escaped_dash_dash}) do
-    tokenize(html, %{
-      s
-      | tokens: [%Char{data: @replacement_char} | s.tokens],
-        current: :script_data_escaped
-    })
+  defp script_data_escaped_dash("", s) do
+    eof(:tokenize, s)
   end
 
-  defp tokenize(html = "", s = %State{current: :script_data_escaped_dash_dash}) do
-    tokenize(html, %{s | tokens: [%EOF{line: s.line, column: s.column} | s.tokens]})
-  end
-
-  defp tokenize(
+  defp script_data_escaped_dash(
          <<c::utf8, html::binary>>,
-         s = %State{current: :script_data_escaped_dash_dash}
+         s
        ) do
-    tokenize(html, %{
+    script_data_escaped(html, %{
       s
-      | tokens: [%Char{data: <<c::utf8>>} | s.tokens],
-        current: :script_data_escaped
+      | tokens: [%Char{data: <<c::utf8>>} | s.tokens]
+    })
+  end
+
+  # § tokenizer-script-data-escaped-dash-dash-state
+
+  defp script_data_escaped_dash_dash(<<"-", html::binary>>, s) do
+    script_data_escaped_dash_dash(
+      html,
+      %{s | tokens: [%Char{data: @hyphen_minus} | s.tokens]}
+    )
+  end
+
+  defp script_data_escaped_dash_dash(<<"<", html::binary>>, s) do
+    script_data_escaped_less_than_sign(html, s)
+  end
+
+  defp script_data_escaped_dash_dash(<<">", html::binary>>, s) do
+    script_data(html, %{
+      s
+      | tokens: [%Char{data: @greater_than_sign} | s.tokens]
+    })
+  end
+
+  defp script_data_escaped_dash_dash(<<"\0", html::binary>>, s) do
+    script_data_escaped(html, %{
+      s
+      | tokens: [%Char{data: @replacement_char} | s.tokens]
+    })
+  end
+
+  defp script_data_escaped_dash_dash("", s) do
+    eof(:script_data_escaped_dash_dash, s)
+  end
+
+  defp script_data_escaped_dash_dash(
+         <<c::utf8, html::binary>>,
+         s
+       ) do
+    script_data_escaped(html, %{
+      s
+      | tokens: [%Char{data: <<c::utf8>>} | s.tokens]
     })
   end
 
   # § tokenizer-script-data-escaped-less-than-sign-state
 
-  defp tokenize(<<"/", html::binary>>, s = %State{current: :script_data_escaped_less_than_sign}) do
-    tokenize(html, %{s | buffer: "", current: :script_data_escaped_end_tag_open})
+  defp script_data_escaped_less_than_sign(<<"/", html::binary>>, s) do
+    script_data_escaped_end_tag_open(html, %{s | buffer: ""})
   end
 
-  defp tokenize(
+  defp script_data_escaped_less_than_sign(
          html = <<c::utf8, _rest::binary>>,
-         s = %State{current: :script_data_escaped_less_than_sign}
+         s
        )
        when <<c::utf8>> in @all_ASCII_letters do
-    tokenize(
+    script_data_double_escape_start(
       html,
       %{
         s
         | buffer: "",
-          tokens: [%Char{data: @less_than_sign} | s.tokens],
-          current: :script_data_double_escape_start
+          tokens: [%Char{data: @less_than_sign} | s.tokens]
       }
     )
   end
 
-  defp tokenize(html, s = %State{current: :script_data_escaped_less_than_sign}) do
-    tokenize(html, %{
+  defp script_data_escaped_less_than_sign(html, s) do
+    script_data_escaped(html, %{
       s
-      | tokens: [%Char{data: @less_than_sign} | s.tokens],
-        current: :script_data_escaped
+      | tokens: [%Char{data: @less_than_sign} | s.tokens]
     })
   end
 
   # § tokenizer-script-data-escaped-end-tag-open-state
 
-  defp tokenize(
+  defp script_data_escaped_end_tag_open(
          html = <<c::utf8, _rest::binary>>,
-         s = %State{current: :script_data_escaped_end_tag_open}
+         s
        )
        when <<c::utf8>> in @all_ASCII_letters do
-    tokenize(
+    script_data_escaped_end_tag_name(
       html,
       %{
         s
-        | token: %Tag{type: :end, name: "", line: s.line, column: s.column},
-          current: :script_data_escaped_end_tag_name
+        | token: %Tag{type: :end, name: "", line: s.line, column: s.column}
       }
     )
   end
 
-  defp tokenize(html, s = %State{current: :script_data_escaped_end_tag_open}) do
-    tokenize(html, %{
+  defp script_data_escaped_end_tag_open(html, s) do
+    script_data_escaped(html, %{
       s
-      | tokens: [%Char{data: @solidus}, %Char{data: @less_than_sign} | s.tokens],
-        current: :script_data_escaped
+      | tokens: [%Char{data: @solidus}, %Char{data: @less_than_sign} | s.tokens]
     })
   end
 
   # § tokenizer-script-data-double-escape-start-state
 
-  defp tokenize(
+  defp script_data_escaped_end_tag_open(
          <<c::utf8, html::binary>>,
-         s = %State{current: :script_data_escaped_end_tag_open}
+         s
        )
        when <<c::utf8>> in ["/", ">" | @space_chars] do
-    next =
-      if s.buffer == "script" do
-        :script_data_double_escaped
-      else
-        :script_data_escaped
-      end
-
-    tokenize(html, %{s | tokens: [%Char{data: <<c::utf8>>} | s.tokens], current: next})
+    if s.buffer == "script" do
+      script_data_double_escaped(html, %{s | tokens: [%Char{data: <<c::utf8>>} | s.tokens]})
+    else
+      script_data_escaped(html, %{s | tokens: [%Char{data: <<c::utf8>>} | s.tokens]})
+    end
   end
 
-  defp tokenize(
+  defp script_data_escaped_end_tag_open(
          <<c::utf8, html::binary>>,
-         s = %State{current: :script_data_escaped_end_tag_open}
+         s
        )
        when <<c::utf8>> in @upper_ASCII_letters do
     char = <<c::utf8>>
 
-    tokenize(html, %{
+    script_data_escaped_end_tag_open(html, %{
       s
       | buffer: s.buffer <> String.downcase(char),
         tokens: [%Char{data: char} | s.tokens]
     })
   end
 
-  defp tokenize(
+  defp script_data_escaped_end_tag_open(
          <<c::utf8, html::binary>>,
-         s = %State{current: :script_data_escaped_end_tag_open}
+         s
        )
        when <<c::utf8>> in @lower_ASCII_letters do
     char = <<c::utf8>>
-    tokenize(html, %{s | buffer: s.buffer <> char, tokens: [%Char{data: char} | s.tokens]})
+
+    script_data_escaped_end_tag_open(html, %{
+      s
+      | buffer: s.buffer <> char,
+        tokens: [%Char{data: char} | s.tokens]
+    })
   end
 
-  defp tokenize(html, s = %State{current: :script_data_escaped_end_tag_open}) do
-    tokenize(html, %{s | current: :script_data_escaped})
+  defp script_data_escaped_end_tag_open(html, s) do
+    script_data_escaped(html, s)
   end
 
   # § tokenizer-script-data-double-escaped-state
 
-  defp tokenize(<<"-", html::binary>>, s = %State{current: :script_data_double_escaped}) do
-    tokenize(html, %{
+  defp script_data_double_escaped(<<"-", html::binary>>, s) do
+    script_data_double_escaped_dash(html, %{
       s
-      | current: :script_data_double_escaped_dash,
-        tokens: [%Char{data: @hyphen_minus} | s.tokens]
+      | tokens: [%Char{data: @hyphen_minus} | s.tokens]
     })
   end
 
-  defp tokenize(<<"<", html::binary>>, s = %State{current: :script_data_double_escaped}) do
-    tokenize(html, %{
+  defp script_data_double_escaped(<<"<", html::binary>>, s) do
+    script_data_double_escaped_less_than_sign(html, %{
       s
-      | current: :script_data_double_escaped_less_than_sign,
-        tokens: [%Char{data: @less_than_sign} | s.tokens]
+      | tokens: [%Char{data: @less_than_sign} | s.tokens]
     })
   end
 
-  defp tokenize(<<"\0", html::binary>>, s = %State{current: :script_data_double_escaped}) do
-    tokenize(html, %{s | tokens: [%Char{data: @replacement_char} | s.tokens]})
+  defp script_data_double_escaped(<<"\0", html::binary>>, s) do
+    script_data_double_escaped(html, %{s | tokens: [%Char{data: @replacement_char} | s.tokens]})
   end
 
-  defp tokenize(html = "", s = %State{current: :script_data_double_escaped}) do
-    tokenize(html, %{s | tokens: [%EOF{line: s.line, column: s.column} | s.tokens]})
+  defp script_data_double_escaped("", s) do
+    eof(:script_data_double_escaped, s)
   end
 
-  defp tokenize(<<c::utf8, html::binary>>, s = %State{current: :script_data_double_escaped}) do
-    tokenize(html, %{s | tokens: [%Char{data: <<c::utf8>>} | s.tokens]})
+  defp script_data_double_escaped(<<c::utf8, html::binary>>, s) do
+    script_data_double_escaped(html, %{s | tokens: [%Char{data: <<c::utf8>>} | s.tokens]})
   end
 
   # § tokenizer-script-data-double-escaped-dash-state
 
-  defp tokenize(<<"-", html::binary>>, s = %State{current: :script_data_double_escaped_dash}) do
-    tokenize(html, %{
+  defp script_data_double_escaped_dash(<<"-", html::binary>>, s) do
+    script_data_double_escaped_dash_dash(html, %{
       s
-      | current: :script_data_double_escaped_dash_dash,
-        tokens: [%Char{data: @hyphen_minus} | s.tokens]
+      | tokens: [%Char{data: @hyphen_minus} | s.tokens]
     })
   end
 
-  defp tokenize(<<"<", html::binary>>, s = %State{current: :script_data_double_escaped_dash}) do
-    tokenize(html, %{
+  defp script_data_double_escaped_dash(<<"<", html::binary>>, s) do
+    script_data_double_escaped_less_than_sign(html, %{
       s
-      | current: :script_data_double_escaped_less_than_sign,
-        tokens: [%Char{data: @less_than_sign} | s.tokens]
+      | tokens: [%Char{data: @less_than_sign} | s.tokens]
     })
   end
 
-  defp tokenize(<<"\0", html::binary>>, s = %State{current: :script_data_double_escaped_dash}) do
-    tokenize(html, %{
+  defp script_data_double_escaped_dash(<<"\0", html::binary>>, s) do
+    script_data_double_escaped(html, %{
       s
-      | tokens: [%Char{data: @replacement_char} | s.tokens],
-        current: :script_data_double_escaped
+      | tokens: [%Char{data: @replacement_char} | s.tokens]
     })
   end
 
-  defp tokenize(html = "", s = %State{current: :script_data_double_escaped_dash}) do
-    tokenize(html, %{s | tokens: [%EOF{line: s.line, column: s.column} | s.tokens]})
+  defp script_data_double_escaped_dash("", s) do
+    eof(:script_data_double_escaped_dash, s)
   end
 
-  defp tokenize(<<c::utf8, html::binary>>, s = %State{current: :script_data_double_escaped_dash}) do
-    tokenize(html, %{
+  defp script_data_double_escaped_dash(<<c::utf8, html::binary>>, s) do
+    script_data_double_escaped(html, %{
       s
-      | tokens: [%Char{data: <<c::utf8>>} | s.tokens],
-        current: :script_data_double_escaped
+      | tokens: [%Char{data: <<c::utf8>>} | s.tokens]
     })
   end
 
   # § tokenizer-script-data-double-escaped-dash-dash-state
 
-  defp tokenize(<<"-", html::binary>>, s = %State{current: :script_data_double_escaped_dash_dash}) do
-    tokenize(html, %{s | tokens: [%Char{data: @hyphen_minus} | s.tokens]})
-  end
-
-  defp tokenize(<<"<", html::binary>>, s = %State{current: :script_data_double_escaped_dash_dash}) do
-    tokenize(html, %{
+  defp script_data_double_escaped_dash_dash(<<"-", html::binary>>, s) do
+    script_data_double_escaped_dash_dash(html, %{
       s
-      | current: :script_data_double_escaped_less_than_sign,
-        tokens: [%Char{data: @less_than_sign} | s.tokens]
+      | tokens: [%Char{data: @hyphen_minus} | s.tokens]
     })
   end
 
-  defp tokenize(<<">", html::binary>>, s = %State{current: :script_data_double_escaped_dash_dash}) do
-    tokenize(html, %{
+  defp script_data_double_escaped_dash_dash(<<"<", html::binary>>, s) do
+    script_data_double_escaped_less_than_sign(html, %{
       s
-      | current: :script_data,
-        tokens: [%Char{data: @greater_than_sign} | s.tokens]
+      | tokens: [%Char{data: @less_than_sign} | s.tokens]
     })
   end
 
-  defp tokenize(
+  defp script_data_double_escaped_dash_dash(<<">", html::binary>>, s) do
+    script_data(html, %{
+      s
+      | tokens: [%Char{data: @greater_than_sign} | s.tokens]
+    })
+  end
+
+  defp script_data_double_escaped_dash_dash(
          <<"\0", html::binary>>,
-         s = %State{current: :script_data_double_escaped_dash_dash}
+         s
        ) do
-    tokenize(html, %{
+    script_data_double_escaped(html, %{
       s
-      | tokens: [%Char{data: @replacement_char} | s.tokens],
-        current: :script_data_double_escaped
+      | tokens: [%Char{data: @replacement_char} | s.tokens]
     })
   end
 
-  defp tokenize(html = "", s = %State{current: :script_data_double_escaped_dash_dash}) do
-    tokenize(html, %{s | tokens: [%EOF{line: s.line, column: s.column} | s.tokens]})
+  defp script_data_double_escaped_dash_dash("", s) do
+    eof(:script_data_double_escaped_dash_dash, s)
   end
 
-  defp tokenize(
+  defp script_data_double_escaped_dash_dash(
          <<c::utf8, html::binary>>,
-         s = %State{current: :script_data_double_escaped_dash_dash}
+         s
        ) do
-    tokenize(html, %{
+    script_data_double_escaped(html, %{
       s
-      | tokens: [%Char{data: <<c::utf8>>} | s.tokens],
-        current: :script_data_double_escaped
+      | tokens: [%Char{data: <<c::utf8>>} | s.tokens]
     })
   end
 
   # § tokenizer-script-data-double-escaped-less-than-sign-state
 
-  defp tokenize(
+  defp script_data_double_escaped_less_than_sign(
          <<"/", html::binary>>,
-         s = %State{current: :script_data_double_escaped_less_than_sign}
+         s
        ) do
-    tokenize(html, %{
+    script_data_double_escape_end(html, %{
       s
       | buffer: "",
-        current: :script_data_double_escape_end,
         tokens: [%Char{data: @solidus} | s.tokens]
     })
   end
 
-  defp tokenize(html, s = %State{current: :script_data_double_escaped_less_than_sign}) do
-    tokenize(html, %{s | current: :script_data_double_escaped})
+  defp script_data_double_escaped_less_than_sign(html, s) do
+    script_data_double_escaped(html, s)
   end
 
   # § tokenizer-script-data-double-escape-end-state
 
-  defp tokenize(
+  defp script_data_double_escape_end(
          <<c::utf8, html::binary>>,
-         s = %State{current: :script_data_double_escape_end}
+         s
        )
        when <<c::utf8>> in ["/", ">" | @space_chars] do
-    next =
-      if s.buffer == "script" do
-        :script_data_escaped
-      else
-        :script_data_double_escaped
-      end
-
-    tokenize(html, %{s | tokens: [%Char{data: <<c::utf8>>} | s.tokens], current: next})
+    if s.buffer == "script" do
+      script_data_escaped(html, %{s | tokens: [%Char{data: <<c::utf8>>} | s.tokens]})
+    else
+      script_data_double_escaped(html, %{s | tokens: [%Char{data: <<c::utf8>>} | s.tokens]})
+    end
   end
 
-  defp tokenize(
+  defp script_data_double_escape_end(
          <<c::utf8, html::binary>>,
-         s = %State{current: :script_data_double_escape_end}
+         s
        )
        when <<c::utf8>> in @upper_ASCII_letters do
     char = <<c::utf8>>
 
-    tokenize(html, %{
+    script_data_double_escape_end(html, %{
       s
       | buffer: s.buffer <> String.downcase(char),
         tokens: [%Char{data: char} | s.tokens]
     })
   end
 
-  defp tokenize(
+  defp script_data_double_escape_end(
          <<c::utf8, html::binary>>,
-         s = %State{current: :script_data_double_escape_end}
+         s
        )
        when <<c::utf8>> in @lower_ASCII_letters do
     char = <<c::utf8>>
-    tokenize(html, %{s | buffer: s.buffer <> char, tokens: [%Char{data: char} | s.tokens]})
+
+    script_data_double_escape_end(html, %{
+      s
+      | buffer: s.buffer <> char,
+        tokens: [%Char{data: char} | s.tokens]
+    })
   end
 
-  defp tokenize(html, s = %State{current: :script_data_double_escape_end}) do
-    tokenize(html, %{s | current: :script_data_double_escaped})
+  defp script_data_double_escape_end(html, s) do
+    script_data_double_escaped(html, s)
   end
 
   # § tokenizer-before-attribute-name-state
 
-  defp tokenize(<<c::utf8, html::binary>>, s = %State{current: :before_attribute_name})
+  defp before_attribute_name(<<c::utf8, html::binary>>, s)
        when <<c::utf8>> in @space_chars do
     line = line_number(<<c::utf8>>, s.line)
     col = column_number(line, s)
-    tokenize(html, %{s | line: line, column: col})
+    before_attribute_name(html, %{s | line: line, column: col})
   end
 
-  defp tokenize(html = <<c::utf8, _rest::binary>>, s = %State{current: :before_attribute_name})
+  defp before_attribute_name(html = <<c::utf8, _rest::binary>>, s)
        when <<c::utf8>> in ["/", ">"] do
-    tokenize(html, %{s | current: :after_attribute_name})
+    after_attribute_name(html, s)
   end
 
-  defp tokenize(html = "", s = %State{current: :before_attribute_name}) do
-    tokenize(html, %{s | current: :after_attribute_name})
+  defp before_attribute_name("", s) do
+    after_attribute_name("", s)
   end
 
-  defp tokenize(html = <<"=", _rest::binary>>, s = %State{current: :before_attribute_name}) do
-    new_token = %{
+  defp before_attribute_name(html = <<"=", _rest::binary>>, s) do
+    new_token = %Tag{
       s.token
       | current_attribute: %Attribute{name: "=", value: "", line: s.line, column: s.column}
     }
 
-    tokenize(html, %{
+    attribute_name(html, %{
       s
       | errors: [%ParseError{line: s.line, column: s.column} | s.errors],
-        token: new_token,
-        current: :attribute_name
+        token: new_token
     })
   end
 
-  defp tokenize(html, s = %State{current: :before_attribute_name}) do
-    new_token = %{
+  defp before_attribute_name(html, s) do
+    new_token = %Tag{
       s.token
       | current_attribute: %Attribute{name: "", value: "", line: s.line, column: s.column}
     }
 
-    tokenize(html, %{
+    attribute_name(html, %{
       s
-      | token: new_token,
-        current: :attribute_name
+      | token: new_token
     })
   end
 
   # § tokenizer-attribute-name-state
 
-  defp tokenize(html = <<c::utf8, _rest::binary>>, s = %State{current: :attribute_name})
+  defp attribute_name(html = <<c::utf8, _rest::binary>>, s)
        when <<c::utf8>> in [@solidus, @greater_than_sign | @space_chars] do
     # FIXME: before changing the state, verify if same attr already exists.
-    tokenize(html, %{s | current: :after_attribute_name})
+    after_attribute_name(html, s)
   end
 
-  defp tokenize(html = "", s = %State{current: :attribute_name}) do
+  defp attribute_name("", s) do
     # FIXME: before changing the state, verify if same attr already exists.
-    tokenize(html, %{s | current: :after_attribute_name})
+    after_attribute_name("", s)
   end
 
-  defp tokenize(<<"=", html::binary>>, s = %State{current: :attribute_name}) do
+  defp attribute_name(<<"=", html::binary>>, s) do
     # FIXME: before changing the state, verify if same attr already exists.
-    tokenize(html, %{s | current: :before_attribute_value})
+    before_attribute_value(html, s)
   end
 
-  defp tokenize(<<c::utf8, html::binary>>, s = %State{current: :attribute_name})
+  defp attribute_name(<<c::utf8, html::binary>>, s)
        when <<c::utf8>> in @upper_ASCII_letters do
     current_attr = s.token.current_attribute
-    new_attr = %{current_attr | name: current_attr.name <> String.downcase(<<c::utf8>>)}
-    new_token = %{s.token | current_attribute: new_attr}
+    new_attr = %Attribute{current_attr | name: current_attr.name <> String.downcase(<<c::utf8>>)}
+    new_token = %Tag{s.token | current_attribute: new_attr}
 
-    tokenize(html, %{s | token: new_token, column: s.column + 1})
+    attribute_name(html, %{s | token: new_token, column: s.column + 1})
   end
 
-  defp tokenize(<<c::utf8, html::binary>>, s = %State{current: :attribute_name})
+  defp attribute_name(<<c::utf8, html::binary>>, s)
        when <<c::utf8>> in ["\"", "'", "<"] do
     col = s.column + 1
     current_attr = s.token.current_attribute
-    new_attr = %{current_attr | name: current_attr.name <> <<c::utf8>>}
-    new_token = %{s.token | current_attribute: new_attr}
+    new_attr = %Attribute{current_attr | name: current_attr.name <> <<c::utf8>>}
+    new_token = %Tag{s.token | current_attribute: new_attr}
 
-    tokenize(html, %{
+    attribute_name(html, %{
       s
       | errors: [%ParseError{line: s.line, column: col} | s.errors],
         token: new_token,
@@ -1367,21 +1358,5 @@ defmodule Floki.HTML.Tokenizer do
 
     tokens = [%Char{data: @solidus}, %Char{data: @less_than_sign} | state.tokens]
     Enum.reduce(buffer_chars, tokens, fn char, acc -> [char | acc] end)
-  end
-
-  defp next_state_for_raw_end_tag(current) do
-    case current do
-      :rcdata_end_tag_name ->
-        :rcdata
-
-      :rawtext_end_tag_name ->
-        :rawtext
-
-      :script_data_end_tag_name ->
-        :script_data
-
-      :script_data_escaped_end_tag_name ->
-        :script_data_escaped
-    end
   end
 end
