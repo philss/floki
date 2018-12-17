@@ -78,7 +78,6 @@ defmodule Floki.HTML.Tokenizer do
   # EMPTY functions that needs to be defined
   def character_reference(_y, _z), do: nil
   def cdata_section(_html, _s), do: nil
-  def after_doctype_public_keyword(_y, _z), do: nil
 
   # TODO:
   # 1. ~~Keep replacing tokens from tuples to Structs~~
@@ -681,14 +680,18 @@ defmodule Floki.HTML.Tokenizer do
 
   defp script_data_escaped_end_tag_open(
          <<c::utf8, html::binary>>,
+         s = %State{buffer: "script"}
+       )
+       when <<c::utf8>> in ["/", ">" | @space_chars] do
+    script_data_double_escaped(html, %{s | tokens: [%Char{data: <<c::utf8>>} | s.tokens]})
+  end
+
+  defp script_data_escaped_end_tag_open(
+         <<c::utf8, html::binary>>,
          s
        )
        when <<c::utf8>> in ["/", ">" | @space_chars] do
-    if s.buffer == "script" do
-      script_data_double_escaped(html, %{s | tokens: [%Char{data: <<c::utf8>>} | s.tokens]})
-    else
-      script_data_escaped(html, %{s | tokens: [%Char{data: <<c::utf8>>} | s.tokens]})
-    end
+    script_data_escaped(html, %{s | tokens: [%Char{data: <<c::utf8>>} | s.tokens]})
   end
 
   defp script_data_escaped_end_tag_open(
