@@ -1724,14 +1724,110 @@ defmodule Floki.HTML.Tokenizer do
     after_doctype_public_keyword(html, %{s | column: s.column + 6})
   end
 
-  defp after_doctype_name(<<s1::utf8, y::utf8, s2::utf8, t::utf8, e::utf8, m::utf8, html::binary>>, s) when <<s1::utf8>> in ["S", "s"] and <<y::utf8>> in ["Y", "y"] and <<s2::utf8>> in ["S", "s"] and <<t::utf8>> in ["T", "t"] and <<e::utf8>> in ["E", "e"] and <<m::utf8>> in ["M", "m"] do
+  defp after_doctype_name(
+         <<s1::utf8, y::utf8, s2::utf8, t::utf8, e::utf8, m::utf8, html::binary>>,
+         s
+       )
+       when <<s1::utf8>> in ["S", "s"] and <<y::utf8>> in ["Y", "y"] and
+              <<s2::utf8>> in ["S", "s"] and <<t::utf8>> in ["T", "t"] and
+              <<e::utf8>> in ["E", "e"] and <<m::utf8>> in ["M", "m"] do
     after_doctype_system_keyword(html, %{s | column: s.column + 6})
   end
 
   defp after_doctype_name(html, s) do
     token = %Doctype{s.token | force_quirks: :on}
 
-    bogus_doctype(html, %{s | token: token, errors: [%ParseError{line: s.line, column: s.column} | s.errors]})
+    bogus_doctype(html, %{
+      s
+      | token: token,
+        errors: [%ParseError{line: s.line, column: s.column} | s.errors]
+    })
+  end
+
+  # § tokenizer-after-doctype-public-keyword-state
+
+  defp after_doctype_public_keyword(<<c::utf8, html::binary>>, s)
+       when <<c::utf8>> in @space_chars do
+    before_doctype_public_identifier(html, s)
+  end
+
+  defp after_doctype_public_keyword(<<"\"", html::binary>>, s) do
+    doctype = %Doctype{s.token | public_id: ""}
+
+    doctype_public_identifier_double_quoted(html, %{
+      s
+      | token: doctype,
+        errors: [%ParseError{line: s.line, column: s.column} | s.errors]
+    })
+  end
+
+  defp after_doctype_public_keyword(<<"'", html::binary>>, s) do
+    doctype = %Doctype{s.token | public_id: ""}
+
+    doctype_public_identifier_single_quoted(html, %{
+      s
+      | token: doctype,
+        errors: [%ParseError{line: s.line, column: s.column} | s.errors]
+    })
+  end
+
+  defp after_doctype_public_keyword(<<">", html::binary>>, s) do
+    doctype = %Doctype{s.token | force_quirks: :on}
+
+    data(html, %{
+      s
+      | token: nil,
+        tokens: [doctype | s.tokens],
+        errors: [%ParseError{line: s.line, column: s.column} | s.errors]
+    })
+  end
+
+  defp after_doctype_public_keyword("", s) do
+    doctype = %Doctype{s.token | force_quirks: :on}
+
+    eof(:after_doctype_public_keyword, %{
+      s
+      | token: nil,
+        tokens: [doctype | s.tokens],
+        errors: [%ParseError{line: s.line, column: s.column} | s.errors]
+    })
+  end
+
+  defp after_doctype_public_keyword(<<_c::utf8, html::binary>>, s) do
+    doctype = %Doctype{s.token | force_quirks: :on}
+
+    bogus_doctype(html, %{
+      s
+      | token: doctype,
+        errors: [%ParseError{line: s.line, column: s.column} | s.errors]
+    })
+  end
+
+  # § tokenizer-before-doctype-public-identifier-state
+
+  defp before_doctype_public_identifier(<<c::utf8, html::binary>>, s)
+       when <<c::utf8>> in @space_chars do
+    before_doctype_public_identifier(html, s)
+  end
+
+  defp before_doctype_public_identifier(<<"\"", html::binary>>, s) do
+    doctype = %Doctype{s.token | public_id: ""}
+
+    doctype_public_identifier_double_quoted(html, %{
+      s
+      | token: doctype,
+        errors: [%ParseError{line: s.line, column: s.column} | s.errors]
+    })
+  end
+
+  defp before_doctype_public_identifier(<<"'", html::binary>>, s) do
+    doctype = %Doctype{s.token | public_id: ""}
+
+    doctype_public_identifier_single_quoted(html, %{
+      s
+      | token: doctype,
+        errors: [%ParseError{line: s.line, column: s.column} | s.errors]
+    })
   end
 
   defp line_number("\n", current_line), do: current_line + 1
