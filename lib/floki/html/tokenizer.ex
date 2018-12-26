@@ -8,6 +8,10 @@ defmodule Floki.HTML.Tokenizer do
   # Example: https://w3c.github.io/html/syntax.html#tokenizer-data-state
   # TODO: add tests: https://github.com/html5lib/html5lib-tests
 
+  # defmodule Pos do
+  #   defstruct line: 0, col: 0
+  # end
+
   defmodule Doctype do
     defstruct name: nil,
               public_id: nil,
@@ -77,7 +81,6 @@ defmodule Floki.HTML.Tokenizer do
 
   # EMPTY functions that needs to be defined
   def character_reference(_y, _z), do: nil
-  def cdata_section(_html, _s), do: nil
 
   # TODO:
   # 1. ~~Keep replacing tokens from tuples to Structs~~
@@ -332,103 +335,297 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   # § tokenizer-rcdata-end-tag-name-state
-  # § tokenizer-rawtext-end-tag-name-state
-  # § tokenizer-script-data-end-tag-name-state
-  # § tokenizer-script-data-escaped-end-tag-name-state
 
-  @raw_end_tag_name_states [
-    :rcdata_end_tag_name,
-    :rawtext_end_tag_name,
-    :script_data_end_tag_name,
-    :script_data_escaped_end_tag_name
-  ]
+  defp rcdata_end_tag_name(html = <<c::utf8, rest::binary>>, s)
+       when <<c::utf8>> in @space_chars do
+    line = line_number(<<c::utf8>>, s.line)
 
-  Enum.each(@raw_end_tag_name_states, fn state ->
-    next_state =
-      case state do
-        :rcdata_end_tag_name ->
-          :rcdata
-
-        :rawtext_end_tag_name ->
-          :rawtext
-
-        :script_data_end_tag_name ->
-          :script_data
-
-        :script_data_escaped_end_tag_name ->
-          :script_data_escaped
-      end
-
-    defp unquote(state)(html = <<c::utf8, rest::binary>>, s)
-         when <<c::utf8>> in @space_chars do
-      line = line_number(<<c::utf8>>, s.line)
-
-      if appropriate_tag?(s) do
-        before_attribute_name(rest, %{s | column: s.column + 1, line: line})
-      else
-        unquote(next_state)(html, %{
-          s
-          | tokens: tokens_for_inappropriate_end_tag(s),
-            buffer: ""
-        })
-      end
-    end
-
-    defp unquote(state)(html = <<"/", rest::binary>>, s) do
-      if appropriate_tag?(s) do
-        self_closing_start_tag(rest, %{s | column: s.column + 1})
-      else
-        unquote(next_state)(html, %{
-          s
-          | tokens: tokens_for_inappropriate_end_tag(s),
-            buffer: ""
-        })
-      end
-    end
-
-    defp unquote(html = <<">", rest::binary>>, s) do
-      if appropriate_tag?(s) do
-        data(rest, %{
-          s
-          | token: nil,
-            tokens: [s.token | s.tokens],
-            column: s.column + 1
-        })
-      else
-        unquote(next_state)(html, %{
-          s
-          | tokens: tokens_for_inappropriate_end_tag(s),
-            buffer: ""
-        })
-      end
-    end
-
-    defp unquote(state)(<<c::utf8, html::binary>>, s)
-         when <<c::utf8>> in @upper_ASCII_letters do
-      col = s.col + 1
-      char = <<c::utf8>>
-      new_token = %{s.token | name: s.name <> String.downcase(char), column: col}
-
-      unquote(next_state)(html, %{s | token: new_token, buffer: s.buffer <> char, col: col})
-    end
-
-    defp unquote(state)(<<c::utf8, html::binary>>, s)
-         when <<c::utf8>> in @lower_ASCII_letters do
-      col = s.col + 1
-      char = <<c::utf8>>
-      new_token = %{s.token | name: s.name <> char, column: col}
-
-      unquote(state)(html, %{s | token: new_token, buffer: s.buffer <> char, col: col})
-    end
-
-    defp unquote(state)(html, s) do
-      unquote(next_state)(html, %{
+    if appropriate_tag?(s) do
+      before_attribute_name(rest, %{s | column: s.column + 1, line: line})
+    else
+      rcdata(html, %{
         s
         | tokens: tokens_for_inappropriate_end_tag(s),
           buffer: ""
       })
     end
-  end)
+  end
+
+  defp rcdata_end_tag_name(html = <<"/", rest::binary>>, s) do
+    if appropriate_tag?(s) do
+      self_closing_start_tag(rest, %{s | column: s.column + 1})
+    else
+      rcdata(html, %{
+        s
+        | tokens: tokens_for_inappropriate_end_tag(s),
+          buffer: ""
+      })
+    end
+  end
+
+  defp rcdata_end_tag_name(html = <<">", rest::binary>>, s) do
+    if appropriate_tag?(s) do
+      data(rest, %{
+        s
+        | token: nil,
+          tokens: [s.token | s.tokens],
+          column: s.column + 1
+      })
+    else
+      rcdata(html, %{
+        s
+        | tokens: tokens_for_inappropriate_end_tag(s),
+          buffer: ""
+      })
+    end
+  end
+
+  defp rcdata_end_tag_name(<<c::utf8, html::binary>>, s)
+       when <<c::utf8>> in @upper_ASCII_letters do
+    col = s.col + 1
+    char = <<c::utf8>>
+    new_token = %{s.token | name: s.name <> String.downcase(char), column: col}
+
+    rcdata(html, %{s | token: new_token, buffer: s.buffer <> char, col: col})
+  end
+
+  defp rcdata_end_tag_name(<<c::utf8, html::binary>>, s)
+       when <<c::utf8>> in @lower_ASCII_letters do
+    col = s.col + 1
+    char = <<c::utf8>>
+    new_token = %{s.token | name: s.name <> char, column: col}
+
+    rcdata_end_tag_name(html, %{s | token: new_token, buffer: s.buffer <> char, col: col})
+  end
+
+  defp rcdata_end_tag_name(html, s) do
+    rcdata(html, %{
+      s
+      | tokens: tokens_for_inappropriate_end_tag(s),
+        buffer: ""
+    })
+  end
+
+  # § tokenizer-rawtext-end-tag-name-state
+
+  defp rawtext_end_tag_name(html = <<c::utf8, rest::binary>>, s)
+       when <<c::utf8>> in @space_chars do
+    line = line_number(<<c::utf8>>, s.line)
+
+    if appropriate_tag?(s) do
+      before_attribute_name(rest, %{s | column: s.column + 1, line: line})
+    else
+      rawtext(html, %{
+        s
+        | tokens: tokens_for_inappropriate_end_tag(s),
+          buffer: ""
+      })
+    end
+  end
+
+  defp rawtext_end_tag_name(html = <<"/", rest::binary>>, s) do
+    if appropriate_tag?(s) do
+      self_closing_start_tag(rest, %{s | column: s.column + 1})
+    else
+      rawtext(html, %{
+        s
+        | tokens: tokens_for_inappropriate_end_tag(s),
+          buffer: ""
+      })
+    end
+  end
+
+  defp rawtext_end_tag_name(html = <<">", rest::binary>>, s) do
+    if appropriate_tag?(s) do
+      data(rest, %{
+        s
+        | token: nil,
+          tokens: [s.token | s.tokens],
+          column: s.column + 1
+      })
+    else
+      rawtext(html, %{
+        s
+        | tokens: tokens_for_inappropriate_end_tag(s),
+          buffer: ""
+      })
+    end
+  end
+
+  defp rawtext_end_tag_name(<<c::utf8, html::binary>>, s)
+       when <<c::utf8>> in @upper_ASCII_letters do
+    col = s.col + 1
+    char = <<c::utf8>>
+    new_token = %{s.token | name: s.name <> String.downcase(char), column: col}
+
+    rawtext(html, %{s | token: new_token, buffer: s.buffer <> char, col: col})
+  end
+
+  defp rawtext_end_tag_name(<<c::utf8, html::binary>>, s)
+       when <<c::utf8>> in @lower_ASCII_letters do
+    col = s.col + 1
+    char = <<c::utf8>>
+    new_token = %{s.token | name: s.name <> char, column: col}
+
+    rawtext_end_tag_name(html, %{s | token: new_token, buffer: s.buffer <> char, col: col})
+  end
+
+  defp rawtext_end_tag_name(html, s) do
+    rawtext(html, %{
+      s
+      | tokens: tokens_for_inappropriate_end_tag(s),
+        buffer: ""
+    })
+  end
+
+  # § tokenizer-script-data-end-tag-name-state
+
+  defp script_data_end_tag_name(html = <<c::utf8, rest::binary>>, s)
+       when <<c::utf8>> in @space_chars do
+    line = line_number(<<c::utf8>>, s.line)
+
+    if appropriate_tag?(s) do
+      before_attribute_name(rest, %{s | column: s.column + 1, line: line})
+    else
+      script_data(html, %{
+        s
+        | tokens: tokens_for_inappropriate_end_tag(s),
+          buffer: ""
+      })
+    end
+  end
+
+  defp script_data_end_tag_name(html = <<"/", rest::binary>>, s) do
+    if appropriate_tag?(s) do
+      self_closing_start_tag(rest, %{s | column: s.column + 1})
+    else
+      script_data(html, %{
+        s
+        | tokens: tokens_for_inappropriate_end_tag(s),
+          buffer: ""
+      })
+    end
+  end
+
+  defp script_data_end_tag_name(html = <<">", rest::binary>>, s) do
+    if appropriate_tag?(s) do
+      data(rest, %{
+        s
+        | token: nil,
+          tokens: [s.token | s.tokens],
+          column: s.column + 1
+      })
+    else
+      script_data(html, %{
+        s
+        | tokens: tokens_for_inappropriate_end_tag(s),
+          buffer: ""
+      })
+    end
+  end
+
+  defp script_data_end_tag_name(<<c::utf8, html::binary>>, s)
+       when <<c::utf8>> in @upper_ASCII_letters do
+    col = s.col + 1
+    char = <<c::utf8>>
+    new_token = %{s.token | name: s.name <> String.downcase(char), column: col}
+
+    script_data(html, %{s | token: new_token, buffer: s.buffer <> char, col: col})
+  end
+
+  defp script_data_end_tag_name(<<c::utf8, html::binary>>, s)
+       when <<c::utf8>> in @lower_ASCII_letters do
+    col = s.col + 1
+    char = <<c::utf8>>
+    new_token = %{s.token | name: s.name <> char, column: col}
+
+    script_data_end_tag_name(html, %{s | token: new_token, buffer: s.buffer <> char, col: col})
+  end
+
+  defp script_data_end_tag_name(html, s) do
+    script_data(html, %{
+      s
+      | tokens: tokens_for_inappropriate_end_tag(s),
+        buffer: ""
+    })
+  end
+
+  # § tokenizer-script-data-escaped-end-tag-name-state
+
+  defp script_data_escaped_end_tag_name(html = <<c::utf8, rest::binary>>, s)
+       when <<c::utf8>> in @space_chars do
+    line = line_number(<<c::utf8>>, s.line)
+
+    if appropriate_tag?(s) do
+      before_attribute_name(rest, %{s | column: s.column + 1, line: line})
+    else
+      script_data_escaped(html, %{
+        s
+        | tokens: tokens_for_inappropriate_end_tag(s),
+          buffer: ""
+      })
+    end
+  end
+
+  defp script_data_escaped_end_tag_name(html = <<"/", rest::binary>>, s) do
+    if appropriate_tag?(s) do
+      self_closing_start_tag(rest, %{s | column: s.column + 1})
+    else
+      script_data_escaped(html, %{
+        s
+        | tokens: tokens_for_inappropriate_end_tag(s),
+          buffer: ""
+      })
+    end
+  end
+
+  defp script_data_escaped_end_tag_name(html = <<">", rest::binary>>, s) do
+    if appropriate_tag?(s) do
+      data(rest, %{
+        s
+        | token: nil,
+          tokens: [s.token | s.tokens],
+          column: s.column + 1
+      })
+    else
+      script_data_escaped(html, %{
+        s
+        | tokens: tokens_for_inappropriate_end_tag(s),
+          buffer: ""
+      })
+    end
+  end
+
+  defp script_data_escaped_end_tag_name(<<c::utf8, html::binary>>, s)
+       when <<c::utf8>> in @upper_ASCII_letters do
+    col = s.col + 1
+    char = <<c::utf8>>
+    new_token = %{s.token | name: s.name <> String.downcase(char), column: col}
+
+    script_data_escaped(html, %{s | token: new_token, buffer: s.buffer <> char, col: col})
+  end
+
+  defp script_data_escaped_end_tag_name(<<c::utf8, html::binary>>, s)
+       when <<c::utf8>> in @lower_ASCII_letters do
+    col = s.col + 1
+    char = <<c::utf8>>
+    new_token = %{s.token | name: s.name <> char, column: col}
+
+    script_data_escaped_end_tag_name(html, %{
+      s
+      | token: new_token,
+        buffer: s.buffer <> char,
+        col: col
+    })
+  end
+
+  defp script_data_escaped_end_tag_name(html, s) do
+    script_data_escaped(html, %{
+      s
+      | tokens: tokens_for_inappropriate_end_tag(s),
+        buffer: ""
+    })
+  end
 
   # § tokenizer-rawtext-less-than-sign-state
 
@@ -1829,6 +2026,484 @@ defmodule Floki.HTML.Tokenizer do
         errors: [%ParseError{line: s.line, column: s.column} | s.errors]
     })
   end
+
+  defp before_doctype_public_identifier(<<">", html::binary>>, s) do
+    doctype = %Doctype{s.token | force_quirks: :on}
+
+    data(html, %{
+      s
+      | token: nil,
+        tokens: [doctype | s.tokens],
+        errors: [%ParseError{line: s.line, column: s.column} | s.errors]
+    })
+  end
+
+  defp before_doctype_public_identifier("", s) do
+    doctype = %Doctype{s.token | force_quirks: :on}
+
+    eof(:before_doctype_public_identifier, %{
+      s
+      | token: nil,
+        tokens: [doctype | s.tokens],
+        errors: [%ParseError{line: s.line, column: s.column} | s.errors]
+    })
+  end
+
+  defp before_doctype_public_identifier(<<_::utf8, html::binary>>, s) do
+    doctype = %Doctype{s.token | force_quirks: :on}
+
+    bogus_doctype(html, %{
+      s
+      | token: nil,
+        tokens: [doctype | s.tokens],
+        errors: [%ParseError{line: s.line, column: s.column} | s.errors]
+    })
+  end
+
+  # § tokenizer-doctype-public-identifier-double-quoted-state
+
+  defp doctype_public_identifier_double_quoted(<<"\"", html::binary>>, s) do
+    after_doctype_public_identifier(html, s)
+  end
+
+  defp doctype_public_identifier_double_quoted(<<"\0", html::binary>>, s) do
+    doctype = %Doctype{s.token | public_id: s.token.public_id <> @replacement_char}
+
+    doctype_public_identifier_double_quoted(html, %{
+      s
+      | token: doctype,
+        errors: [%ParseError{line: s.line, column: s.column} | s.errors]
+    })
+  end
+
+  defp doctype_public_identifier_double_quoted(<<">", html::binary>>, s) do
+    doctype = %Doctype{s.token | force_quirks: :on}
+
+    data(html, %{
+      s
+      | token: nil,
+        tokens: [doctype | s.tokens],
+        errors: [%ParseError{line: s.line, column: s.column} | s.errors]
+    })
+  end
+
+  defp doctype_public_identifier_double_quoted("", s) do
+    doctype = %Doctype{s.token | force_quirks: :on}
+
+    eof(:doctype_public_identifier_double_quoted, %{
+      s
+      | token: nil,
+        tokens: [doctype | s.tokens],
+        errors: [%ParseError{line: s.line, column: s.column} | s.errors]
+    })
+  end
+
+  defp doctype_public_identifier_double_quoted(<<c::utf8, html::binary>>, s) do
+    doctype = %Doctype{s.token | public_id: s.token.public_id <> <<c::utf8>>}
+
+    doctype_public_identifier_double_quoted(html, %{s | token: doctype})
+  end
+
+  # § tokenizer-doctype-public-identifier-single-quoted-state
+
+  defp doctype_public_identifier_single_quoted(<<"\'", html::binary>>, s) do
+    after_doctype_public_identifier(html, s)
+  end
+
+  defp doctype_public_identifier_single_quoted(<<"\0", html::binary>>, s) do
+    doctype = %Doctype{s.token | public_id: s.token.public_id <> @replacement_char}
+
+    doctype_public_identifier_single_quoted(html, %{
+      s
+      | token: doctype,
+        errors: [%ParseError{line: s.line, column: s.column} | s.errors]
+    })
+  end
+
+  defp doctype_public_identifier_single_quoted(<<">", html::binary>>, s) do
+    doctype = %Doctype{s.token | force_quirks: :on}
+
+    data(html, %{
+      s
+      | token: nil,
+        tokens: [doctype | s.tokens],
+        errors: [%ParseError{line: s.line, column: s.column} | s.errors]
+    })
+  end
+
+  defp doctype_public_identifier_single_quoted("", s) do
+    doctype = %Doctype{s.token | force_quirks: :on}
+
+    eof(:doctype_public_identifier_single_quoted, %{
+      s
+      | token: nil,
+        tokens: [doctype | s.tokens],
+        errors: [%ParseError{line: s.line, column: s.column} | s.errors]
+    })
+  end
+
+  defp doctype_public_identifier_single_quoted(<<c::utf8, html::binary>>, s) do
+    doctype = %Doctype{s.token | public_id: s.token.public_id <> <<c::utf8>>}
+
+    doctype_public_identifier_single_quoted(html, %{s | token: doctype})
+  end
+
+  # § tokenizer-after-doctype-public-identifier-state
+
+  defp after_doctype_public_identifier(<<c::utf8, html::binary>>, s)
+       when <<c::utf8>> in @space_chars do
+    between_doctype_public_and_system_identifiers(html, s)
+  end
+
+  defp after_doctype_public_identifier(<<">", html::binary>>, s) do
+    data(html, %{s | token: nil, tokens: [s.token | s.tokens]})
+  end
+
+  defp after_doctype_public_identifier(<<"\"", html::binary>>, s) do
+    doctype = %Doctype{s.token | system_id: ""}
+
+    doctype_system_identifier_double_quoted(html, %{
+      s
+      | token: doctype,
+        errors: [%ParseError{line: s.line, column: s.column} | s.errors]
+    })
+  end
+
+  defp after_doctype_public_identifier(<<"'", html::binary>>, s) do
+    doctype = %Doctype{s.token | system_id: ""}
+
+    doctype_system_identifier_single_quoted(html, %{
+      s
+      | token: doctype,
+        errors: [%ParseError{line: s.line, column: s.column} | s.errors]
+    })
+  end
+
+  defp after_doctype_public_identifier("", s) do
+    doctype = %Doctype{s.token | force_quirks: :on}
+
+    eof(:after_doctype_public_identifier, %{
+      s
+      | token: nil,
+        tokens: [doctype | s.tokens],
+        errors: [%ParseError{line: s.line, column: s.column} | s.errors]
+    })
+  end
+
+  defp after_doctype_public_identifier(<<_c::utf8, html::binary>>, s) do
+    doctype = %Doctype{s.token | force_quirks: :on}
+
+    bogus_doctype(html, %{
+      s
+      | token: doctype,
+        errors: [%ParseError{line: s.line, column: s.column} | s.errors]
+    })
+  end
+
+  # § tokenizer-between-doctype-public-and-system-identifiers-state
+
+  defp between_doctype_public_and_system_identifiers(<<c::utf8, html::binary>>, s)
+       when <<c::utf8>> in @space_chars do
+    between_doctype_public_and_system_identifiers(html, s)
+  end
+
+  defp between_doctype_public_and_system_identifiers(<<">", html::binary>>, s) do
+    data(html, %{s | token: nil, tokens: [s.token | s.tokens]})
+  end
+
+  defp between_doctype_public_and_system_identifiers(<<"\"", html::binary>>, s) do
+    doctype = %Doctype{s.token | system_id: ""}
+
+    doctype_system_identifier_double_quoted(html, %{s | token: doctype})
+  end
+
+  defp between_doctype_public_and_system_identifiers(<<"'", html::binary>>, s) do
+    doctype = %Doctype{s.token | system_id: ""}
+
+    doctype_system_identifier_single_quoted(html, %{s | token: doctype})
+  end
+
+  defp between_doctype_public_and_system_identifiers("", s) do
+    doctype = %Doctype{s.token | force_quirks: :on}
+
+    eof(:between_doctype_public_and_system_identifiers, %{
+      s
+      | token: nil,
+        tokens: [doctype | s.tokens],
+        errors: [%ParseError{line: s.line, column: s.column} | s.errors]
+    })
+  end
+
+  defp between_doctype_public_and_system_identifiers(<<_c::utf8, html::binary>>, s) do
+    doctype = %Doctype{s.token | force_quirks: :on}
+
+    bogus_doctype(html, %{
+      s
+      | tokens: doctype,
+        errors: [%ParseError{line: s.line, column: s.column} | s.errors]
+    })
+  end
+
+  # § tokenizer-after-doctype-system-keyword-state
+
+  defp after_doctype_system_keyword(<<c::utf8, html::binary>>, s)
+       when <<c::utf8>> in @space_chars do
+    before_doctype_system_identifier(html, s)
+  end
+
+  defp after_doctype_system_keyword(<<"\"", html::binary>>, s) do
+    doctype = %Doctype{s.token | system_id: ""}
+
+    doctype_system_identifier_double_quoted(html, %{
+      s
+      | token: doctype,
+        errors: [%ParseError{line: s.line, column: s.column} | s.errors]
+    })
+  end
+
+  defp after_doctype_system_keyword(<<"'", html::binary>>, s) do
+    doctype = %Doctype{s.token | system_id: ""}
+
+    doctype_system_identifier_single_quoted(html, %{
+      s
+      | token: doctype,
+        errors: [%ParseError{line: s.line, column: s.column} | s.errors]
+    })
+  end
+
+  defp after_doctype_system_keyword(<<">", html::binary>>, s) do
+    doctype = %Doctype{s.token | force_quirks: :on}
+
+    data(html, %{
+      s
+      | token: nil,
+        tokens: [doctype | s.tokens],
+        errors: [%ParseError{line: s.line, column: s.column} | s.errors]
+    })
+  end
+
+  defp after_doctype_system_keyword("", s) do
+    doctype = %Doctype{s.token | force_quirks: :on}
+
+    eof(:after_doctype_system_keyword, %{
+      s
+      | token: nil,
+        tokens: [doctype | s.tokens],
+        errors: [%ParseError{line: s.line, column: s.column} | s.errors]
+    })
+  end
+
+  defp after_doctype_system_keyword(<<_c::utf8, html::binary>>, s) do
+    doctype = %Doctype{s.token | force_quirks: :on}
+
+    bogus_doctype(html, %{
+      s
+      | token: doctype,
+        errors: [%ParseError{line: s.line, column: s.column} | s.errors]
+    })
+  end
+
+  # § tokenizer-before-doctype-system-identifier-state
+
+  defp before_doctype_system_identifier(<<c::utf8, html::binary>>, s)
+       when <<c::utf8>> in @space_chars do
+    before_doctype_system_identifier(html, s)
+  end
+
+  defp before_doctype_system_identifier(<<"\"", html::binary>>, s) do
+    doctype = %Doctype{s.token | system_id: ""}
+
+    doctype_system_identifier_double_quoted(html, %{
+      s
+      | token: doctype,
+        errors: [%ParseError{line: s.line, column: s.column} | s.errors]
+    })
+  end
+
+  defp before_doctype_system_identifier(<<"'", html::binary>>, s) do
+    doctype = %Doctype{s.token | system_id: ""}
+
+    doctype_system_identifier_single_quoted(html, %{
+      s
+      | token: doctype,
+        errors: [%ParseError{line: s.line, column: s.column} | s.errors]
+    })
+  end
+
+  defp before_doctype_system_identifier(<<">", html::binary>>, s) do
+    doctype = %Doctype{s.token | force_quirks: :on}
+
+    data(html, %{
+      s
+      | token: nil,
+        tokens: [doctype | s.tokens],
+        errors: [%ParseError{line: s.line, column: s.column} | s.errors]
+    })
+  end
+
+  defp before_doctype_system_identifier("", s) do
+    doctype = %Doctype{s.token | force_quirks: :on}
+
+    eof(:before_doctype_system_identifier, %{
+      s
+      | token: nil,
+        tokens: [doctype | s.tokens],
+        errors: [%ParseError{line: s.line, column: s.column} | s.errors]
+    })
+  end
+
+  defp before_doctype_system_identifier(<<_::utf8, html::binary>>, s) do
+    doctype = %Doctype{s.token | force_quirks: :on}
+
+    bogus_doctype(html, %{
+      s
+      | token: nil,
+        tokens: [doctype | s.tokens],
+        errors: [%ParseError{line: s.line, column: s.column} | s.errors]
+    })
+  end
+
+  # § tokenizer-doctype-system-identifier-double-quoted-state
+
+  defp doctype_system_identifier_double_quoted(<<"\"", html::binary>>, s) do
+    after_doctype_system_identifier(html, s)
+  end
+
+  defp doctype_system_identifier_double_quoted(<<"\0", html::binary>>, s) do
+    doctype = %Doctype{s.token | system_id: s.token.system_id <> @replacement_char}
+
+    doctype_system_identifier_double_quoted(html, %{
+      s
+      | token: doctype,
+        errors: [%ParseError{line: s.line, column: s.column} | s.errors]
+    })
+  end
+
+  defp doctype_system_identifier_double_quoted(<<">", html::binary>>, s) do
+    doctype = %Doctype{s.token | force_quirks: :on}
+
+    data(html, %{
+      s
+      | token: nil,
+        tokens: [doctype | s.tokens],
+        errors: [%ParseError{line: s.line, column: s.column} | s.errors]
+    })
+  end
+
+  defp doctype_system_identifier_double_quoted("", s) do
+    doctype = %Doctype{s.token | force_quirks: :on}
+
+    eof(:doctype_system_identifier_double_quoted, %{
+      s
+      | token: nil,
+        tokens: [doctype | s.tokens],
+        errors: [%ParseError{line: s.line, column: s.column} | s.errors]
+    })
+  end
+
+  defp doctype_system_identifier_double_quoted(<<c::utf8, html::binary>>, s) do
+    doctype = %Doctype{s.token | system_id: s.token.system_id <> <<c::utf8>>}
+
+    doctype_system_identifier_double_quoted(html, %{s | token: doctype})
+  end
+
+  # § tokenizer-doctype-system-identifier-single-quoted-state
+
+  defp doctype_system_identifier_single_quoted(<<"\'", html::binary>>, s) do
+    after_doctype_system_identifier(html, s)
+  end
+
+  defp doctype_system_identifier_single_quoted(<<"\0", html::binary>>, s) do
+    doctype = %Doctype{s.token | system_id: s.token.system_id <> @replacement_char}
+
+    doctype_system_identifier_single_quoted(html, %{
+      s
+      | token: doctype,
+        errors: [%ParseError{line: s.line, column: s.column} | s.errors]
+    })
+  end
+
+  defp doctype_system_identifier_single_quoted(<<">", html::binary>>, s) do
+    doctype = %Doctype{s.token | force_quirks: :on}
+
+    data(html, %{
+      s
+      | token: nil,
+        tokens: [doctype | s.tokens],
+        errors: [%ParseError{line: s.line, column: s.column} | s.errors]
+    })
+  end
+
+  defp doctype_system_identifier_single_quoted("", s) do
+    doctype = %Doctype{s.token | force_quirks: :on}
+
+    eof(:doctype_system_identifier_single_quoted, %{
+      s
+      | token: nil,
+        tokens: [doctype | s.tokens],
+        errors: [%ParseError{line: s.line, column: s.column} | s.errors]
+    })
+  end
+
+  defp doctype_system_identifier_single_quoted(<<c::utf8, html::binary>>, s) do
+    doctype = %Doctype{s.token | system_id: s.token.system_id <> <<c::utf8>>}
+
+    doctype_system_identifier_single_quoted(html, %{s | token: doctype})
+  end
+
+  # § tokenizer-bogus-doctype-state
+
+  defp bogus_doctype(<<">", html::binary>>, s) do
+    data(html, %{s | token: nil, tokens: [s.token | s.tokens]})
+  end
+
+  defp bogus_doctype("", s) do
+    eof(:bogus_doctype, %{s | token: nil, tokens: [s.token | s.tokens]})
+  end
+
+  defp bogus_doctype(<<_c::utf8, html::binary>>, s) do
+    bogus_doctype(html, s)
+  end
+
+  # § tokenizer-cdata-section-state
+
+  defp cdata_section(<<"]", html::binary>>, s) do
+    cdata_section_bracket(html, s)
+  end
+
+  defp cdata_section("", s) do
+    eof(:cdata_section, %{s | errors: [%ParseError{line: s.line, column: s.column} | s.errors]})
+  end
+
+  defp cdata_section(<<c::utf8, html::binary>>, s) do
+    cdata_section(html, %{s | tokens: [%Char{data: <<c::utf8>>} | s.tokens]})
+  end
+
+  # § tokenizer-cdata-section-bracket-state
+
+  defp cdata_section_bracket(<<"]", html::binary>>, s) do
+    cdata_section_end(html, s)
+  end
+
+  defp cdata_section_bracket(html, s) do
+    cdata_section(html, %{s | tokens: [%Char{data: "]"} | s.tokens]})
+  end
+
+  # § tokenizer-cdata-section-end-state
+
+  defp cdata_section_end(<<"]", html::binary>>, s) do
+    cdata_section_end(html, %{s | tokens: [%Char{data: "]"} | s.tokens]})
+  end
+
+  defp cdata_section_end(<<">", html::binary>>, s) do
+    data(html, s)
+  end
+
+  defp cdata_section_end(html, s) do
+    cdata_section(html, %{s | tokens: [%Char{data: "]]"} | s.tokens]})
+  end
+
+  # § tokenizer-character-reference-state
 
   defp line_number("\n", current_line), do: current_line + 1
   defp line_number(_, current_line), do: current_line
