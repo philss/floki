@@ -30,7 +30,6 @@ defmodule Floki.HTML.Tokenizer do
               type: :start,
               self_close: nil,
               attributes: [],
-              current_attribute: nil,
               line: nil,
               column: nil
   end
@@ -1121,7 +1120,9 @@ defmodule Floki.HTML.Tokenizer do
   defp before_attribute_name(html = <<"=", _rest::binary>>, s) do
     new_token = %Tag{
       s.token
-      | current_attribute: %Attribute{name: "=", value: "", line: s.line, column: s.column}
+      | attributes: [
+          %Attribute{name: "=", value: "", line: s.line, column: s.column} | s.token.attributes
+        ]
     }
 
     attribute_name(html, %{
@@ -1134,7 +1135,9 @@ defmodule Floki.HTML.Tokenizer do
   defp before_attribute_name(html, s) do
     new_token = %Tag{
       s.token
-      | current_attribute: %Attribute{name: "", value: "", line: s.line, column: s.column}
+      | attributes: [
+          %Attribute{name: "", value: "", line: s.line, column: s.column} | s.token.attributes
+        ]
     }
 
     attribute_name(html, %{
@@ -1163,9 +1166,9 @@ defmodule Floki.HTML.Tokenizer do
 
   defp attribute_name(<<c::utf8, html::binary>>, s)
        when <<c::utf8>> in @upper_ASCII_letters do
-    current_attr = s.token.current_attribute
-    new_attr = %Attribute{current_attr | name: current_attr.name <> String.downcase(<<c::utf8>>)}
-    new_token = %Tag{s.token | current_attribute: new_attr}
+    [attr | attrs] = s.token.attributes
+    new_attr = %Attribute{attr | name: attr.name <> String.downcase(<<c::utf8>>)}
+    new_token = %Tag{s.token | attributes: [new_attr | attrs]}
 
     attribute_name(html, %{s | token: new_token, column: s.column + 1})
   end
@@ -1173,9 +1176,9 @@ defmodule Floki.HTML.Tokenizer do
   defp attribute_name(<<c::utf8, html::binary>>, s)
        when <<c::utf8>> in ["\"", "'", "<"] do
     col = s.column + 1
-    current_attr = s.token.current_attribute
-    new_attr = %Attribute{current_attr | name: current_attr.name <> <<c::utf8>>}
-    new_token = %Tag{s.token | current_attribute: new_attr}
+    [attr | attrs] = s.token.attributes
+    new_attr = %Attribute{attr | name: attr.name <> <<c::utf8>>}
+    new_token = %Tag{s.token | attributes: [new_attr | attrs]}
 
     attribute_name(html, %{
       s
@@ -1187,9 +1190,9 @@ defmodule Floki.HTML.Tokenizer do
 
   defp attribute_name(<<c::utf8, html::binary>>, s) do
     col = s.column + 1
-    current_attr = s.token.current_attribute
-    new_attr = %Attribute{current_attr | name: current_attr.name <> <<c::utf8>>}
-    new_token = %Tag{s.token | current_attribute: new_attr}
+    [attr | attrs] = s.token.attributes
+    new_attr = %Attribute{attr | name: attr.name <> <<c::utf8>>}
+    new_token = %Tag{s.token | attributes: [new_attr | attrs]}
 
     attribute_name(html, %{s | token: new_token, column: col})
   end
@@ -1230,7 +1233,7 @@ defmodule Floki.HTML.Tokenizer do
 
   defp after_attribute_name(html, s) do
     attribute = %Attribute{name: "", value: "", line: s.line, column: s.column}
-    new_token = %Tag{s.token | current_attribute: attribute}
+    new_token = %Tag{s.token | attributes: [attribute | s.token.attributes]}
 
     after_attribute_name(html, %{s | token: new_token})
   end
@@ -1275,13 +1278,13 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defp attribute_value_double_quoted(<<"\0", html::binary>>, s) do
-    attr = s.token.current_attribute
+    [attr | attrs] = s.token.attributes
     new_attr = %Attribute{attr | value: attr.value <> @replacement_char}
 
     attribute_value_double_quoted(html, %{
       s
       | errors: [%ParseError{line: s.line, column: s.column} | s.errors],
-        token: %Tag{s.token | current_attribute: new_attr}
+        token: %Tag{s.token | attributes: [new_attr | attrs]}
     })
   end
 
@@ -1293,12 +1296,12 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defp attribute_value_double_quoted(<<c::utf8, html::binary>>, s) do
-    attr = s.token.current_attribute
+    [attr | attrs] = s.token.attributes
     new_attr = %Attribute{attr | value: attr.value <> <<c::utf8>>}
 
     attribute_value_double_quoted(html, %{
       s
-      | token: %Tag{s.token | current_attribute: new_attr}
+      | token: %Tag{s.token | attributes: [new_attr | attrs]}
     })
   end
 
@@ -1313,13 +1316,13 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defp attribute_value_single_quoted(<<"\0", html::binary>>, s) do
-    attr = s.token.current_attribute
+    [attr | attrs] = s.token.attributes
     new_attr = %Attribute{attr | value: attr.value <> @replacement_char}
 
     attribute_value_single_quoted(html, %{
       s
       | errors: [%ParseError{line: s.line, column: s.column} | s.errors],
-        token: %Tag{s.token | current_attribute: new_attr}
+        token: %Tag{s.token | attributes: [new_attr | attrs]}
     })
   end
 
@@ -1331,12 +1334,12 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defp attribute_value_single_quoted(<<c::utf8, html::binary>>, s) do
-    attr = s.token.current_attribute
+    [attr | attrs] = s.token.attributes
     new_attr = %Attribute{attr | value: attr.value <> <<c::utf8>>}
 
     attribute_value_single_quoted(html, %{
       s
-      | token: %Tag{s.token | current_attribute: new_attr}
+      | token: %Tag{s.token | attributes: [new_attr | attrs]}
     })
   end
 
@@ -1355,25 +1358,25 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defp attribute_value_unquoted(<<"\0", html::binary>>, s) do
-    attr = s.token.current_attribute
+    [attr | attrs] = s.token.attributes
     new_attr = %Attribute{attr | value: attr.value <> @replacement_char}
 
     attribute_value_unquoted(html, %{
       s
       | errors: [%ParseError{line: s.line, column: s.column} | s.errors],
-        token: %Tag{s.token | current_attribute: new_attr}
+        token: %Tag{s.token | attributes: [new_attr | attrs]}
     })
   end
 
   defp attribute_value_unquoted(<<c::utf8, html::binary>>, s)
        when <<c::utf8>> in ["\"", "'", "<", "=", "`"] do
-    attr = s.token.current_attribute
+    [attr | attrs] = s.token.attributes
     new_attr = %Attribute{attr | value: attr.value <> <<c::utf8>>}
 
     attribute_value_unquoted(html, %{
       s
       | errors: [%ParseError{line: s.line, column: s.column} | s.errors],
-        token: %Tag{s.token | current_attribute: new_attr}
+        token: %Tag{s.token | attributes: [new_attr | attrs]}
     })
   end
 
@@ -1385,12 +1388,12 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defp attribute_value_unquoted(<<c::utf8, html::binary>>, s) do
-    attr = s.token.current_attribute
+    [attr | attrs] = s.token.attributes
     new_attr = %Attribute{attr | value: attr.value <> <<c::utf8>>}
 
     attribute_value_unquoted(html, %{
       s
-      | token: %Tag{s.token | current_attribute: new_attr}
+      | token: %Tag{s.token | attributes: [new_attr | attrs]}
     })
   end
 
@@ -2627,13 +2630,9 @@ defmodule Floki.HTML.Tokenizer do
     state =
       cond do
         part_of_attr?(s) ->
-          new_tag = %Tag{
-            s.token
-            | current_attribute: %Attribute{
-                s.token.current_attribute
-                | value: s.token.current_attribute.value <> s.buffer
-              }
-          }
+          [attr | attrs] = s.token.attributes
+          new_attr = %Attribute{attr | value: attr.value <> s.buffer}
+          new_tag = %Tag{s.token | attributes: [new_attr | attrs]}
 
           %{s | token: new_tag}
 
