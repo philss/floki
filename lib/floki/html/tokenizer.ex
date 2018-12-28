@@ -55,8 +55,13 @@ defmodule Floki.HTML.Tokenizer do
               open_tags: [],
               errors: [],
               emit: nil,
+              charref_state: nil,
               line: 1,
               column: 1
+  end
+
+  defmodule CharrefState do
+    defstruct candidate: nil, done: false, length: 0
   end
 
   defmodule ParseError do
@@ -70,6 +75,7 @@ defmodule Floki.HTML.Tokenizer do
   @lower_ASCII_letters Enum.map(?a..?z, fn l -> <<l::utf8>> end)
   @upper_ASCII_letters Enum.map(?A..?Z, fn l -> <<l::utf8>> end)
   @all_ASCII_letters @lower_ASCII_letters ++ @upper_ASCII_letters
+  @alphanumerics @all_ASCII_letters ++ Enum.map(0..9, fn n -> Integer.to_string(n) end)
   @space_chars ["\t", "\n", "\f", "\s"]
 
   @less_than_sign "\u003C"
@@ -79,8 +85,7 @@ defmodule Floki.HTML.Tokenizer do
   @hyphen_minus "\u002D"
   @replacement_char "\uFFFD"
 
-  # EMPTY functions that needs to be defined
-  def character_reference(_y, _z), do: nil
+  @entities Floki.Entities.load_entities("priv/entities.json")
 
   # TODO:
   # 1. ~~Keep replacing tokens from tuples to Structs~~
@@ -1341,10 +1346,6 @@ defmodule Floki.HTML.Tokenizer do
     before_attribute_name(html, s)
   end
 
-  defp attribute_value_unquoted(<<">", html::binary>>, s) do
-    data(html, %{s | tokens: [s.token | s.tokens], token: nil})
-  end
-
   defp attribute_value_unquoted(<<"&", html::binary>>, s) do
     character_reference(html, %{s | return_state: :attribute_value_unquoted})
   end
@@ -2451,6 +2452,37 @@ defmodule Floki.HTML.Tokenizer do
     doctype_system_identifier_single_quoted(html, %{s | token: doctype})
   end
 
+  # § tokenizer-after-doctype-system-identifier-state
+
+  defp after_doctype_system_identifier(<<c::utf8, html::binary>>, s)
+       when <<c::utf8>> in @space_chars do
+    after_doctype_system_identifier(html, s)
+  end
+
+  defp after_doctype_system_identifier(<<">", html::binary>>, s) do
+    data(html, %{s | token: nil, tokens: [s.token | s.tokens]})
+  end
+
+  defp after_doctype_system_identifier("", s) do
+    doctype = %Doctype{s.token | force_quirks: :on}
+
+    eof(:after_doctype_system_identifier, %{
+      s
+      | token: nil,
+        tokens: [doctype | s.tokens],
+        errors: [%ParseError{line: s.line, column: s.column} | s.errors]
+    })
+  end
+
+  defp after_doctype_system_identifier(<<_c::utf8, html::binary>>, s) do
+    bogus_doctype(html, %{
+      s
+      | token: nil,
+        tokens: [s.token | s.tokens],
+        errors: [%ParseError{line: s.line, column: s.column} | s.errors]
+    })
+  end
+
   # § tokenizer-bogus-doctype-state
 
   defp bogus_doctype(<<">", html::binary>>, s) do
@@ -2504,6 +2536,155 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   # § tokenizer-character-reference-state
+
+  defp character_reference(html, s) do
+    do_char_reference(html, %{s | buffer: "&"})
+  end
+
+  defp do_char_reference(html = <<c::utf8, _rest::binary>>, s)
+       when <<c::utf8>> in ["<", "&", "" | @space_chars] do
+    character_reference_end(html, s)
+  end
+
+  defp do_char_reference(<<"#", html::binary>>, s) do
+    numeric_character_reference(html, %{s | buffer: s.buffer <> "#"})
+  end
+
+  defp do_char_reference(html, s) do
+    seek_charref(html, %{s | charref_state: %CharrefState{}})
+  end
+
+  defp seek_charref(<<c::utf8, html::binary>>, s) when <<c::utf8>> in [";" | @alphanumerics] do
+    buffer = s.buffer <> <<c::utf8>>
+    candidate = Map.get(@entities, buffer)
+
+    charref_state =
+      if candidate do
+        %CharrefState{s.charref_state | candidate: buffer}
+      else
+        s.charref_state
+      end
+
+    len = charref_state.length + 1
+    done_by_length? = len > 60
+    done_by_semicolon? = <<c::utf8>> == ";"
+
+    seek_charref(html, %{
+      s
+      | buffer: buffer,
+        charref_state: %{charref_state | length: len, done: done_by_semicolon? || done_by_length?}
+    })
+  end
+
+  defp seek_charref(html, s) do
+    charref_state = %CharrefState{s.charref_state | done: true}
+
+    seek_charref_end(html, %{s | charref_state: charref_state})
+  end
+
+  defp seek_charref_end(html, s) do
+    candidate = s.charref_state.candidate
+
+    ends_with_semicolon? = String.ends_with?(s.buffer, ";")
+
+    parse_error_on_unmatch? =
+      String.starts_with?(s.buffer, "&") && ends_with_semicolon? && candidate == nil
+
+    do_nothing_when_part_of_attr? =
+      candidate && part_of_attr?(s) && !ends_with_semicolon? &&
+        next_input_in?(html, ["=" | @alphanumerics])
+
+    parse_error_on_non_semicolon_ending? = !ends_with_semicolon?
+
+    state =
+      cond do
+        parse_error_on_unmatch? ->
+          %{s | errors: [%ParseError{line: s.line, column: s.column} | s.errors]}
+
+        do_nothing_when_part_of_attr? ->
+          s
+
+        parse_error_on_non_semicolon_ending? ->
+          %{s | errors: [%ParseError{line: s.line, column: s.column} | s.errors]}
+
+        true ->
+          chars =
+            @entities
+            |> Map.get(s.charref_state.candidate, %{})
+            |> Map.get("characters")
+
+          %{s | buffer: chars}
+      end
+
+    character_reference_end(html, state)
+  end
+
+  # § tokenizer-numeric-character-reference-state
+
+  # § tokenizer-character-reference-end-state
+
+  defp character_reference_end(html, s) do
+    state =
+      cond do
+        part_of_attr?(s) ->
+          new_tag = %Tag{
+            s.token
+            | current_attribute: %Attribute{
+                s.token.current_attribute
+                | value: s.token.current_attribute.value <> s.buffer
+              }
+          }
+
+          %{s | token: new_tag}
+
+        true ->
+          %{s | tokens: [%Char{data: s.buffer} | s.tokens]}
+      end
+
+    case s.return_state do
+      :data ->
+        data(html, state)
+
+      :rcdata ->
+        rcdata(html, state)
+
+      :attribute_value_unquoted ->
+        attribute_value_unquoted(html, state)
+
+      :attribute_value_single_quoted ->
+        attribute_value_single_quoted(html, state)
+
+      :attribute_value_double_quoted ->
+        attribute_value_double_quoted(html, state)
+    end
+  end
+
+  ##
+  # TEMP
+  ##
+  defp numeric_character_reference(_, s), do: s
+
+  ##
+  # END TEMP
+  ##
+
+  defp part_of_attr?(state) do
+    state.return_state in [
+      :attribute_value_double_quoted,
+      :attribute_value_single_quoted,
+      :attribute_value_unquoted
+    ]
+  end
+
+  defp next_input_in?(html, chars) do
+    case html do
+      <<c::utf8, _rest::binary>> ->
+        <<c::utf8>> in chars
+
+      _ ->
+        false
+    end
+  end
 
   defp line_number("\n", current_line), do: current_line + 1
   defp line_number(_, current_line), do: current_line
