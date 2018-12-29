@@ -118,7 +118,7 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defp data(<<c::utf8, html::binary>>, s) do
-    data(html, %{s | tokens: [%Char{data: <<c::utf8>>} | s.tokens]})
+    data(html, %{s | tokens: append_char_token(s, <<c::utf8>>)})
   end
 
   # § tokenizer-rcdata-state
@@ -140,7 +140,7 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defp rcdata(<<c::utf8, html::binary>>, s) do
-    rcdata(html, %{s | tokens: [%Char{data: <<c::utf8>>} | s.tokens], column: s.column + 1})
+    rcdata(html, %{s | tokens: append_char_token(s, <<c::utf8>>), column: s.column + 1})
   end
 
   # § tokenizer-rawtext-state
@@ -158,7 +158,7 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defp rawtext(<<c::utf8, html::binary>>, s) do
-    rawtext(html, %{s | tokens: [%Char{data: <<c::utf8>>} | s.tokens], column: s.column + 1})
+    rawtext(html, %{s | tokens: append_char_token(s, <<c::utf8>>), column: s.column + 1})
   end
 
   # § tokenizer-script-data-state
@@ -176,7 +176,7 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defp script_data(<<c::utf8, html::binary>>, s) do
-    script_data(html, %{s | tokens: [%Char{data: <<c::utf8>>} | s.tokens], column: s.column + 1})
+    script_data(html, %{s | tokens: append_char_token(s, <<c::utf8>>), column: s.column + 1})
   end
 
   # § tokenizer-plaintext-state
@@ -190,7 +190,7 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defp plaintext(<<c::utf8, html::binary>>, s) do
-    plaintext(html, %{s | tokens: [%Char{data: <<c::utf8>>} | s.tokens], column: s.column + 1})
+    plaintext(html, %{s | tokens: append_char_token(s, <<c::utf8>>), column: s.column + 1})
   end
 
   # § tokenizer-tag-open-state
@@ -2682,6 +2682,16 @@ defmodule Floki.HTML.Tokenizer do
 
       _ ->
         false
+    end
+  end
+
+  defp append_char_token(state, char) do
+    case state.tokens do
+      [existing = %Char{} | rest] ->
+        [%Char{existing | data: existing.data <> char} | rest]
+
+      other_tokens ->
+        [%Char{data: char} | other_tokens]
     end
   end
 
