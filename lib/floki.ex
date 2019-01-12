@@ -83,7 +83,6 @@ defmodule Floki do
   You can also control the encoding behaviour at the application level via
   `config :floki, :encode_raw_html, true | false`
 
-
   ## Examples
 
       iex> Floki.parse(~s(<div class="wrapper">my content</div>)) |> Floki.raw_html
@@ -258,10 +257,10 @@ defmodule Floki do
 
       iex> Floki.text([{"p", [], ["1"]},{"p", [], ["2"]}])
       "12"
-      
+
       iex> Floki.text("<div><style>hello</style> world</div>")
       "hello world"
-      
+
       iex> Floki.text("<div><style>hello</style> world</div>", style: false)
       " world"
   """
@@ -269,24 +268,10 @@ defmodule Floki do
   @spec text(html_tree | binary) :: binary
 
   def text(html, opts \\ [deep: true, js: false, style: true, sep: ""]) do
-    html_tree =
-      if is_binary(html) do
-        parse(html)
-      else
-        html
-      end
-
-    cleaned_html_tree =
-      case opts[:js] do
-        true -> html_tree
-        _ -> filter_out(html_tree, "script")
-      end
-
-    cleaned_html_tree =
-      case opts[:style] do
-        true -> cleaned_html_tree
-        _ -> filter_out(cleaned_html_tree, "style")
-      end
+    cleaned_html_tree = html
+      |> parse_it()
+      |> clean_html_tree(:js, opts[:js])
+      |> clean_html_tree(:style, opts[:style])
 
     search_strategy =
       case opts[:deep] do
@@ -335,7 +320,6 @@ defmodule Floki do
   """
 
   @spec attribute(binary | html_tree, binary) :: list
-
   def attribute(html_tree, attribute_name) when is_binary(html_tree) do
     html_tree
     |> parse
@@ -377,6 +361,15 @@ defmodule Floki do
       end
     )
   end
+
+  defp parse_it(html) when is_binary(html), do: parse(html)
+  defp parse_it(html), do: html
+
+  defp clean_html_tree(html_tree, :js, true), do: html_tree
+  defp clean_html_tree(html_tree, :js, _), do: filter_out(html_tree, "script")
+
+  defp clean_html_tree(html_tree, :style, true), do: html_tree
+  defp clean_html_tree(html_tree, :style, _), do: filter_out(html_tree, "style")
 
   @doc """
   Returns the nodes from a HTML tree that don't match the filter selector.
