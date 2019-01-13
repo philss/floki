@@ -93,7 +93,7 @@ This is recommended if you need [better performance](https://gist.github.com/phi
 and a more accurate parser. However `html5ever` is being under active development and **may be unstable**.
 
 Since it's written in Rust, we need to install Rust and compile the project.
-Luckily we have have the [html5ever Elixir NIF](https://github.com/hansihe/html5ever_elixir) that makes the integration very easy.
+Luckily we have the [html5ever Elixir NIF](https://github.com/hansihe/html5ever_elixir) that makes the integration very easy.
 
 You still need to install Rust in your system. To do that, please
 [follow the instruction](https://www.rust-lang.org/en-US/install.html) presented in the official page.
