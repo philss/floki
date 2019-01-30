@@ -86,7 +86,7 @@ If you get this [kind of error](https://github.com/philss/floki/issues/35),
 you need to install the `erlang-dev` and `erlang-parsetools` packages in order get the `leex` module.
 The packages names may be different depending on your OS.
 
-### Optional - Using http5ever as the HTML parser
+### Optional - Using html5ever as the HTML parser
 
 You can configure Floki to use [html5ever](https://github.com/servo/html5ever) as your HTML parser.
 This is recommended if you need [better performance](https://gist.github.com/philss/70b4b0294f29501c3c7e0f60338cc8bd)
