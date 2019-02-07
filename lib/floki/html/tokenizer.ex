@@ -9,7 +9,7 @@ defmodule Floki.HTML.Tokenizer do
   # TODO: add tests: https://github.com/html5lib/html5lib-tests
 
   defmodule Position do
-    defstruct line: 0, col: 0, offset: 0
+    defstruct line: 1, col: 1, offset: 0
   end
 
   defmodule Doctype do
@@ -1841,7 +1841,7 @@ defmodule Floki.HTML.Tokenizer do
       s
       | tokens: [new_token | s.tokens],
         token: nil,
-        errors: [%ParseError{position: s.position} | s.errors]
+        errors: [%ParseError{id: "eof-in-doctype", position: s.position} | s.errors]
     })
   end
 
@@ -1876,7 +1876,7 @@ defmodule Floki.HTML.Tokenizer do
       s
       | tokens: [token | s.tokens],
         token: nil,
-        errors: [%ParseError{position: s.position} | s.errors]
+        errors: [%ParseError{id: "eof-in-doctype", position: s.position} | s.errors]
     })
   end
 
@@ -2683,7 +2683,7 @@ defmodule Floki.HTML.Tokenizer do
   defp pos(char, previous_position) do
     case <<char::utf8>> do
       "\n" ->
-        %Position{line: previous_position.line + 1, col: 0}
+        %Position{line: previous_position.line + 1, col: 1}
 
       _ ->
         %Position{previous_position | col: previous_position.col + 1}
