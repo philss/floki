@@ -1474,7 +1474,11 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defp markup_declaration_open(html, s) do
-    bogus_comment(html, %{s | errors: [%ParseError{position: s.position} | s.errors]})
+    bogus_comment(html, %{
+      s
+      | token: %Comment{position: s.position},
+        errors: [%ParseError{position: s.position} | s.errors]
+    })
   end
 
   # § tokenizer-comment-start-state
@@ -1561,7 +1565,7 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defp comment(<<c::utf8, html::binary>>, s) do
-    new_token = %{s.token | data: s.token.comment <> <<c::utf8>>}
+    new_token = %Comment{s.token | data: s.token.data <> <<c::utf8>>}
 
     comment(
       html,
@@ -1670,8 +1674,8 @@ defmodule Floki.HTML.Tokenizer do
     })
   end
 
-  defp comment_end(html, s) do
-    new_comment = %Comment{s.token | data: s.token.data <> "-"}
+  defp comment_end(html = <<c::utf8, _rest::binary>>, s) do
+    new_comment = %Comment{s.token | data: s.token.data <> "--"}
 
     comment(html, %{s | token: new_comment})
   end
@@ -2602,7 +2606,7 @@ defmodule Floki.HTML.Tokenizer do
           %{s | token: new_tag}
 
         true ->
-          %{s | tokens: [%Char{data: s.buffer} | s.tokens]}
+          %{s | tokens: append_char_token(s, s.buffer)}
       end
 
     case s.return_state do
