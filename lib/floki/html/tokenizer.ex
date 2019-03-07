@@ -2523,12 +2523,13 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defp do_char_reference(html, s) do
-    seek_charref(html, %{s | charref_state: %CharrefState{}})
+    seek_charref(html, %{s | charref_state: %CharrefState{done: false}})
   end
 
-  defp seek_charref(<<c::utf8, html::binary>>, s) when <<c::utf8>> in [";" | @alphanumerics] do
+  defp seek_charref(<<c::utf8, html::binary>>, s = %State{charref_state: %CharrefState{done: false}}) when <<c::utf8>> in [";" | @alphanumerics] do
     buffer = s.buffer <> <<c::utf8>>
-    candidate = Map.get(@entities, buffer)
+    candidate = IO.inspect(Map.get(@entities, buffer), label: "inside seek_charref")
+    IO.inspect(html, label: "inside seek_charref")
 
     charref_state =
       if candidate do
@@ -2544,7 +2545,8 @@ defmodule Floki.HTML.Tokenizer do
     seek_charref(html, %{
       s
       | buffer: buffer,
-        charref_state: %{charref_state | length: len, done: done_by_semicolon? || done_by_length?}
+      charref_state: %{charref_state | length: len,
+        done: IO.inspect(done_by_semicolon? || done_by_length?, label: "done?")}
     })
   end
 
@@ -2580,15 +2582,20 @@ defmodule Floki.HTML.Tokenizer do
           %{s | errors: [%ParseError{position: s.position} | s.errors]}
 
         true ->
-          chars =
-            @entities
-            |> Map.get(s.charref_state.candidate, %{})
-            |> Map.get("characters")
-
-          %{s | buffer: chars}
+          s
       end
 
-    character_reference_end(html, state)
+    buffer =
+      if candidate do
+        @entities
+        |> Map.get(candidate, %{})
+        |> Map.get("characters")
+        |> IO.inspect(label: "chars")
+      else
+        ""
+      end
+
+    character_reference_end(IO.inspect(html, label: "html"), %{state | buffer: buffer})
   end
 
   # § tokenizer-numeric-character-reference-state
