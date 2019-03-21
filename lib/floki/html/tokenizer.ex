@@ -2526,7 +2526,11 @@ defmodule Floki.HTML.Tokenizer do
     seek_charref(html, %{s | charref_state: %CharrefState{done: false}})
   end
 
-  defp seek_charref(<<c::utf8, html::binary>>, s = %State{charref_state: %CharrefState{done: false}}) when <<c::utf8>> in [";" | @alphanumerics] do
+  defp seek_charref(
+         <<c::utf8, html::binary>>,
+         s = %State{charref_state: %CharrefState{done: false}}
+       )
+       when <<c::utf8>> in [";" | @alphanumerics] do
     buffer = s.buffer <> <<c::utf8>>
     candidate = IO.inspect(Map.get(@entities, buffer), label: "inside seek_charref")
     IO.inspect(html, label: "inside seek_charref")
@@ -2545,15 +2549,32 @@ defmodule Floki.HTML.Tokenizer do
     seek_charref(html, %{
       s
       | buffer: buffer,
-      charref_state: %{charref_state | length: len,
-        done: IO.inspect(done_by_semicolon? || done_by_length?, label: "done?")}
+        charref_state: %{
+          charref_state
+          | length: len,
+            done: IO.inspect(done_by_semicolon? || done_by_length?, label: "done?")
+        }
     })
   end
 
   defp seek_charref(html, s) do
     charref_state = %CharrefState{s.charref_state | done: true}
 
+    IO.inspect(s.buffer, label: "FINISH PROCESS")
+
     seek_charref_end(html, %{s | charref_state: charref_state})
+  end
+
+  defp seek_charref_end(html, s = %State{return_state: return_state})
+       when return_state in [
+              :attribute_value_double_quoted,
+              :attribute_value_single_quoted,
+              :attribute_value_unquoted
+            ] do
+    # do_nothing_when_part_of_attr? =
+    # candidate && part_of_attr?(s) && !ends_with_semicolon? &&
+    # next_input_in?(html, ["=" | @alphanumerics])
+    data(html, s)
   end
 
   defp seek_charref_end(html, s) do
@@ -2564,10 +2585,6 @@ defmodule Floki.HTML.Tokenizer do
     parse_error_on_unmatch? =
       String.starts_with?(s.buffer, "&") && ends_with_semicolon? && candidate == nil
 
-    do_nothing_when_part_of_attr? =
-      candidate && part_of_attr?(s) && !ends_with_semicolon? &&
-        next_input_in?(html, ["=" | @alphanumerics])
-
     parse_error_on_non_semicolon_ending? = !ends_with_semicolon?
 
     state =
@@ -2575,28 +2592,46 @@ defmodule Floki.HTML.Tokenizer do
         parse_error_on_unmatch? ->
           %{s | errors: [%ParseError{position: s.position} | s.errors]}
 
-        do_nothing_when_part_of_attr? ->
-          s
-
         parse_error_on_non_semicolon_ending? ->
-          %{s | errors: [%ParseError{position: s.position} | s.errors]}
+          %{
+            s
+            | errors: [
+                %ParseError{
+                  id: "missing-semicolon-after-character-reference",
+                  position: s.position
+                }
+                | s.errors
+              ]
+          }
 
         true ->
           s
       end
 
-    buffer =
-      if candidate do
-        @entities
-        |> Map.get(candidate, %{})
-        |> Map.get("characters")
-        |> IO.inspect(label: "chars")
-      else
-        ""
-      end
+    buffer = character_buffer(s)
+    html = charref_html_after_buffer(html, s)
 
-    character_reference_end(IO.inspect(html, label: "html"), %{state | buffer: buffer})
+    character_reference_end(html, %{state | buffer: buffer})
   end
+
+  defp character_buffer(%State{charref_state: %CharrefState{candidate: candidate}, buffer: buffer}) do
+    if candidate do
+      @entities
+      |> Map.get(candidate, %{})
+      |> Map.get("characters")
+    else
+      buffer
+    end
+  end
+
+  defp charref_html_after_buffer(html, %State{
+         charref_state: %CharrefState{candidate: candidate},
+         buffer: buffer
+       }) when is_binary(buffer) and is_binary(candidate) do
+    String.replace_prefix(buffer, candidate, "") <> html
+  end
+
+  defp charref_html_after_buffer(html, _), do: html
 
   # § tokenizer-numeric-character-reference-state
 
