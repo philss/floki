@@ -6,7 +6,7 @@ defmodule Floki.FilterOut do
   # Helper functions for filtering out a specific element from the tree.
 
   @type html_tree :: tuple | list
-  @type selector :: binary
+  @type selector :: :comment | Finder.selector()
 
   @spec filter_out(html_tree, selector) :: tuple | list
 
