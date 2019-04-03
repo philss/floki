@@ -2534,8 +2534,7 @@ defmodule Floki.HTML.Tokenizer do
        )
        when <<c::utf8>> in [";" | @alphanumerics] do
     buffer = s.buffer <> <<c::utf8>>
-    candidate = IO.inspect(Map.get(@entities, buffer), label: "inside seek_charref")
-    IO.inspect(html, label: "inside seek_charref")
+    candidate = Map.get(@entities, buffer)
 
     charref_state =
       if candidate do
@@ -2554,15 +2553,13 @@ defmodule Floki.HTML.Tokenizer do
         charref_state: %{
           charref_state
           | length: len,
-            done: IO.inspect(done_by_semicolon? || done_by_length?, label: "done?")
+            done: done_by_semicolon? || done_by_length?
         }
     })
   end
 
   defp seek_charref(html, s) do
     charref_state = %CharrefState{s.charref_state | done: true}
-
-    IO.inspect(s.buffer, label: "FINISH PROCESS")
 
     seek_charref_end(html, %{s | charref_state: charref_state})
   end
@@ -2573,10 +2570,25 @@ defmodule Floki.HTML.Tokenizer do
               :attribute_value_single_quoted,
               :attribute_value_unquoted
             ] do
-    # do_nothing_when_part_of_attr? =
-    # candidate && part_of_attr?(s) && !ends_with_semicolon? &&
-    # next_input_in?(html, ["=" | @alphanumerics])
-    data(html, s)
+    last_char =
+      s.buffer
+      |> String.codepoints()
+      |> List.last()
+
+    with true <- last_char != ";",
+         <<c::utf8, _html::binary>> when <<c::utf8>> in ["=" | @alphanumerics] <- html do
+      character_reference_end(html, s)
+    else
+      _ ->
+        buffer =
+          if s.buffer == s.charref_state.candidate do
+            character_buffer(s)
+          else
+            s.buffer
+          end
+
+        character_reference_end(html, %{s | buffer: buffer})
+    end
   end
 
   defp seek_charref_end(html, s) do
@@ -2629,7 +2641,8 @@ defmodule Floki.HTML.Tokenizer do
   defp charref_html_after_buffer(html, %State{
          charref_state: %CharrefState{candidate: candidate},
          buffer: buffer
-       }) when is_binary(buffer) and is_binary(candidate) do
+       })
+       when is_binary(buffer) and is_binary(candidate) do
     String.replace_prefix(buffer, candidate, "") <> html
   end
 
