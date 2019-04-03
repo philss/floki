@@ -651,7 +651,7 @@ defmodule Floki.HTML.Tokenizer do
   # § tokenizer-script-data-less-than-sign-state
 
   defp script_data_less_than_sign(<<"/", html::binary>>, s) do
-    script_data_end_tag_open_state(html, %{s | buffer: ""})
+    script_data_end_tag_open(html, %{s | buffer: ""})
   end
 
   defp script_data_less_than_sign(<<"!", html::binary>>, s) do
@@ -827,7 +827,9 @@ defmodule Floki.HTML.Tokenizer do
          s
        )
        when <<c::utf8>> in @all_ASCII_letters do
-    script_data_double_escape_start(
+    # TODO: revert this after implement the script_data_double_scape_start state
+    # script_data_double_escape_start(
+    data(
       html,
       %{
         s
