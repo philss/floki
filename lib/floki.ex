@@ -388,7 +388,7 @@ defmodule Floki do
 
   """
 
-  @spec filter_out(binary | html_tree, binary) :: list
+  @spec filter_out(binary | html_tree, FilterOut.selector()) :: list
 
   def filter_out(html_tree, selector) when is_binary(html_tree) do
     html_tree
