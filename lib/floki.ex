@@ -23,12 +23,12 @@ defmodule Floki do
 
   Examples of queries that you can perform:
 
-    * Floki.find(html, "#content")
-    * Floki.find(html, ".headline")
-    * Floki.find(html, "a")
-    * Floki.find(html, "[data-model=user]")
-    * Floki.find(html, "#content a")
-    * Floki.find(html, ".headline, a")
+    * `Floki.find(html, "#content")`
+    * `Floki.find(html, ".headline")`
+    * `Floki.find(html, "a")`
+    * `Floki.find(html, "[data-model=user]")`
+    * `Floki.find(html, "#content a")`
+    * `Floki.find(html, ".headline, a")`
 
   Each HTML node is represented by a tuple like:
 

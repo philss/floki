@@ -14,7 +14,7 @@ defmodule Floki.Mixfile do
       package: package(),
       deps: deps(),
       source_url: "https://github.com/philss/floki",
-      docs: [extras: ["README.md"], main: "Floki"]
+      docs: [extras: ["README.md"], main: "Floki", assets: "assets"]
     ]
   end
 
