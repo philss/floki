@@ -4,7 +4,7 @@
 [![Inline docs](https://inch-ci.org/github/philss/floki.svg?branch=master)](https://inch-ci.org/github/philss/floki)
 [![Ebert](https://ebertapp.io/github/philss/floki.svg)](https://ebertapp.io/github/philss/floki)
 
-<img src="priv/images/floki-logo-with-type.svg" width="500" alt="Floki logo">
+<img src="assets/images/floki-logo-with-type.svg" width="500" alt="Floki logo">
 
 **Floki is a simple HTML parser that enables search for nodes using CSS selectors**.
 
