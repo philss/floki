@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased][unreleased]
 
+## [0.21.0] - 2019-04-17
+
+### Added
+
+- Add a possibility to filter `style` tags on `Floki.text/2` - thanks [@Vict0rynox](https://github.com/Vict0rynox)
+
+### Fixed
+
+- Fix `Floki.text/2` to consider the previous filter of `js` when filtering `style` - thanks [@Vict0rynox](https://github.com/Vict0rynox)
+- Fix typespecs for `Floki.filter_out/2` - thanks [@myfreeweb](https://github.com/myfreeweb)
+
+### Changed
+
+- Drop support for Elixir 1.3 and below - thanks [@herbstrith](https://github.com/herbstrith)
+
 ## [0.20.4] - 2018-09-24
 
 ### Fixed
@@ -407,7 +422,8 @@ of the parent element inside HTML.
 
 - Elixir version requirement from "~> 1.0.0" to ">= 1.0.0".
 
-[unreleased]: https://github.com/philss/floki/compare/v0.20.4...HEAD
+[unreleased]: https://github.com/philss/floki/compare/v0.21.0...HEAD
+[0.21.0]: https://github.com/philss/floki/compare/v0.20.4...v0.21.0
 [0.20.4]: https://github.com/philss/floki/compare/v0.20.3...v0.20.4
 [0.20.3]: https://github.com/philss/floki/compare/v0.20.2...v0.20.3
 [0.20.2]: https://github.com/philss/floki/compare/v0.20.1...v0.20.2
