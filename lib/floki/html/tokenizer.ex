@@ -53,6 +53,7 @@ defmodule Floki.HTML.Tokenizer do
               errors: [],
               emit: nil,
               charref_state: nil,
+              charref_code: nil,
               position: %Position{}
   end
 
@@ -71,8 +72,15 @@ defmodule Floki.HTML.Tokenizer do
   @lower_ASCII_letters Enum.map(?a..?z, fn l -> <<l::utf8>> end)
   @upper_ASCII_letters Enum.map(?A..?Z, fn l -> <<l::utf8>> end)
   @all_ASCII_letters @lower_ASCII_letters ++ @upper_ASCII_letters
-  @alphanumerics @all_ASCII_letters ++ Enum.map(0..9, fn n -> Integer.to_string(n) end)
+  @ascii_digits Enum.map(0..9, fn n -> Integer.to_string(n) end)
+  @alphanumerics @all_ASCII_letters ++ @ascii_digits
   @space_chars ["\t", "\n", "\f", "\s"]
+
+  @ascii_hex_digits Enum.reduce([?a..?f, ?A..?F, ?0..?9], [], fn range, digits ->
+                      Enum.reduce(range, digits, fn l, all_digits ->
+                        [<<l::utf8>> | all_digits]
+                      end)
+                    end)
 
   @less_than_sign "\u003C"
   @greater_than_sign "\u003E"
@@ -2648,8 +2656,6 @@ defmodule Floki.HTML.Tokenizer do
 
   defp charref_html_after_buffer(html, _), do: html
 
-  # § tokenizer-numeric-character-reference-state
-
   # § tokenizer-character-reference-end-state
 
   defp character_reference_end(html, s) do
@@ -2684,14 +2690,68 @@ defmodule Floki.HTML.Tokenizer do
     end
   end
 
-  ##
-  # TEMP
-  ##
-  defp numeric_character_reference(_, s), do: s
+  # § tokenizer-numeric-character-reference-state
 
-  ##
-  # END TEMP
-  ##
+  defp numeric_character_reference(html, s) do
+    do_numeric_character_reference(html, %{s | charref_code: 0})
+  end
+
+  defp do_numeric_character_reference(<<c::utf8, html::binary>>, s)
+       when <<c::utf8>> in ["x", "X"] do
+    hexadecimal_character_reference_start(html, %{s | buffer: s.buffer <> <<c::utf8>>})
+  end
+
+  defp do_numeric_character_reference(html, s) do
+    decimal_character_reference_start(html, s)
+  end
+
+  # § tokenizer-hexadecimal-character-reference-start-state
+
+  defp hexadecimal_character_reference_start(html = <<c::utf8, _rest::binary>>, s)
+       when <<c::utf8>> in @ascii_hex_digits do
+    hexadecimal_character_reference(html, s)
+  end
+
+  defp hexadecimal_character_reference_start(html, s) do
+    # set parse error
+
+    character_reference_end(html, s)
+  end
+
+  # § tokenizer-decimal-character-reference-start-state
+
+  defp decimal_character_reference_start(html = <<c::utf8, _rest::binary>>, s)
+       when <<c::utf8>> in @ascii_digits do
+    decimal_character_reference(html, s)
+  end
+
+  defp decimal_character_reference_start(html, s) do
+    # set parse error
+    character_reference_end(html, s)
+  end
+
+  # § tokenizer-hexadecimal-character-reference-state
+
+  defp hexadecimal_character_reference(<<c::utf8, html::binary>>, s) when c in ?0..?9 do
+    hexadecimal_character_reference(html, %{s | charref_code: s.charref_code * 16 + c - 0x30})
+  end
+
+  defp hexadecimal_character_reference(<<c::utf8, html::binary>>, s) when c in ?A..?F do
+    hexadecimal_character_reference(html, %{s | charref_code: s.charref_code * 16 + c - 0x37})
+  end
+
+  defp hexadecimal_character_reference(<<c::utf8, html::binary>>, s) when c in ?a..?f do
+    hexadecimal_character_reference(html, %{s | charref_code: s.charref_code * 16 + c - 0x57})
+  end
+
+  defp hexadecimal_character_reference(<<";", html::binary>>, s) do
+    numeric_character_reference_end(html, s)
+  end
+
+  defp hexadecimal_character_reference(html, s) do
+    # set parse error
+    numeric_character_reference_end(html, s)
+  end
 
   defp part_of_attr?(state) do
     state.return_state in [
