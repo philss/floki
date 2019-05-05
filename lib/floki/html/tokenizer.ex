@@ -1684,7 +1684,7 @@ defmodule Floki.HTML.Tokenizer do
     })
   end
 
-  defp comment_end(html = <<c::utf8, _rest::binary>>, s) do
+  defp comment_end(html, s) do
     new_comment = %Comment{s.token | data: s.token.data <> "--"}
 
     comment(html, %{s | token: new_comment})
@@ -2656,40 +2656,6 @@ defmodule Floki.HTML.Tokenizer do
 
   defp charref_html_after_buffer(html, _), do: html
 
-  # § tokenizer-character-reference-end-state
-
-  defp character_reference_end(html, s) do
-    state =
-      cond do
-        part_of_attr?(s) ->
-          [attr | attrs] = s.token.attributes
-          new_attr = %Attribute{attr | value: attr.value <> s.buffer}
-          new_tag = %Tag{s.token | attributes: [new_attr | attrs]}
-
-          %{s | token: new_tag}
-
-        true ->
-          %{s | tokens: append_char_token(s, s.buffer)}
-      end
-
-    case s.return_state do
-      :data ->
-        data(html, state)
-
-      :rcdata ->
-        rcdata(html, state)
-
-      :attribute_value_unquoted ->
-        attribute_value_unquoted(html, state)
-
-      :attribute_value_single_quoted ->
-        attribute_value_single_quoted(html, state)
-
-      :attribute_value_double_quoted ->
-        attribute_value_double_quoted(html, state)
-    end
-  end
-
   # § tokenizer-numeric-character-reference-state
 
   defp numeric_character_reference(html, s) do
@@ -2753,22 +2719,72 @@ defmodule Floki.HTML.Tokenizer do
     numeric_character_reference_end(html, s)
   end
 
+  # § tokenizer-decimal-character-reference-state
+
+  defp decimal_character_reference(<<c::utf8, html::binary>>, s) when c in ?0..?9 do
+    decimal_character_reference(html, %{s | charref_code: s.charref_code * 10 + c - 0x30})
+  end
+
+  defp decimal_character_reference(<<";", html::binary>>, s) do
+    numeric_character_reference_end(html, s)
+  end
+
+  defp decimal_character_reference(html, s) do
+    # set parse error
+
+    numeric_character_reference_end(html, s)
+  end
+
+  # § tokenizer-decimal-character-reference-state
+
+  defp numeric_character_reference_end(html, s) do
+    # set parse errors
+    {:ok, {_, numeric_char}} = Floki.HTML.NumericCharref.to_unicode_number(s.charref_code)
+    unicode = <<numeric_char::utf8>>
+
+    character_reference_end(html, %{s | buffer: "" <> unicode})
+  end
+
+  # § tokenizer-character-reference-end-state
+
+  defp character_reference_end(html, s) do
+    state =
+      cond do
+        part_of_attr?(s) ->
+          [attr | attrs] = s.token.attributes
+          new_attr = %Attribute{attr | value: attr.value <> s.buffer}
+          new_tag = %Tag{s.token | attributes: [new_attr | attrs]}
+
+          %{s | token: new_tag}
+
+        true ->
+          %{s | tokens: append_char_token(s, s.buffer)}
+      end
+
+    case s.return_state do
+      :data ->
+        data(html, state)
+
+      :rcdata ->
+        rcdata(html, state)
+
+      :attribute_value_unquoted ->
+        attribute_value_unquoted(html, state)
+
+      :attribute_value_single_quoted ->
+        attribute_value_single_quoted(html, state)
+
+      :attribute_value_double_quoted ->
+        attribute_value_double_quoted(html, state)
+    end
+  end
+
   defp part_of_attr?(state) do
     state.return_state in [
       :attribute_value_double_quoted,
       :attribute_value_single_quoted,
       :attribute_value_unquoted
     ]
-  end
-
-  defp next_input_in?(html, chars) do
-    case html do
-      <<c::utf8, _rest::binary>> ->
-        <<c::utf8>> in chars
-
-      _ ->
-        false
-    end
   end
 
   defp append_char_token(state, char) do
