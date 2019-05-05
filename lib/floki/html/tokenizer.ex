@@ -92,9 +92,7 @@ defmodule Floki.HTML.Tokenizer do
   @entities Floki.Entities.load_entities("priv/entities.json")
 
   # TODO:
-  # 1. ~~Keep replacing tokens from tuples to Structs~~
-  # 2. Use `s.emit.(token)` before append it to list of tokens
-  # 3. Keep adding the state that you was working.
+  # Use `s.emit.(token)` before append it to list of tokens
 
   def tokenize(html) do
     data(html, %State{emit: fn token -> token end})
