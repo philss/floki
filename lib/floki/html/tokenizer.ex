@@ -113,7 +113,7 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defp data(<<"\0", html::binary>>, s) do
-    data(html, %{s | tokens: [%Char{data: "\0"} | s.tokens]})
+    data(html, %{s | tokens: append_char_token(s, "\0")})
   end
 
   defp data("", s) do
@@ -135,7 +135,7 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defp rcdata(<<"\0", html::binary>>, s) do
-    rcdata(html, %{s | tokens: [%Char{data: @replacement_char} | s.tokens]})
+    rcdata(html, %{s | tokens: append_char_token(s, @replacement_char)})
   end
 
   defp rcdata("", s) do
@@ -153,7 +153,7 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defp rawtext(<<"\0", html::binary>>, s) do
-    rawtext(html, %{s | tokens: [%Char{data: @replacement_char} | s.tokens]})
+    rawtext(html, %{s | tokens: append_char_token(s, @replacement_char)})
   end
 
   defp rawtext("", s) do
@@ -171,7 +171,7 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defp script_data(<<"\0", html::binary>>, s) do
-    script_data(html, %{s | tokens: [%Char{data: @replacement_char} | s.tokens]})
+    script_data(html, %{s | tokens: append_char_token(s, @replacement_char)})
   end
 
   defp script_data("", s) do
@@ -189,7 +189,7 @@ defmodule Floki.HTML.Tokenizer do
   # § tokenizer-plaintext-state
 
   defp plaintext(<<"\0", html::binary>>, s) do
-    plaintext(html, %{s | tokens: [%Char{data: @replacement_char} | s.tokens]})
+    plaintext(html, %{s | tokens: append_char_token(s, @replacement_char)})
   end
 
   defp plaintext("", s) do
@@ -227,7 +227,7 @@ defmodule Floki.HTML.Tokenizer do
     data(html, %{
       s
       | token: nil,
-        tokens: [%Char{data: @less_than_sign} | s.tokens]
+        tokens: append_char_token(s, @less_than_sign)
     })
   end
 
@@ -245,12 +245,10 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defp end_tag_open("", s) do
-    tokens = [%Char{data: @solidus}, %Char{data: @less_than_sign} | s.tokens]
-
     eof(:data, %{
       s
       | token: nil,
-        tokens: tokens,
+        tokens: append_char_token(s, "#{@less_than_sign}#{@solidus}"),
         errors: [%ParseError{position: s.position} | s.errors]
     })
   end
@@ -323,7 +321,7 @@ defmodule Floki.HTML.Tokenizer do
     rcdata(html, %{
       s
       | token: nil,
-        tokens: [%Char{data: @less_than_sign} | s.tokens]
+        tokens: append_char_token(s, @less_than_sign)
     })
   end
 
@@ -339,8 +337,7 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defp rcdata_end_tag_open(html, s) do
-    tokens = [%Char{data: @solidus}, %Char{data: @less_than_sign} | s.tokens]
-    rcdata(html, %{s | tokens: tokens})
+    rcdata(html, %{s | tokens: append_char_token(s, "#{@less_than_sign}#{@solidus}")})
   end
 
   # § tokenizer-rcdata-end-tag-name-state
@@ -635,7 +632,7 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defp rawtext_less_than_sign(html, s) do
-    rawtext(html, %{s | tokens: [%Char{data: "\u003C"} | s.tokens]})
+    rawtext(html, %{s | tokens: append_char_token(s, "\u003C")})
   end
 
   # § tokenizer-rawtext-end-tag-open-state
@@ -650,8 +647,7 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defp rawtext_end_tag_open(html, s) do
-    tokens = [%Char{data: @solidus}, %Char{data: @less_than_sign} | s.tokens]
-    rawtext(html, %{s | tokens: tokens})
+    rawtext(html, %{s | tokens: append_char_token(s, "#{@less_than_sign}#{@solidus}")})
   end
 
   # § tokenizer-script-data-less-than-sign-state
@@ -661,12 +657,14 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defp script_data_less_than_sign(<<"!", html::binary>>, s) do
-    tokens = [%Char{data: @exclamation_mark}, %Char{data: @less_than_sign} | s.tokens]
-    script_data_less_than_sign(html, %{s | tokens: tokens})
+    script_data_less_than_sign(html, %{
+      s
+      | tokens: append_char_token(s, "#{@less_than_sign}#{@exclamation_mark}")
+    })
   end
 
   defp script_data_less_than_sign(html, s) do
-    script_data(html, %{s | tokens: [%Char{data: @less_than_sign} | s.tokens]})
+    script_data(html, %{s | tokens: append_char_token(s, @less_than_sign)})
   end
 
   # § tokenizer-script-data-end-tag-open-state
@@ -683,7 +681,7 @@ defmodule Floki.HTML.Tokenizer do
   defp script_data_end_tag_open(html, s) do
     script_data(html, %{
       s
-      | tokens: [%Char{data: @solidus}, %Char{data: @less_than_sign} | s.tokens]
+      | tokens: append_char_token(s, "#{@less_than_sign}#{@solidus}")
     })
   end
 
@@ -694,7 +692,7 @@ defmodule Floki.HTML.Tokenizer do
       html,
       %{
         s
-        | tokens: [%Char{data: @hyphen_minus} | s.tokens]
+        | tokens: append_char_token(s, @hyphen_minus)
       }
     )
   end
@@ -710,7 +708,7 @@ defmodule Floki.HTML.Tokenizer do
       html,
       %{
         s
-        | tokens: [%Char{data: @hyphen_minus} | s.tokens]
+        | tokens: append_char_token(s, @hyphen_minus)
       }
     )
   end
@@ -724,7 +722,7 @@ defmodule Floki.HTML.Tokenizer do
   defp script_data_escaped(<<"-", html::binary>>, s) do
     script_data_escaped_dash(
       html,
-      %{s | tokens: [%Char{data: @hyphen_minus} | s.tokens]}
+      %{s | tokens: append_char_token(s, @hyphen_minus)}
     )
   end
 
@@ -733,7 +731,7 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defp script_data_escaped(<<"\0", html::binary>>, s) do
-    script_data_escaped(html, %{s | tokens: [%Char{data: @replacement_char} | s.tokens]})
+    script_data_escaped(html, %{s | tokens: append_char_token(s, @replacement_char)})
   end
 
   defp script_data_escaped("", s) do
@@ -741,7 +739,7 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defp script_data_escaped(<<c::utf8, html::binary>>, s) do
-    script_data_escaped(html, %{s | tokens: [%Char{data: <<c::utf8>>} | s.tokens]})
+    script_data_escaped(html, %{s | tokens: append_char_token(s, <<c::utf8>>)})
   end
 
   # § tokenizer-script-data-escaped-dash-state
@@ -751,7 +749,7 @@ defmodule Floki.HTML.Tokenizer do
       html,
       %{
         s
-        | tokens: [%Char{data: @hyphen_minus} | s.tokens]
+        | tokens: append_char_token(s, @hyphen_minus)
       }
     )
   end
@@ -763,7 +761,7 @@ defmodule Floki.HTML.Tokenizer do
   defp script_data_escaped_dash(<<"\0", html::binary>>, s) do
     script_data_escaped(html, %{
       s
-      | tokens: [%Char{data: @replacement_char} | s.tokens]
+      | tokens: append_char_token(s, @replacement_char)
     })
   end
 
@@ -777,7 +775,7 @@ defmodule Floki.HTML.Tokenizer do
        ) do
     script_data_escaped(html, %{
       s
-      | tokens: [%Char{data: <<c::utf8>>} | s.tokens]
+      | tokens: append_char_token(s, <<c::utf8>>)
     })
   end
 
@@ -786,7 +784,7 @@ defmodule Floki.HTML.Tokenizer do
   defp script_data_escaped_dash_dash(<<"-", html::binary>>, s) do
     script_data_escaped_dash_dash(
       html,
-      %{s | tokens: [%Char{data: @hyphen_minus} | s.tokens]}
+      %{s | tokens: append_char_token(s, @hyphen_minus)}
     )
   end
 
@@ -797,14 +795,14 @@ defmodule Floki.HTML.Tokenizer do
   defp script_data_escaped_dash_dash(<<">", html::binary>>, s) do
     script_data(html, %{
       s
-      | tokens: [%Char{data: @greater_than_sign} | s.tokens]
+      | tokens: append_char_token(s, @greater_than_sign)
     })
   end
 
   defp script_data_escaped_dash_dash(<<"\0", html::binary>>, s) do
     script_data_escaped(html, %{
       s
-      | tokens: [%Char{data: @replacement_char} | s.tokens]
+      | tokens: append_char_token(s, @replacement_char)
     })
   end
 
@@ -818,7 +816,7 @@ defmodule Floki.HTML.Tokenizer do
        ) do
     script_data_escaped(html, %{
       s
-      | tokens: [%Char{data: <<c::utf8>>} | s.tokens]
+      | tokens: append_char_token(s, <<c::utf8>>)
     })
   end
 
@@ -840,7 +838,7 @@ defmodule Floki.HTML.Tokenizer do
       %{
         s
         | buffer: "",
-          tokens: [%Char{data: @less_than_sign} | s.tokens]
+          tokens: append_char_token(s, @less_than_sign)
       }
     )
   end
@@ -848,7 +846,7 @@ defmodule Floki.HTML.Tokenizer do
   defp script_data_escaped_less_than_sign(html, s) do
     script_data_escaped(html, %{
       s
-      | tokens: [%Char{data: @less_than_sign} | s.tokens]
+      | tokens: append_char_token(s, @less_than_sign)
     })
   end
 
@@ -871,7 +869,7 @@ defmodule Floki.HTML.Tokenizer do
   defp script_data_escaped_end_tag_open(html, s) do
     script_data_escaped(html, %{
       s
-      | tokens: [%Char{data: @solidus}, %Char{data: @less_than_sign} | s.tokens]
+      | tokens: append_char_token(s, "#{@less_than_sign}#{@solidus}")
     })
   end
 
@@ -882,7 +880,7 @@ defmodule Floki.HTML.Tokenizer do
          s = %State{buffer: "script"}
        )
        when <<c::utf8>> in ["/", ">" | @space_chars] do
-    script_data_double_escaped(html, %{s | tokens: [%Char{data: <<c::utf8>>} | s.tokens]})
+    script_data_double_escaped(html, %{s | tokens: append_char_token(s, <<c::utf8>>)})
   end
 
   defp script_data_escaped_end_tag_open(
@@ -890,7 +888,7 @@ defmodule Floki.HTML.Tokenizer do
          s
        )
        when <<c::utf8>> in ["/", ">" | @space_chars] do
-    script_data_escaped(html, %{s | tokens: [%Char{data: <<c::utf8>>} | s.tokens]})
+    script_data_escaped(html, %{s | tokens: append_char_token(s, <<c::utf8>>)})
   end
 
   defp script_data_escaped_end_tag_open(
@@ -903,7 +901,7 @@ defmodule Floki.HTML.Tokenizer do
     script_data_escaped_end_tag_open(html, %{
       s
       | buffer: s.buffer <> String.downcase(char),
-        tokens: [%Char{data: char} | s.tokens]
+        tokens: append_char_token(s, char)
     })
   end
 
@@ -917,7 +915,7 @@ defmodule Floki.HTML.Tokenizer do
     script_data_escaped_end_tag_open(html, %{
       s
       | buffer: s.buffer <> char,
-        tokens: [%Char{data: char} | s.tokens]
+        tokens: append_char_token(s, char)
     })
   end
 
@@ -930,19 +928,19 @@ defmodule Floki.HTML.Tokenizer do
   defp script_data_double_escaped(<<"-", html::binary>>, s) do
     script_data_double_escaped_dash(html, %{
       s
-      | tokens: [%Char{data: @hyphen_minus} | s.tokens]
+      | tokens: append_char_token(s, @hyphen_minus)
     })
   end
 
   defp script_data_double_escaped(<<"<", html::binary>>, s) do
     script_data_double_escaped_less_than_sign(html, %{
       s
-      | tokens: [%Char{data: @less_than_sign} | s.tokens]
+      | tokens: append_char_token(s, @less_than_sign)
     })
   end
 
   defp script_data_double_escaped(<<"\0", html::binary>>, s) do
-    script_data_double_escaped(html, %{s | tokens: [%Char{data: @replacement_char} | s.tokens]})
+    script_data_double_escaped(html, %{s | tokens: append_char_token(s, @replacement_char)})
   end
 
   defp script_data_double_escaped("", s) do
@@ -950,7 +948,7 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defp script_data_double_escaped(<<c::utf8, html::binary>>, s) do
-    script_data_double_escaped(html, %{s | tokens: [%Char{data: <<c::utf8>>} | s.tokens]})
+    script_data_double_escaped(html, %{s | tokens: append_char_token(s, <<c::utf8>>)})
   end
 
   # § tokenizer-script-data-double-escaped-dash-state
@@ -958,21 +956,21 @@ defmodule Floki.HTML.Tokenizer do
   defp script_data_double_escaped_dash(<<"-", html::binary>>, s) do
     script_data_double_escaped_dash_dash(html, %{
       s
-      | tokens: [%Char{data: @hyphen_minus} | s.tokens]
+      | tokens: append_char_token(s, @hyphen_minus)
     })
   end
 
   defp script_data_double_escaped_dash(<<"<", html::binary>>, s) do
     script_data_double_escaped_less_than_sign(html, %{
       s
-      | tokens: [%Char{data: @less_than_sign} | s.tokens]
+      | tokens: append_char_token(s, @less_than_sign)
     })
   end
 
   defp script_data_double_escaped_dash(<<"\0", html::binary>>, s) do
     script_data_double_escaped(html, %{
       s
-      | tokens: [%Char{data: @replacement_char} | s.tokens]
+      | tokens: append_char_token(s, @replacement_char)
     })
   end
 
@@ -983,7 +981,7 @@ defmodule Floki.HTML.Tokenizer do
   defp script_data_double_escaped_dash(<<c::utf8, html::binary>>, s) do
     script_data_double_escaped(html, %{
       s
-      | tokens: [%Char{data: <<c::utf8>>} | s.tokens]
+      | tokens: append_char_token(s, <<c::utf8>>)
     })
   end
 
@@ -992,21 +990,21 @@ defmodule Floki.HTML.Tokenizer do
   defp script_data_double_escaped_dash_dash(<<"-", html::binary>>, s) do
     script_data_double_escaped_dash_dash(html, %{
       s
-      | tokens: [%Char{data: @hyphen_minus} | s.tokens]
+      | tokens: append_char_token(s, @hyphen_minus)
     })
   end
 
   defp script_data_double_escaped_dash_dash(<<"<", html::binary>>, s) do
     script_data_double_escaped_less_than_sign(html, %{
       s
-      | tokens: [%Char{data: @less_than_sign} | s.tokens]
+      | tokens: append_char_token(s, @less_than_sign)
     })
   end
 
   defp script_data_double_escaped_dash_dash(<<">", html::binary>>, s) do
     script_data(html, %{
       s
-      | tokens: [%Char{data: @greater_than_sign} | s.tokens]
+      | tokens: append_char_token(s, @greater_than_sign)
     })
   end
 
@@ -1016,7 +1014,7 @@ defmodule Floki.HTML.Tokenizer do
        ) do
     script_data_double_escaped(html, %{
       s
-      | tokens: [%Char{data: @replacement_char} | s.tokens]
+      | tokens: append_char_token(s, @replacement_char)
     })
   end
 
@@ -1030,7 +1028,7 @@ defmodule Floki.HTML.Tokenizer do
        ) do
     script_data_double_escaped(html, %{
       s
-      | tokens: [%Char{data: <<c::utf8>>} | s.tokens]
+      | tokens: append_char_token(s, <<c::utf8>>)
     })
   end
 
@@ -1043,7 +1041,7 @@ defmodule Floki.HTML.Tokenizer do
     script_data_double_escape_end(html, %{
       s
       | buffer: "",
-        tokens: [%Char{data: @solidus} | s.tokens]
+        tokens: append_char_token(s, @solidus)
     })
   end
 
@@ -1059,9 +1057,9 @@ defmodule Floki.HTML.Tokenizer do
        )
        when <<c::utf8>> in ["/", ">" | @space_chars] do
     if s.buffer == "script" do
-      script_data_escaped(html, %{s | tokens: [%Char{data: <<c::utf8>>} | s.tokens]})
+      script_data_escaped(html, %{s | tokens: append_char_token(s, <<c::utf8>>)})
     else
-      script_data_double_escaped(html, %{s | tokens: [%Char{data: <<c::utf8>>} | s.tokens]})
+      script_data_double_escaped(html, %{s | tokens: append_char_token(s, <<c::utf8>>)})
     end
   end
 
@@ -1075,7 +1073,7 @@ defmodule Floki.HTML.Tokenizer do
     script_data_double_escape_end(html, %{
       s
       | buffer: s.buffer <> String.downcase(char),
-        tokens: [%Char{data: char} | s.tokens]
+        tokens: append_char_token(s, char)
     })
   end
 
@@ -1089,7 +1087,7 @@ defmodule Floki.HTML.Tokenizer do
     script_data_double_escape_end(html, %{
       s
       | buffer: s.buffer <> char,
-        tokens: [%Char{data: char} | s.tokens]
+        tokens: append_char_token(s, char)
     })
   end
 
@@ -1226,7 +1224,7 @@ defmodule Floki.HTML.Tokenizer do
     attribute = %Attribute{name: "", value: "", position: s.position}
     new_token = %Tag{s.token | attributes: [attribute | s.token.attributes]}
 
-    after_attribute_name(html, %{s | token: new_token})
+    attribute_name(html, %{s | token: new_token})
   end
 
   # § tokenizer-before-attribute-value-state
@@ -2488,7 +2486,7 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defp cdata_section(<<c::utf8, html::binary>>, s) do
-    cdata_section(html, %{s | tokens: [%Char{data: <<c::utf8>>} | s.tokens]})
+    cdata_section(html, %{s | tokens: append_char_token(s, <<c::utf8>>)})
   end
 
   # § tokenizer-cdata-section-bracket-state
@@ -2498,13 +2496,13 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defp cdata_section_bracket(html, s) do
-    cdata_section(html, %{s | tokens: [%Char{data: "]"} | s.tokens]})
+    cdata_section(html, %{s | tokens: append_char_token(s, "]")})
   end
 
   # § tokenizer-cdata-section-end-state
 
   defp cdata_section_end(<<"]", html::binary>>, s) do
-    cdata_section_end(html, %{s | tokens: [%Char{data: "]"} | s.tokens]})
+    cdata_section_end(html, %{s | tokens: append_char_token(s, "]")})
   end
 
   defp cdata_section_end(<<">", html::binary>>, s) do
@@ -2512,7 +2510,7 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defp cdata_section_end(html, s) do
-    cdata_section(html, %{s | tokens: [%Char{data: "]]"} | s.tokens]})
+    cdata_section(html, %{s | tokens: append_char_token(s, "]]")})
   end
 
   # § tokenizer-character-reference-state
