@@ -1243,7 +1243,7 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defp before_attribute_value(html = <<">", _rest::binary>>, s) do
-    before_attribute_value(html, %{
+    attribute_value_unquoted(html, %{
       s
       | errors: [%ParseError{position: s.position} | s.errors]
     })
