@@ -1167,6 +1167,14 @@ defmodule Floki.HTML.Tokenizer do
     attribute_name(html, %{s | token: new_token, position: pos_c(s.position)})
   end
 
+  defp attribute_name(<<"\0", html::binary>>, s) do
+    [attr | attrs] = s.token.attributes
+    new_attr = %Attribute{attr | name: attr.name <> @replacement_char}
+    new_token = %Tag{s.token | attributes: [new_attr | attrs]}
+
+    attribute_name(html, %{s | token: new_token, position: pos_c(s.position)})
+  end
+
   defp attribute_name(<<c::utf8, html::binary>>, s)
        when <<c::utf8>> in ["\"", "'", "<"] do
     [attr | attrs] = s.token.attributes
