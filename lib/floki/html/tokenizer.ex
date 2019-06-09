@@ -95,7 +95,9 @@ defmodule Floki.HTML.Tokenizer do
   # Use `s.emit.(token)` before append it to list of tokens
 
   def tokenize(html) do
-    data(html, %State{emit: fn token -> token end})
+    html
+    |> normalize_newlines("")
+    |> data(%State{emit: fn token -> token end})
   end
 
   defp eof(last_state, s) do
@@ -1843,7 +1845,7 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defp doctype_name(<<"\0", html::binary>>, s) do
-    new_token = %Doctype{s.token | name: s.token.name <> "\uFFFD"}
+    new_token = %Doctype{s.token | name: s.token.name <> @replacement_char}
 
     doctype_name(html, %{
       s
@@ -2226,7 +2228,7 @@ defmodule Floki.HTML.Tokenizer do
 
     bogus_doctype(html, %{
       s
-      | tokens: doctype,
+      | token: doctype,
         errors: [%ParseError{position: s.position} | s.errors]
     })
   end
@@ -2473,6 +2475,11 @@ defmodule Floki.HTML.Tokenizer do
 
   defp bogus_doctype(<<">", html::binary>>, s) do
     data(html, %{s | token: nil, tokens: [s.token | s.tokens]})
+  end
+
+  defp bogus_doctype(<<"\0", html::binary>>, s) do
+    # TODO: set error
+    bogus_doctype(html, s)
   end
 
   defp bogus_doctype("", s) do
@@ -2833,5 +2840,19 @@ defmodule Floki.HTML.Tokenizer do
 
   defp pos_c(previous_position, chars_count \\ 1) do
     %Position{previous_position | col: previous_position.col + chars_count}
+  end
+
+  defp normalize_newlines("", acc), do: acc
+
+  defp normalize_newlines(<<"\u000D\u000A", html::binary>>, acc) do
+    normalize_newlines(html, acc <> "\u000A")
+  end
+
+  defp normalize_newlines(<<"\u000D", html::binary>>, acc) do
+    normalize_newlines(html, acc <> "\u000A")
+  end
+
+  defp normalize_newlines(<<c::utf8, html::binary>>, acc) do
+    normalize_newlines(html, acc <> <<c::utf8>>)
   end
 end
