@@ -17,8 +17,7 @@ defmodule Floki.TraversalTest do
 
       assert Floki.traverse_and_update(html, fn {"div", attrs, children} ->
                {"p", attrs, children}
-             end) ==
-               {"p", [], ["hello"]}
+             end) == {"p", [], ["hello"]}
     end
 
     test "with style attribute and style->src function returns src attribute" do
@@ -26,8 +25,7 @@ defmodule Floki.TraversalTest do
 
       assert Floki.traverse_and_update(html, fn {elem, _attrs, children} ->
                {elem, [{"src", "http://example.test"}], children}
-             end) ==
-               {"div", [{"src", "http://example.test"}], ["hello"]}
+             end) == {"div", [{"src", "http://example.test"}], ["hello"]}
     end
 
     test "with text child and child replacer function returns tag with new child" do
@@ -35,8 +33,7 @@ defmodule Floki.TraversalTest do
 
       assert Floki.traverse_and_update(html, fn {elem, attrs, _children} ->
                {elem, attrs, ["world"]}
-             end) ==
-               {"div", [], ["world"]}
+             end) == {"div", [], ["world"]}
     end
 
     test "with div->span and span deleter function returns div without span" do
@@ -45,8 +42,7 @@ defmodule Floki.TraversalTest do
       assert Floki.traverse_and_update(html, fn
                {"span", _attrs, _children} -> nil
                tag -> tag
-             end) ==
-               {"div", [], []}
+             end) == {"div", [], []}
     end
 
     test "with div,p and identity function returns div,p" do
