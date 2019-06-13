@@ -1113,7 +1113,7 @@ defmodule Floki.HTML.Tokenizer do
     after_attribute_name("", s)
   end
 
-  defp before_attribute_name(html = <<"=", _rest::binary>>, s) do
+  defp before_attribute_name(<<"=", html::binary>>, s) do
     new_token = %Tag{
       s.token
       | attributes: [
