@@ -6,4 +6,6 @@ defmodule Floki.HTML.TokenizerTest do
   load_tests_from_file("./test/html5lib-tests/tokenizer/test2.test")
   load_tests_from_file("./test/html5lib-tests/tokenizer/test3.test")
   load_tests_from_file("./test/html5lib-tests/tokenizer/test4.test")
+  load_tests_from_file("./test/html5lib-tests/tokenizer/entities.test")
+  load_tests_from_file("./test/html5lib-tests/tokenizer/namedEntities.test")
 end

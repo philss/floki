@@ -19,24 +19,13 @@ defmodule Floki.Mixfile do
       docs: docs(),
       dialyzer: [
         plt_file: {:no_warn, "priv/plts/dialyzer.plt"}
-      ]
+      ],
+      elixirc_paths: elixirc_paths(Mix.env())
     ]
   end
 
   def application do
     [extra_applications: [:logger]]
-  end
-
-  defp docs do
-    [
-      extras: ["CHANGELOG.md", {:"README.md", [title: "Overview"]}],
-      main: "readme",
-      assets: "assets",
-      logo: "assets/images/floki-logo.svg",
-      source_url: @source_url,
-      source_ref: "v#{@version}",
-      skip_undefined_reference_warnings_on: ["CHANGELOG.md"]
-    ]
   end
 
   defp deps do
@@ -123,4 +112,8 @@ defmodule Floki.Mixfile do
       }
     }
   end
+
+  # Specifies which paths to compile per environment.
+  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(_), do: ["lib"]
 end
