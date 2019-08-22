@@ -50,5 +50,30 @@ defmodule Floki.TraversalTest do
 
       assert Floki.traverse_and_update(html, fn tag -> tag end) == html
     end
+
+    test "with comment, pi and doctype elements" do
+      html = [
+        {:doctype, "html", nil, nil},
+        {"body", [],
+         [
+           {"div", [], ["hello"]},
+           {:comment, "a comment"},
+           {:pi, "xml", []}
+         ]}
+      ]
+
+      assert Floki.traverse_and_update(html, fn
+               {:comment, text} -> {"span", [], [text]}
+               {:pi, "xml", _children} -> nil
+               {:doctype, "html", nil, nil} -> nil
+               tag -> tag
+             end) == [
+               {"body", [],
+                [
+                  {"div", [], ["hello"]},
+                  {"span", [], ["a comment"]}
+                ]}
+             ]
+    end
   end
 end

@@ -12,12 +12,14 @@ defmodule Floki.Traversal do
 
   def traverse_and_update([], _fun), do: []
 
+  def traverse_and_update(xml_tag = {:pi, _, _}, fun), do: fun.(xml_tag)
+
   def traverse_and_update({elem, attrs, children}, fun) do
     mapped_children = traverse_and_update(children, fun)
     fun.({elem, attrs, mapped_children})
   end
 
-  def traverse_and_update({:comment, children}, fun) do
-    fun.({:comment, children})
-  end
+  def traverse_and_update({:comment, children}, fun), do: fun.({:comment, children})
+
+  def traverse_and_update(doctype = {:doctype, _, _, _}, fun), do: fun.(doctype)
 end
