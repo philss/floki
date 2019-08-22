@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased][unreleased]
 
+## [0.22.0] - 2019-08-21
+
+### Added
+
+- Add `Floki.traverse_and_update/2` that works in similar way to `Floki.map/2` but
+traverse the tree and update the children elements. The difference from "map" is that
+this function can create a tree with more or less nodes. - thanks [@ericlathrop](https://github.com/ericlathrop)
+
+### Changed
+
+- Remove support for Elixir 1.4.
+
 ## [0.21.0] - 2019-04-17
 
 ### Added
@@ -422,7 +434,8 @@ of the parent element inside HTML.
 
 - Elixir version requirement from "~> 1.0.0" to ">= 1.0.0".
 
-[unreleased]: https://github.com/philss/floki/compare/v0.21.0...HEAD
+[unreleased]: https://github.com/philss/floki/compare/v0.22.0...HEAD
+[0.22.0]: https://github.com/philss/floki/compare/v0.21.0...v0.22.0
 [0.21.0]: https://github.com/philss/floki/compare/v0.20.4...v0.21.0
 [0.20.4]: https://github.com/philss/floki/compare/v0.20.3...v0.20.4
 [0.20.3]: https://github.com/philss/floki/compare/v0.20.2...v0.20.3
