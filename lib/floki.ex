@@ -229,6 +229,22 @@ defmodule Floki do
   def map(html_tree, fun), do: Finder.map(html_tree, fun)
 
   @doc """
+  Traverses a HTML tree structure and returns a new tree structure that is the result of executing a function on all nodes. The function receives a tuple with {name, attributes, children}, and should either return a similar tuple or `nil` to delete the current node.
+
+  ## Examples
+
+      iex> html = {"div", [], ["hello"]}
+      iex> Floki.traverse_and_update(html, fn {"div", attrs, children} -> {"p", attrs, children} end)
+      {"p", [], ["hello"]}
+
+      iex> html = {"div", [], [{"span", [], ["hello"]}]}
+      iex> Floki.traverse_and_update(html, fn {"span", _attrs, _children} -> nil; tag -> tag end)
+      {"div", [], []}
+  """
+
+  defdelegate traverse_and_update(html_tree, fun), to: Floki.Traversal
+
+  @doc """
   Returns the text nodes from a HTML tree.
   By default, it will perform a deep search through the HTML tree.
   You can disable deep search with the option `deep` assigned to false.
