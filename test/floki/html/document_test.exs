@@ -2,7 +2,7 @@ defmodule Floki.HTML.DocumentTest do
   use ExUnit.Case, async: true
 
   alias Floki.HTML.Document
-  alias Floki.HTML.Document.Doctype
+  alias Floki.HTML.Doctype
   alias Floki.HTMLTree
   alias Floki.HTMLTree.HTMLNode
 
@@ -13,7 +13,11 @@ defmodule Floki.HTML.DocumentTest do
     assert %Document{doctype: %Doctype{name: "html"}} == Document.set_doctype(doc, doctype)
   end
 
-  test "add_node/3 add a node to its parent or the root of the tree" do
+  test "set_mode/2 sets the document mode" do
+    assert %Document{mode: "quirks"} == Document.set_mode(%Document{}, "quirks")
+  end
+
+  test "add_node/3 add a node to its parent in the tree" do
     doc = build_document()
     node = %HTMLNode{type: "p"}
     parent = Map.fetch!(doc.tree.nodes, 6)
@@ -21,8 +25,25 @@ defmodule Floki.HTML.DocumentTest do
     new_doc = Document.add_node(doc, node, parent)
 
     assert %Document{tree: %HTMLTree{node_ids: [11 | _]}} = new_doc
+
     inserted_node = Map.get(new_doc.tree.nodes, 11)
     assert %HTMLNode{type: "p", node_id: 11, parent_node_id: 6} = inserted_node
+  end
+
+  test "add_node/2 add a node to the root of the tree" do
+    doc = %Document{}
+
+    node = %HTMLNode{type: "body"}
+
+    new_doc = Document.add_node(doc, node)
+
+    assert %Document{
+             tree: %HTMLTree{
+               node_ids: [1],
+               root_nodes_ids: [1],
+               nodes: %{1 => %HTMLNode{type: "body", node_id: 1, parent_node_id: nil}}
+             }
+           } = new_doc
   end
 
   defp build_document do

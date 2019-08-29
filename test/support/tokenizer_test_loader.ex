@@ -59,6 +59,7 @@ defmodule TokenizerTestLoader do
     output_tokens =
       state.tokens
       |> Enum.map(&transform_token/1)
+      |> Enum.reverse()
       |> Enum.reduce([], fn token, tokens ->
         if token do
           [token | tokens]
@@ -76,6 +77,7 @@ defmodule TokenizerTestLoader do
           "line" => error.position.line
         }
       end)
+      |> Enum.reverse()
 
     %HTMLTestResult{tokens: output_tokens, errors: output_errors}
   end

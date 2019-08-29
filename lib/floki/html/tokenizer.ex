@@ -100,8 +100,15 @@ defmodule Floki.HTML.Tokenizer do
     |> data(%State{emit: fn token -> token end})
   end
 
+  # It assumes that the parser stops in the end of file.
+  # If we need to work with streams, this can't reverse here.
   defp eof(last_state, s) do
-    %{s | eof_last_state: last_state, tokens: [%EOF{position: s.position} | s.tokens]}
+    %{
+      s
+      | eof_last_state: last_state,
+        tokens: Enum.reverse([%EOF{position: s.position} | s.tokens]),
+        errors: Enum.reverse(s.errors)
+    }
   end
 
   # § tokenizer-data-state
