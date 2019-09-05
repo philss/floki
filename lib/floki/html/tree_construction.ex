@@ -26,75 +26,71 @@ defmodule Floki.HTML.TreeConstruction do
   end
 
   def build_document(tokenizer_state = %TState{}) do
-    build(%State{}, tokenizer_state)
+    initial(%State{}, tokenizer_state)
   end
 
-  defp build(state, %TState{tokens: []}) do
-    {:ok, state.document}
-  end
-
-  defp build(
-         state = %State{mode: :initial},
+  defp initial(
+         state,
          tstate = %TState{tokens: [token = %Tokenizer.Comment{} | tokens]}
        ) do
     doc = Document.add_node(state.document, %HTree.Comment{content: token.data})
-    build(%{state | document: doc}, %{tstate | tokens: tokens})
+    initial(%{state | document: doc}, %{tstate | tokens: tokens})
   end
 
-  defp build(
-         state = %State{mode: :initial},
+  defp initial(
+         state,
          tstate = %TState{tokens: [token = %Tokenizer.Char{} | tokens]}
        ) do
     if String.trim(token.data) == "" do
-      build(state, %{tstate | tokens: tokens})
+      initial(state, %{tstate | tokens: tokens})
     else
-      build(%{state | mode: :before_html}, tstate)
+      before_html(state, tstate)
     end
   end
 
-  defp build(
-         state = %State{mode: :initial},
+  defp initial(
+         state,
          tstate = %TState{tokens: [token = %Tokenizer.Doctype{} | tokens]}
        ) do
     # TODO: check for parse errors
     doctype = %Doctype{name: token.name}
     doc = Document.set_doctype(state.document, doctype)
-    build(%{state | document: doc}, %{tstate | tokens: tokens})
+    initial(%{state | document: doc}, %{tstate | tokens: tokens})
   end
 
-  defp build(state = %State{mode: :initial}, tstate) do
-    build(
-      %{state | document: Document.set_mode(state.document, "quirks"), mode: :before_html},
+  defp initial(state, tstate) do
+    before_html(
+      %{state | document: Document.set_mode(state.document, "quirks")},
       tstate
     )
   end
 
   # the-before-html-insertion-mode
 
-  defp build(
-         state = %State{mode: :before_html},
+  defp before_html(
+         state,
          tstate = %TState{tokens: [%Tokenizer.Doctype{} | tokens]}
        ) do
-    build(state, %{tstate | tokens: tokens})
+    before_html(state, %{tstate | tokens: tokens})
   end
 
-  defp build(
-         state = %State{mode: :before_html},
+  defp before_html(
+         state,
          tstate = %TState{tokens: [token = %Tokenizer.Comment{} | tokens]}
        ) do
     doc = Document.add_node(state.document, %HTree.Comment{content: token.data})
-    build(%{state | document: doc}, %{tstate | tokens: tokens})
+    before_html(%{state | document: doc}, %{tstate | tokens: tokens})
   end
 
-  defp build(
-         state = %State{mode: :before_html},
-         tstate = %TState{tokens: [token = %Tokenizer.Char{} | tokens]}
+  defp before_html(
+         _state,
+         _tstate = %TState{tokens: [_token = %Tokenizer.Char{} | _tokens]}
        ) do
     # TODO: since we are collapsing the char tokens, we can't check if this is
     # a space token. Maybe breaking the char token into multiples is a solution.
   end
 
-  defp build(state, %TState{}) do
+  defp before_html(state, %TState{}) do
     {:ok, state.document}
   end
 end
