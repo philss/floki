@@ -4,7 +4,7 @@ defmodule Floki.HTMLParser.Mochiweb do
 
   def parse(html) do
     html = "<#{@root_node}>#{html}</#{@root_node}>"
-    {@root_node, [], parsed} = :mochiweb_html.parse(html)
+    {@root_node, [], parsed} = :floki_mochi_html.parse(html)
 
     if length(parsed) == 1, do: hd(parsed), else: parsed
   end
