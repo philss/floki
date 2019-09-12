@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased][unreleased]
 
+## [0.23.0] - 2019-09-11
+
+### Changed
+
+- Remove mochiweb as a hex dependency. It brings the code from the original project
+to Floki's codebase - thanks [@josevalim](https://github.com/josevalim)
+
 ## [0.22.0] - 2019-08-21
 
 ### Added
@@ -434,7 +441,8 @@ of the parent element inside HTML.
 
 - Elixir version requirement from "~> 1.0.0" to ">= 1.0.0".
 
-[unreleased]: https://github.com/philss/floki/compare/v0.22.0...HEAD
+[unreleased]: https://github.com/philss/floki/compare/v0.23.0...HEAD
+[0.23.0]: https://github.com/philss/floki/compare/v0.22.0...v0.23.0
 [0.22.0]: https://github.com/philss/floki/compare/v0.21.0...v0.22.0
 [0.21.0]: https://github.com/philss/floki/compare/v0.20.4...v0.21.0
 [0.20.4]: https://github.com/philss/floki/compare/v0.20.3...v0.20.4
