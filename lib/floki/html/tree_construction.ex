@@ -7,6 +7,8 @@ defmodule Floki.HTML.TreeConstruction do
   alias Floki.HTML.Tokenizer.State, as: TState
   alias Floki.HTMLTree, as: HTree
 
+  @space_chars ["\t", "\n", "\f", "\s"]
+
   # It represents the state of tree construction.
   # The docs of this step is here: https://html.spec.whatwg.org/#tree-construction
   defmodule State do
@@ -33,7 +35,7 @@ defmodule Floki.HTML.TreeConstruction do
          state,
          tstate = %TState{tokens: [token = %Tokenizer.Comment{} | tokens]}
        ) do
-    doc = Document.add_node(state.document, %HTree.Comment{content: token.data})
+    {:ok, doc, _} = Document.add_node(state.document, %HTree.Comment{content: token.data})
     initial(%{state | document: doc}, %{tstate | tokens: tokens})
   end
 
@@ -83,11 +85,12 @@ defmodule Floki.HTML.TreeConstruction do
   end
 
   defp before_html(
-         _state,
-         _tstate = %TState{tokens: [_token = %Tokenizer.Char{} | _tokens]}
-       ) do
+         state,
+         tstate = %TState{tokens: [%Tokenizer.Char{data: data} | tokens]}
+       ) when data in @space_chars do
     # TODO: since we are collapsing the char tokens, we can't check if this is
     # a space token. Maybe breaking the char token into multiples is a solution.
+    before_html(state, %{tstate | tokens: tokens})
   end
 
   defp before_html(state, %TState{}) do

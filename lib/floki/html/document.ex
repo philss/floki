@@ -44,7 +44,7 @@ defmodule Floki.HTML.Document do
         nodes: Map.put(tree.nodes, new_id, new_node)
     }
 
-    %{document | tree: new_tree}
+    {:ok, %{document | tree: new_tree}, new_node}
   end
 
   @doc """
@@ -58,7 +58,7 @@ defmodule Floki.HTML.Document do
     nodes = put_new_node(tree.nodes, new_node)
     new_tree = %{tree | node_ids: [new_id | tree.node_ids], nodes: nodes}
 
-    %{document | tree: new_tree}
+    {:ok, %{document | tree: new_tree}, new_node}
   end
 
   defp id([]), do: 1

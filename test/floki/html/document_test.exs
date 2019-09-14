@@ -22,12 +22,13 @@ defmodule Floki.HTML.DocumentTest do
     node = %HTMLNode{type: "p"}
     parent = Map.fetch!(doc.tree.nodes, 6)
 
-    new_doc = Document.add_node(doc, node, parent)
-
-    assert %Document{tree: %HTMLTree{node_ids: [11 | _]}} = new_doc
+    assert {:ok, new_doc = %Document{tree: %HTMLTree{node_ids: [11 | _]}}, new_node} =
+             Document.add_node(doc, node, parent)
 
     inserted_node = Map.get(new_doc.tree.nodes, 11)
     assert %HTMLNode{type: "p", node_id: 11, parent_node_id: 6} = inserted_node
+
+    assert new_node == inserted_node
   end
 
   test "add_node/2 add a node to the root of the tree" do
@@ -37,13 +38,16 @@ defmodule Floki.HTML.DocumentTest do
 
     new_doc = Document.add_node(doc, node)
 
-    assert %Document{
-             tree: %HTMLTree{
-               node_ids: [1],
-               root_nodes_ids: [1],
-               nodes: %{1 => %HTMLNode{type: "body", node_id: 1, parent_node_id: nil}}
-             }
-           } = new_doc
+    assert {:ok,
+            %Document{
+              tree: %HTMLTree{
+                node_ids: [1],
+                root_nodes_ids: [1],
+                nodes: %{1 => %HTMLNode{type: "body", node_id: 1, parent_node_id: nil}}
+              }
+            }, h_node} = new_doc
+
+    assert %HTMLNode{type: "body", node_id: 1, parent_node_id: nil} = h_node
   end
 
   defp build_document do
