@@ -80,20 +80,74 @@ defmodule Floki.HTML.TreeConstruction do
          state,
          tstate = %TState{tokens: [token = %Tokenizer.Comment{} | tokens]}
        ) do
-    doc = Document.add_node(state.document, %HTree.Comment{content: token.data})
+    {:ok, doc, _} = Document.add_node(state.document, %HTree.Comment{content: token.data})
+
     before_html(%{state | document: doc}, %{tstate | tokens: tokens})
   end
 
   defp before_html(
          state,
          tstate = %TState{tokens: [%Tokenizer.Char{data: data} | tokens]}
-       ) when data in @space_chars do
+       )
+       when data in @space_chars do
     # TODO: since we are collapsing the char tokens, we can't check if this is
     # a space token. Maybe breaking the char token into multiples is a solution.
     before_html(state, %{tstate | tokens: tokens})
   end
 
+  defp before_html(
+         state,
+         tstate = %TState{tokens: [token = %Tokenizer.Tag{type: :start} | tokens]}
+       ) do
+    new_element = %HTree.HTMLNode{type: token.name, attributes: token.attributes}
+    {:ok, doc, new_node} = Document.add_node(state.document, new_element)
+
+    before_head(
+      %{state | document: doc, open_elements: [new_node.node_id | state.open_elements]},
+      %{tstate | tokens: tokens}
+    )
+  end
+
+  defp before_html(
+         state,
+         tstate = %TState{tokens: [%Tokenizer.Tag{name: name, type: :end} | _tokens]}
+       )
+       when name in ~w(head body html br) do
+    new_element = %HTree.HTMLNode{type: "html"}
+    {:ok, doc, new_node} = Document.add_node(state.document, new_element)
+
+    before_head(
+      %{state | document: doc, open_elements: [new_node.node_id | state.open_elements]},
+      tstate
+    )
+  end
+
+  defp before_html(
+         state,
+         tstate = %TState{tokens: [%Tokenizer.Tag{type: :end} | tokens]}
+       ) do
+    # TODO: add parse error
+    before_html(state, %{tstate | tokens: tokens})
+  end
+
+  defp before_html(
+         state,
+         tstate = %TState{tokens: [_token | _tokens]}
+       ) do
+    new_element = %HTree.HTMLNode{type: "html"}
+    {:ok, doc, new_node} = Document.add_node(state.document, new_element)
+
+    before_head(
+      %{state | document: doc, open_elements: [new_node.node_id | state.open_elements]},
+      tstate
+    )
+  end
+
   defp before_html(state, %TState{}) do
+    {:ok, state.document}
+  end
+
+  defp before_head(state, %TState{}) do
     {:ok, state.document}
   end
 end
