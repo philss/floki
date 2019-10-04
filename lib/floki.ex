@@ -303,6 +303,37 @@ defmodule Floki do
   end
 
   @doc """
+  Returns the direct child nodes of a HTML tree.
+
+  By default, it will also include all texts. You can disable this behaviour
+  by using the option `include_text` to `false`
+
+  ## Examples
+
+      iex> Floki.children({"div", [], ["text", {"span", [], []}]})
+      ["text", {"span", [], []}]
+
+      iex> Floki.children({"div", [], ["text", {"span", [], []}]}, include_text: false)
+      [{"span", [], []}]
+
+  """
+
+  @spec children(html_tree, Keyword.t()) :: html_tree
+
+  def children(html, opts \\ [include_text: true]) do
+    case html do
+      {_, _, subtree} ->
+        filter_children(subtree, opts[:include_text])
+
+      _ ->
+        nil
+    end
+  end
+
+  defp filter_children(children, false), do: Enum.filter(children, &is_tuple(&1))
+  defp filter_children(children, _), do: children
+
+  @doc """
   Returns a list with attribute values for a given selector.
 
   ## Examples
