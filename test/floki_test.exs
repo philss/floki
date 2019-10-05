@@ -941,6 +941,32 @@ defmodule FlokiTest do
     assert Floki.find(@html, "a,div") == Floki.find(@html, [selector_struct_1, selector_struct_2])
   end
 
+  # Floki.children/2
+
+  test "returns the children elements of an element including the text" do
+    html = "<div>a parent<span>a child</span></div>"
+    elements = Floki.parse(html)
+    expected = ["a parent", {"span", [], ["a child"]}]
+
+    result = Floki.children(elements)
+
+    assert result == expected
+  end
+
+  test "returns the children elements of an element without the text" do
+    html = "<div>a parent<span>child 1</span>some text<span>child 2</span></div>"
+    elements = Floki.parse(html)
+    expected = [{"span", [], ["child 1"]}, {"span", [], ["child 2"]}]
+
+    result = Floki.children(elements, include_text: false)
+
+    assert result == expected
+  end
+
+  test "returns nil if the given html is not a valid tuple" do
+    assert Floki.children("<div>not<span>valid</span></div>") == nil
+  end
+
   # Floki.attribute/3
 
   test "get attribute values from elements with a given class" do
