@@ -318,6 +318,18 @@ defmodule FlokiTest do
     assert rerendered_tree == tree
   end
 
+  test "raw_html (with both quote and double quote inside the attribute)" do
+    expected_html = "<span data-stuff=\"&quot;'\"></span>"
+    tree = Floki.parse("<span data-stuff=\"&quot;&#39;\"></span>")
+    assert Floki.raw_html(tree) == expected_html
+
+    tree = Floki.parse("<span data-stuff='\"&#39;'></span>")
+    assert Floki.raw_html(tree) == expected_html
+
+    span = Floki.parse("<span data-stuff=\"&quot;'\"></span>")
+    assert Floki.raw_html(tree) == expected_html
+  end
+
   test "raw_html (with style tag with comments" do
     html = "<style><!-- test --></style>"
 
