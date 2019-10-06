@@ -368,6 +368,21 @@ defmodule FlokiTest do
            ]
   end
 
+  test "find elements with anormal class spacing" do
+    html = """
+    <div class="js-cool\t\t  js-elixir"></div>
+    """
+    class_selector = ".js-cool.js-elixir"
+
+    assert Floki.find(html, class_selector) == [
+             {
+               "div",
+               [{"class", "js-cool\t\t  js-elixir"}],
+               []
+             }
+           ]
+  end
+
   test "find elements with a given class in html_without_html_tag" do
     class_selector = ".js-cool"
 
