@@ -124,8 +124,8 @@ defmodule Floki.RawHTML do
     html_escape_chars(text, ~r/&|<|>/)
   end
 
-  defp html_escape_chars(subject, escaped_chars) do
-    String.replace(subject, escaped_chars, &html_escape_char/1)
+  defp html_escape_chars(subject, escaped_chars_regex) do
+    Regex.replace(escaped_chars_regex, subject, &html_escape_char/1)
   end
 
   defp html_escape_char("<"), do: "&lt;"
