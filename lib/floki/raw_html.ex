@@ -34,6 +34,7 @@ defmodule Floki.RawHTML do
   end
 
   defp build_raw_html([], html, _encoder), do: html
+
   defp build_raw_html(string, _html, encoder) when is_binary(string),
     do: html_escape_text(encoder.(string))
 
