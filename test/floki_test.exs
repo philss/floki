@@ -372,6 +372,7 @@ defmodule FlokiTest do
     html = """
     <div class="js-cool\t\t  js-elixir"></div>
     """
+
     class_selector = ".js-cool.js-elixir"
 
     assert Floki.find(html, class_selector) == [
