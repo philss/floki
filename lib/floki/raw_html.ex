@@ -35,8 +35,7 @@ defmodule Floki.RawHTML do
 
   defp build_raw_html([], html, _encoder), do: html
 
-  defp build_raw_html(string, _html, encoder) when is_binary(string),
-    do: html_escape_text(encoder.(string))
+  defp build_raw_html(string, _html, encoder) when is_binary(string), do: encoder.(string)
 
   defp build_raw_html(tuple, html, encoder) when is_tuple(tuple),
     do: build_raw_html([tuple], html, encoder)
@@ -119,10 +118,6 @@ defmodule Floki.RawHTML do
 
   def html_escape_attribute_value(attribute_value) do
     html_escape_chars(attribute_value, ~r/&|"/)
-  end
-
-  def html_escape_text(text) do
-    html_escape_chars(text, ~r/&|<|>/)
   end
 
   defp html_escape_chars(subject, escaped_chars_regex) do
