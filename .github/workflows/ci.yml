@@ -13,7 +13,7 @@ jobs:
 
     strategy:
       matrix:
-        elixir: [1.9.1, 1.8.2, 1.7.4, 1.6.6, 1.5.3]
+        elixir: [1.9, 1.8, 1.7, 1.6, 1.5]
 
     steps:
       - uses: actions/checkout@v1.0.0
