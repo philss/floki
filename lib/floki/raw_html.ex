@@ -34,6 +34,7 @@ defmodule Floki.RawHTML do
   end
 
   defp build_raw_html([], html, _encoder), do: html
+
   defp build_raw_html(string, _html, encoder) when is_binary(string), do: encoder.(string)
 
   defp build_raw_html(tuple, html, encoder) when is_tuple(tuple),
@@ -88,11 +89,7 @@ defmodule Floki.RawHTML do
   end
 
   defp build_attrs({attr, <<value::binary>>}, attrs) do
-    if String.contains?(value, "\"") do
-      ~s(#{attrs} #{attr}='#{value}')
-    else
-      ~s(#{attrs} #{attr}="#{value}")
-    end
+    "#{attrs} #{attr}=\"#{html_escape_attribute_value(value)}\""
   end
 
   defp build_attrs(<<attr::binary>>, attrs), do: "#{attrs} #{attr}"
@@ -116,4 +113,20 @@ defmodule Floki.RawHTML do
       & &1
     end
   end
+
+  # html_escape
+
+  def html_escape_attribute_value(attribute_value) do
+    html_escape_chars(attribute_value, ~r/&|"/)
+  end
+
+  defp html_escape_chars(subject, escaped_chars_regex) do
+    Regex.replace(escaped_chars_regex, subject, &html_escape_char/1)
+  end
+
+  defp html_escape_char("<"), do: "&lt;"
+  defp html_escape_char(">"), do: "&gt;"
+  defp html_escape_char("&"), do: "&amp;"
+  defp html_escape_char("\""), do: "&quot;"
+  defp html_escape_char("'"), do: "&#39;"
 end
