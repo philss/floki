@@ -38,7 +38,7 @@ defmodule Floki.Selector.AttributeSelector do
   def match?(attributes, s = %AttributeSelector{match_type: :includes}) do
     value = get_value(s.attribute, attributes)
 
-    whitespace_values = String.split(value, " ")
+    whitespace_values = String.split(value, ~r/\s+/)
 
     Enum.any?(whitespace_values, fn v -> v == s.value end)
   end
