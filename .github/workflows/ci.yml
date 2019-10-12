@@ -1,0 +1,39 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    container:
+      image: elixir:${{ matrix.elixir }}-slim
+
+    name: Elixir ${{ matrix.elixir }}
+
+    strategy:
+      matrix:
+        elixir: [1.9, 1.8, 1.7, 1.6, 1.5]
+
+    steps:
+      - uses: actions/checkout@v1.0.0
+
+      - name: Install dependencies
+        run: |-
+          mix local.rebar --force
+          mix local.hex --force
+          mix deps.get
+
+      - name: Check format
+        if: matrix.elixir >= 1.6
+        run: mix format --check-formatted
+
+      - name: Run tests
+        run: |-
+          mix test
+
+      - name: Run inch.report
+        if: matrix.elixir >= 1.7
+        run: |-
+          mix deps.get --only docs
+          MIX_ENV=docs mix inch.report
