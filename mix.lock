@@ -1,7 +1,7 @@
 %{
   "bunt": {:hex, :bunt, "0.2.0", "951c6e801e8b1d2cbe58ebbd3e616a869061ddadcc4863d0a2182541acae9a38", [:mix], [], "hexpm"},
   "credo": {:hex, :credo, "1.1.5", "caec7a3cadd2e58609d7ee25b3931b129e739e070539ad1a0cd7efeeb47014f4", [:mix], [{:bunt, "~> 0.2.0", [hex: :bunt, repo: "hexpm", optional: false]}, {:jason, "~> 1.0", [hex: :jason, repo: "hexpm", optional: false]}], "hexpm"},
-  "earmark": {:hex, :earmark, "1.4.1", "07bb382826ee8d08d575a1981f971ed41bd5d7e86b917fd012a93c51b5d28727", [:mix], [], "hexpm"},
+  "earmark": {:hex, :earmark, "1.4.2", "3aa0bd23bc4c61cf2f1e5d752d1bb470560a6f8539974f767a38923bb20e1d7f", [:mix], [], "hexpm"},
   "ex_doc": {:hex, :ex_doc, "0.21.2", "caca5bc28ed7b3bdc0b662f8afe2bee1eedb5c3cf7b322feeeb7c6ebbde089d6", [:mix], [{:earmark, "~> 1.3.3 or ~> 1.4", [hex: :earmark, repo: "hexpm", optional: false]}, {:makeup_elixir, "~> 0.14", [hex: :makeup_elixir, repo: "hexpm", optional: false]}], "hexpm"},
   "html_entities": {:hex, :html_entities, "0.5.0", "40f5c5b9cbe23073b48a4e69c67b6c11974f623a76165e2b92d098c0e88ccb1d", [:mix], [], "hexpm"},
   "inch_ex": {:hex, :inch_ex, "2.0.0", "24268a9284a1751f2ceda569cd978e1fa394c977c45c331bb52a405de544f4de", [:mix], [{:bunt, "~> 0.2", [hex: :bunt, repo: "hexpm", optional: false]}, {:jason, "~> 1.0", [hex: :jason, repo: "hexpm", optional: false]}], "hexpm"},
