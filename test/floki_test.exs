@@ -9,6 +9,7 @@ defmodule FlokiTest do
   <title>Test</title>
   </head>
   <body>
+    <a href="http://foo.com/blah?hi=blah&foo=&#43;Park" class="foo">test</a>
     <div class="content">
       <a href="http://google.com" class="js-google js-cool">Google</a>
       <a href="http://elixir-lang.org" class="js-elixir js-cool">Elixir lang</a>
@@ -115,6 +116,11 @@ defmodule FlokiTest do
                  "body",
                  [],
                  [
+                   {
+                     "a",
+                     [{"href", "http://foo.com/blah?hi=blah&foo=+Park"}, {"class", "foo"}],
+                     ["test"]
+                   },
                    {
                      "div",
                      [{"class", "content"}],

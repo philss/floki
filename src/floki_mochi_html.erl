@@ -702,8 +702,13 @@ tokenize_charref_raw(Bin, S=#decoder{offset=O}, Start) ->
             %% CHANGED: Previously this was mochiweb_charref:charref/1
             %% but the functionality below is equivalent;
             <<_:Start/binary, Raw:Len/binary, _/binary>> = Bin,
-            <<CP/utf8>> = 'Elixir.HtmlEntities':decode(<<$&, Raw/binary, $;>>),
-            {CP, ?INC_COL(S)};
+
+            case 'Elixir.HtmlEntities':decode(<<$&, Raw/binary, $;>>) of
+              <<CP/utf8>> ->
+                {CP, ?INC_COL(S)};
+              _ ->
+                throw(invalid_charref)
+            end;
         _ ->
             tokenize_charref_raw(Bin, ?INC_COL(S), Start)
     end.
