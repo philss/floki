@@ -24,20 +24,26 @@ defmodule Floki.Mixfile do
   end
 
   defp deps do
+    # Needed to avoid installing unnecessary deps on the CI
+    parsers =
+      case System.get_env("PARSER") do
+        nil -> [:fast_html, :html5ever]
+        parser -> [String.to_atom(parser)]
+      end
+      |> Enum.map(fn name -> {name, ">= 0.0.0", optional: true, only: [:dev, :test]} end)
+
     [
       {:html_entities, "~> 0.5.0"},
       {:earmark, "~> 1.2", only: :dev},
       {:ex_doc, "~> 0.18", only: :dev},
       {:credo, ">= 0.0.0", only: [:dev, :test]},
-      {:inch_ex, ">= 0.0.0", only: :docs},
-      {:html5ever, ">= 0.0.0", optional: true, only: [:dev, :test]},
-      {:fast_html, ">= 0.0.0", optional: true, only: [:dev, :test]},
-      {:mochiweb, ">= 0.0.0", optional: true, only: [:dev, :test]}
-    ]
+      {:inch_ex, ">= 0.0.0", only: :docs}
+    ] ++ parsers
   end
 
   defp aliases do
-    parsers = get_parsers()
+    # Hardcoded because we can't load the floki application and get the module list at this point.
+    parsers = [Floki.HTMLParser.Mochiweb, Floki.HTMLParser.FastHtml, Floki.HTMLParser.Html5ever]
 
     {aliases, cli_names} =
       Enum.map_reduce(parsers, [], fn parser, acc ->
@@ -54,12 +60,6 @@ defmodule Floki.Mixfile do
     |> Keyword.put(:test, &test_with_parser(cli_names, &1))
   end
 
-  # Hardcoded because we can't load the floki application and get the module list at this point.
-  defp get_parsers() do
-    [Floki.HTMLParser.Mochiweb, Floki.HTMLParser.FastHtml, Floki.HTMLParser.Html5ever]
-  end
-
-  # Hack: If Mix.Task.Test.run is called the second time, it won't run any tests
   defp test_with_parser(parser_cli_names, args) when is_list(parser_cli_names) do
     Enum.each(parser_cli_names, fn cli_name ->
       Mix.shell().cmd("mix test.#{cli_name} --color #{Enum.join(args, " ")}",
