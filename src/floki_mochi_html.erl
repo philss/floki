@@ -656,12 +656,7 @@ tokenize_charref(Bin, S=#decoder{offset=O}) ->
                 %% CHANGED: Previously this was mochiutf8:codepoint_to_bytes(Unichar)
                 %% but that is equivalent to the below.
                 {{data, <<Unichar/utf8>>, false},
-                 S1};
-            {Unichars, S1} when is_list(Unichars) ->
-                {{data, unicode:characters_to_binary(Unichars), false},
-                 S1};
-            {undefined, _} ->
-                throw(invalid_charref)
+                 S1}
         end
     catch
         throw:invalid_charref ->
