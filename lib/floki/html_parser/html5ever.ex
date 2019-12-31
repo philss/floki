@@ -1,16 +1,26 @@
 defmodule Floki.HTMLParser.Html5ever do
+  @behaviour Floki.HTMLParser
+
   @moduledoc false
 
-  def parse(html) do
+  @impl true
+  def parse_document(html) do
     case Code.ensure_loaded(Html5ever) do
       {:module, module} ->
         case module.parse(html) do
-          {:ok, result} -> result
-          {:error, error} -> {:error, error}
+          {:ok, result} ->
+            {:ok, result}
+
+          {:error, _message} = error ->
+            error
         end
 
       {:error, _reason} ->
         raise "Expected module Html5ever to be available."
     end
   end
+
+  # NOTE: html5ever does not implement parse_fragment yet.
+  @impl true
+  def parse_fragment(html), do: parse_document(html)
 end

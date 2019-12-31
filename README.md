@@ -32,11 +32,13 @@ Take this HTML as an example:
 Here are some queries that you can perform (with return examples):
 
 ```elixir
-Floki.find(html, "p.headline")
+{:ok, document} = Floki.parse_document(html)
+
+Floki.find(document, "p.headline")
 # => [{"p", [{"class", "headline"}], ["Floki"]}]
 
-
-Floki.find(html, "p.headline")
+document
+|> Floki.find("p.headline")
 |> Floki.raw_html
 # => <p class="headline">Floki</p>
 ```
@@ -50,18 +52,6 @@ Example of node:
     {"p", [{"class", "headline"}], ["Floki"]}
 
 So even if the only child node is the element text, it is represented inside a list.
-
-You can write a simple HTML crawler with Floki and [HTTPoison](https://github.com/edgurgel/httpoison):
-
-```elixir
-html
-|> Floki.find(".pages a")
-|> Floki.attribute("href")
-|> Enum.map(fn(url) -> HTTPoison.get!(url) end)
-
-```
-
-It is simple as that!
 
 ## Installation
 
@@ -88,7 +78,7 @@ The packages names may be different depending on your OS.
 
 ### Alternative HTML parsers
 
-By default Floki uses a patched version of `mochiweb_html` for parsing fragments 
+By default Floki uses a patched version of `mochiweb_html` for parsing fragments
 due to it's ease of installation (it's written in Erlang and has no outside dependencies).
 
 However one might want to use an alternative parser due to the following
@@ -184,21 +174,22 @@ html = """
   </html>
 """
 
-Floki.parse(html)
-# => {"html", [], [{"body", [], [{"div", [{"class", "example"}], []}]}]}
+{:ok, document} = Floki.parse_document(html)
+# => {:ok, [{"html", [], [{"body", [], [{"div", [{"class", "example"}], []}]}]}]}
 ```
 
 To find elements with the class `example`, try:
 
 ```elixir
-Floki.find(html, ".example")
+Floki.find(document, ".example")
 # => [{"div", [{"class", "example"}], []}]
 ```
 
 To convert your node tree back to raw HTML (spaces are ignored):
 
 ```elixir
-Floki.find(html, ".example")
+document
+|> Floki.find(".example")
 |> Floki.raw_html
 # =>  <div class="example"></div>
 ```
@@ -206,14 +197,15 @@ Floki.find(html, ".example")
 To fetch some attribute from elements, try:
 
 ```elixir
-Floki.attribute(html, ".example", "class")
+Floki.attribute(document, ".example", "class")
 # => ["example"]
 ```
 
 You can get attributes from elements that you already have:
 
 ```elixir
-Floki.find(html, ".example")
+document
+|> Floki.find(".example")
 |> Floki.attribute("class")
 # => ["example"]
 ```
@@ -221,7 +213,8 @@ Floki.find(html, ".example")
 If you want to get the text from an element, try:
 
 ```elixir
-Floki.find(html, ".headline")
+document
+|> Floki.find(".headline")
 |> Floki.text
 
 # => "Floki"

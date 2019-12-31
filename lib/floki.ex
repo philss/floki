@@ -1,5 +1,5 @@
 defmodule Floki do
-  alias Floki.{Finder, HTMLParser, FilterOut, HTMLTree}
+  alias Floki.{Finder, FilterOut, HTMLTree}
 
   @moduledoc """
   Floki is a simple HTML parser that enables search for nodes using CSS selectors.
@@ -21,7 +21,26 @@ defmodule Floki do
   </html>
   ```
 
-  Examples of queries that you can perform:
+  To parse this, you can use the function `Floki.parse_document/1`:
+
+  ```elixir
+  {:ok, html} = Floki.parse_document(doc)
+  # =>
+  # [{"html", [],
+  #   [
+  #     {"body", [],
+  #      [
+  #        {"section", [{"id", "content"}],
+  #         [
+  #           {"p", [{"class", "headline"}], ["Floki"]},
+  #           {"a", [{"href", "http://github.com/philss/floki"}], ["Github page"]},
+  #           {"span", [{"data-model", "user"}], ["philss"]}
+  #         ]}
+  #      ]}
+  #   ]}]
+  ```
+
+  With this document you can perform queries such as:
 
     * `Floki.find(html, "#content")`
     * `Floki.find(html, ".headline")`
@@ -40,37 +59,61 @@ defmodule Floki do
 
   So even if the only child node is the element text, it is represented
   inside a list.
-
-  You can write a simple HTML crawler (with support of [HTTPoison](https://github.com/edgurgel/httpoison)) with a few lines of code:
-
-      html
-      |> Floki.find(".pages a")
-      |> Floki.attribute("href")
-      |> Enum.map(fn(url) -> HTTPoison.get!(url) end)
-
-  It is simple as that!
   """
 
-  @type html_tree :: tuple | list
+  @type html_comment :: {:comment, String.t()}
+  @type html_doctype :: {:doctype, String.t(), String.t(), String.t()}
+  @type html_attribute :: {String.t(), String.t()}
+  @type html_tag :: {String.t(), [html_attribute()], [html_tag() | String.t() | html_comment()]}
+  @type html_tree :: [html_comment() | html_doctype() | html_tag()]
 
   @doc """
-  Parses a HTML string.
+  Parses a HTML Document from a String.
 
-  ## Examples
+  The expect string is a valid HTML, but the parser will try
+  to parse even with errors.
+  """
 
-      iex> Floki.parse("<div class=js-action>hello world</div>")
-      {"div", [{"class", "js-action"}], ["hello world"]}
+  @spec parse(binary()) :: html_tag() | html_tree() | String.t()
 
-      iex> Floki.parse("<div>first</div><div>second</div>")
-      [{"div", [], ["first"]}, {"div", [], ["second"]}]
+  @deprecated "Please use parse_document/1 or parse_fragment/1"
+  def parse(html) do
+    with {:ok, document} <- Floki.HTMLParser.parse_document(html) do
+      if length(document) == 1 do
+        hd(document)
+      else
+        document
+      end
+    end
+  end
+
+  @doc """
+  Parses a HTML Document from a string.
+
+  It will use the available parser.
+  Check https://github.com/philss/floki#alternative-html-parsers for more details.
+
+  ## Example
+
+      iex> Floki.parse_document("<html><head></head><body>hello</body></html>")
+      {:ok, [{"html", [], [{"head", [], []}, {"body", [], ["hello"]}]}]}
 
   """
 
-  @spec parse(binary) :: html_tree | String.t()
+  @spec parse_document(binary()) :: {:ok, html_tree()} | {:error, String.t()}
 
-  def parse(html) do
-    HTMLParser.parse(html)
-  end
+  defdelegate parse_document(document), to: Floki.HTMLParser
+
+  @doc """
+  Parses a HTML fragment from a string.
+
+  It will use the available parser.
+  Check https://github.com/philss/floki#alternative-html-parsers for more details.
+  """
+
+  @spec parse_fragment(binary()) :: {:ok, html_tree()} | {:error, String.t()}
+
+  defdelegate parse_fragment(document), to: Floki.HTMLParser
 
   @doc """
   Converts HTML tree to raw HTML.
@@ -85,13 +128,13 @@ defmodule Floki do
 
   ## Examples
 
-      iex> Floki.parse(~s(<div class="wrapper">my content</div>)) |> Floki.raw_html
+      iex> Floki.raw_html({:div, [class: "wrapper"], ["my content"]})
       ~s(<div class="wrapper">my content</div>)
 
-      iex> Floki.parse(~s(<div class="wrapper">10 > 5</div>)) |> Floki.raw_html(encode: true)
+      iex> Floki.raw_html({:div, [class: "wrapper"], ["10 > 5"]}, encode: true)
       ~s(<div class="wrapper">10 &gt; 5</div>)
 
-      iex> Floki.parse(~s(<div class="wrapper">10 > 5</div>)) |> Floki.raw_html(encode: false)
+      iex> Floki.raw_html({:div, [class: "wrapper"], ["10 > 5"]}, encode: false)
       ~s(<div class="wrapper">10 > 5</div>)
   """
 
@@ -104,13 +147,16 @@ defmodule Floki do
 
   ## Examples
 
-      iex> Floki.find("<p><span class=hint>hello</span></p>", ".hint")
+      iex> {:ok, html} = Floki.parse_fragment("<p><span class=hint>hello</span></p>")
+      iex> Floki.find(html, ".hint")
       [{"span", [{"class", "hint"}], ["hello"]}]
 
-      iex> Floki.find("<body><div id=important><div>Content</div></div></body>", "#important")
+      iex> {:ok, html} = Floki.parse_fragment("<div id=important><div>Content</div></div>")
+      iex> Floki.find(html, "#important")
       [{"div", [{"id", "important"}], [{"div", [], ["Content"]}]}]
 
-      iex> Floki.find("<p><a href='https://google.com'>Google</a></p>", "a")
+      iex> {:ok, html} = Floki.parse_fragment("<p><a href='https://google.com'>Google</a></p>")
+      iex> Floki.find(html, "a")
       [{"a", [{"href", "https://google.com"}], ["Google"]}]
 
       iex> Floki.find([{ "div", [], [{"a", [{"href", "https://google.com"}], ["Google"]}]}], "div a")
@@ -121,11 +167,15 @@ defmodule Floki do
   @spec find(binary | html_tree, binary) :: html_tree
 
   def find(html, selector) when is_binary(html) do
-    html_as_tuple = parse(html)
+    IO.warn(
+      "deprecation: parse the HTML with parse_document or parse_fragment before using find/2"
+    )
 
-    {tree, results} = Finder.find(html_as_tuple, selector)
+    with {:ok, document} <- Floki.parse_document(html) do
+      {tree, results} = Finder.find(document, selector)
 
-    Enum.map(results, fn html_node -> HTMLTree.to_tuple(tree, html_node) end)
+      Enum.map(results, fn html_node -> HTMLTree.to_tuple(tree, html_node) end)
+    end
   end
 
   def find(html_tree_as_tuple, selector) do
@@ -140,11 +190,11 @@ defmodule Floki do
 
   ## Examples
 
-      iex> Floki.attr("<div id='a'></div>", "#a", "id", fn(id) -> String.replace(id, "a", "b") end)
+      iex> Floki.attr([{"div", [{"id", "a"}], []}], "#a", "id", fn(id) -> String.replace(id, "a", "b") end)
       [{"div", [{"id", "b"}], []}]
 
-      iex> Floki.attr("<div class='class_name'></div>", "div", "id", fn _ -> "b" end)
-      [{"div", [{"id", "b"}, {"class", "class_name"}], []}]
+      iex> Floki.attr([{"div", [{"class", "name"}], []}], "div", "id", fn _ -> "b" end)
+      [{"div", [{"id", "b"}, {"class", "name"}], []}]
 
   """
   @spec attr(binary | html_tree, binary, binary, (binary -> binary)) :: html_tree
@@ -153,8 +203,14 @@ defmodule Floki do
     attr([html_elem_tuple], selector, attribute_name, mutation)
   end
 
-  def attr(html_str, selector, attribute_name, mutation) when is_binary(html_str) do
-    attr(parse(html_str), selector, attribute_name, mutation)
+  def attr(html, selector, attribute_name, mutation) when is_binary(html) do
+    IO.warn(
+      "deprecation: parse the HTML with parse_document or parse_fragment before using attr/4"
+    )
+
+    with {:ok, document} <- Floki.parse_document(html) do
+      attr(document, selector, attribute_name, mutation)
+    end
   end
 
   def attr(html_tree_list, selector, attribute_name, mutation) when is_list(html_tree_list) do
@@ -253,20 +309,20 @@ defmodule Floki do
 
   ## Examples
 
-      iex> Floki.text("<div><span>hello</span> world</div>")
+      iex> Floki.text({"div", [], [{"span", [], ["hello"]}, " world"]})
       "hello world"
 
-      iex> Floki.text("<div><span>hello</span> world</div>", deep: false)
+      iex> Floki.text({"div", [], [{"span", [], ["hello"]}, " world"]}, deep: false)
       " world"
 
-      iex> Floki.text("<div><script>hello</script> world</div>")
+      iex> Floki.text({"div", [], [{"script", [], ["hello"]}, " world"]})
       " world"
 
-      iex> Floki.text("<div><script>hello</script> world</div>", js: true)
+      iex> Floki.text({"div", [], [{"script", [], ["hello"]}, " world"]}, js: true)
       "hello world"
 
-      iex> Floki.text("<ul><li>hello</li><li>world</li></ul>", sep: " ")
-      "hello world"
+      iex> Floki.text({"ul", [], [{"li", [], ["hello"]}, {"li", [], ["world"]}]}, sep: "-")
+      "hello-world"
 
       iex> Floki.text([{"div", [], ["hello world"]}])
       "hello world"
@@ -274,11 +330,12 @@ defmodule Floki do
       iex> Floki.text([{"p", [], ["1"]},{"p", [], ["2"]}])
       "12"
 
-      iex> Floki.text("<div><style>hello</style> world</div>")
+      iex> Floki.text({"div", [], [{"style", [], ["hello"]}, " world"]}, style: false)
+      " world"
+
+      iex> Floki.text({"div", [], [{"style", [], ["hello"]}, " world"]}, style: true)
       "hello world"
 
-      iex> Floki.text("<div><style>hello</style> world</div>", style: false)
-      " world"
   """
 
   @spec text(html_tree | binary) :: binary
@@ -338,11 +395,11 @@ defmodule Floki do
 
   ## Examples
 
-      iex> Floki.attribute("<a href='https://google.com'>Google</a>", "a", "href")
-      ["https://google.com"]
-
       iex> Floki.attribute([{"a", [{"href", "https://google.com"}], ["Google"]}], "a", "href")
       ["https://google.com"]
+
+      iex> Floki.attribute([{"a", [{"class", "foo"}, {"href", "https://google.com"}], ["Google"]}], "a", "class")
+      ["foo"]
 
   """
 
@@ -359,19 +416,20 @@ defmodule Floki do
 
   ## Examples
 
-      iex> Floki.attribute("<a href=https://google.com>Google</a>", "href")
-      ["https://google.com"]
-
       iex> Floki.attribute([{"a", [{"href", "https://google.com"}], ["Google"]}], "href")
       ["https://google.com"]
 
   """
 
   @spec attribute(binary | html_tree, binary) :: list
-  def attribute(html_tree, attribute_name) when is_binary(html_tree) do
-    html_tree
-    |> parse
-    |> attribute_values(attribute_name)
+  def attribute(html, attribute_name) when is_binary(html) do
+    IO.warn(
+      "deprecation: parse the HTML with parse_document or parse_fragment before using attribute/2"
+    )
+
+    with {:ok, document} <- Floki.parse_document(html) do
+      attribute_values(document, attribute_name)
+    end
   end
 
   def attribute(elements, attribute_name) do
@@ -410,7 +468,15 @@ defmodule Floki do
     )
   end
 
-  defp parse_it(html) when is_binary(html), do: parse(html)
+  defp parse_it(html) when is_binary(html) do
+    IO.warn(
+      "deprecation: parse the HTML with parse_document or parse_fragment before using text/2"
+    )
+
+    {:ok, document} = Floki.parse_document(html)
+    document
+  end
+
   defp parse_it(html), do: html
 
   defp clean_html_tree(html_tree, :js, true), do: html_tree
@@ -424,23 +490,27 @@ defmodule Floki do
 
   ## Examples
 
-      iex> Floki.filter_out("<div><script>hello</script> world</div>", "script")
+      iex> Floki.filter_out({"div", [], [{"script", [], ["hello"]}, " world"]}, "script")
       {"div", [], [" world"]}
 
       iex> Floki.filter_out([{"body", [], [{"script", [], []},{"div", [], []}]}], "script")
       [{"body", [], [{"div", [], []}]}]
 
-      iex> Floki.filter_out("<div><!-- comment --> text</div>", :comment)
+      iex> Floki.filter_out({"div", [], [{:comment, "comment"}, " text"]}, :comment)
       {"div", [], [" text"]}
 
   """
 
   @spec filter_out(binary | html_tree, FilterOut.selector()) :: list
 
-  def filter_out(html_tree, selector) when is_binary(html_tree) do
-    html_tree
-    |> parse
-    |> FilterOut.filter_out(selector)
+  def filter_out(html, selector) when is_binary(html) do
+    IO.warn(
+      "deprecation: parse the HTML with parse_document or parse_fragment before using filter_out/2"
+    )
+
+    with {:ok, document} <- Floki.parse_document(html) do
+      FilterOut.filter_out(document, selector)
+    end
   end
 
   def filter_out(elements, selector) do
