@@ -14,6 +14,9 @@ defmodule Floki.Mixfile do
       package: package(),
       deps: deps(),
       aliases: aliases(),
+      dialyzer: [
+        plt_file: {:no_warn, "priv/plts/dialyzer.plt"}
+      ],
       source_url: "https://github.com/philss/floki",
       docs: [extras: ["README.md"], main: "Floki", assets: "assets"]
     ]
@@ -37,6 +40,7 @@ defmodule Floki.Mixfile do
       {:earmark, "~> 1.2", only: :dev},
       {:ex_doc, "~> 0.18", only: :dev},
       {:credo, ">= 0.0.0", only: [:dev, :test]},
+      {:dialyxir, "~> 0.5", only: [:dev], runtime: false},
       {:inch_ex, ">= 0.0.0", only: :docs}
     ] ++ parsers
   end

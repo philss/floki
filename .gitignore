@@ -7,3 +7,5 @@ erl_crash.dump
 /doc
 *.beam
 /src/*_lexer.erl
+/priv/plts/*.plt
+/priv/plts/*.plt.hash
