@@ -86,21 +86,39 @@ If you get this [kind of error](https://github.com/philss/floki/issues/35),
 you need to install the `erlang-dev` and `erlang-parsetools` packages in order get the `leex` module.
 The packages names may be different depending on your OS.
 
-### Optional - Using html5ever as the HTML parser
+### Alternative HTML parsers
 
-You can configure Floki to use [html5ever](https://github.com/servo/html5ever) as your HTML parser.
-This is recommended if you need [better performance](https://gist.github.com/philss/70b4b0294f29501c3c7e0f60338cc8bd)
-and a more accurate parser. However `html5ever` is being under active development and **may be unstable**.
+By default Floki uses a patched version of `mochiweb_html` for parsing fragments 
+due to it's ease of installation (it's written in Erlang and has no outside dependencies).
 
-Since it's written in Rust, we need to install Rust and compile the project.
-Luckily we have the [html5ever Elixir NIF](https://github.com/hansihe/html5ever_elixir) that makes the integration very easy.
+However one might want to use an alternative parser due to the following
+concerns:
 
-You still need to install Rust in your system. To do that, please
+- Performance - It can be [up to 20 times slower than the alternatives](https://hexdocs.pm/fast_html/readme.html#benchmarks) on big HTML
+  documents.
+- Correctness - in some cases `mochiweb_html` will produce different results
+  from what is specified in [HTML5 specification](https://html.spec.whatwg.org/)](https://html.spec.whatwg.org/).
+  For example, a correct parser would parse `<title> <b> bold </b> text </title>`
+  as `{"title", [], [" <b> bold </b> text "]}` since content inside `<title>` is
+  to be [treated as plaintext](https://html.spec.whatwg.org/#the-title-element).
+  Albeit `mochiweb_html` would parse it as `{"title", [], [{"b", [], [" bold "]}, " text "]}`.
+
+Floki supports the following alternative parsers:
+
+- `fast_html` - A wrapper for lexborisov's [myhtml](https://github.com/lexborisov/myhtml/). A pure C HTML parser.
+- `html5ever` - A wrapper for [html5ever](https://github.com/servo/html5ever) written in Rust, developed as a part of the Servo project.
+
+`fast_html` is generally faster, according to the
+[benchmarks](https://hexdocs.pm/fast_html/readme.html#benchmarks) conducted by
+it's developers. Though `html5ever` does have an advantage on really small
+(~4kb) fragments due to it being implemented as a NIF.
+
+#### Using `html5ever` as the HTML parser
+
+Rust needs to be installed on the system in order to compile html5ever. To do that, please
 [follow the instruction](https://www.rust-lang.org/en-US/install.html) presented in the official page.
 
-#### Installing html5ever
-
-After setup Rust, you need to add `html5ever` NIF to your dependency list:
+After Rust is set up, you need to add `html5ever` NIF to your dependency list:
 
 ```elixir
 defp deps do
@@ -121,9 +139,37 @@ Then you need to configure your app to use `html5ever`:
 config :floki, :html_parser, Floki.HTMLParser.Html5ever
 ```
 
-After that you are able to use `html5ever` as your HTML parser with Floki.
-
 For more info, check the article [Rustler - Safe Erlang and Elixir NIFs in Rust](http://hansihe.com/2017/02/05/rustler-safe-erlang-elixir-nifs-in-rust.html).
+
+#### Using `fast_html` as the HTML parser
+
+A C compiler and GNU\Make needs to be installed on the system in order to
+compile myhtml. It's likely that your machine has them already.
+
+Note that you also need to have `epmd` started/available to start due to `fast_html` relying on a
+C-Node worker, usually it will be started automatically, but some distributions
+(i.e Gentoo Linux) enforce only being able to start it as a service.
+
+First, add `fast_html` to your dependencies:
+
+```elixir
+defp deps do
+  [
+    {:floki, "~> 0.23.0"},
+    {:fast_html, "~> 1.0"}
+  ]
+end
+```
+
+Run `mix deps.get` and compiles the project with `mix compile` to make sure it works.
+
+Then you need to configure your app to use `fast_html`:
+
+```elixir
+# in config/config.exs
+
+config :floki, :html_parser, Floki.HTMLParser.FastHTML
+```
 
 ## More about Floki API
 
