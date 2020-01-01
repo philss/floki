@@ -10,7 +10,7 @@ defmodule Floki.Mixfile do
       name: "Floki",
       version: @version,
       description: @description,
-      elixir: "~> 1.5",
+      elixir: "~> 1.6",
       package: package(),
       deps: deps(),
       aliases: aliases(),
