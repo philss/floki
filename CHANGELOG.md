@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased][unreleased]
 
+## [0.24.0] - 2020-01-01
+
+### Added
+
+- Add support for [`fast_html`](https://hexdocs.pm/fast_html), which is a "C Node" wrapping
+Lexborisov's [myhtml](https://github.com/lexborisov/myhtml) - thanks [@rinpatch](https://github.com/rinpatch)
+- Add setup to run our test suite against all parsers on CI - thanks [@rinpatch](https://github.com/rinpatch)
+- Add `Floki.parse_document/1` and `Floki.parse_fragment/1` in order to correct parse documents
+and fragments of documents - it also prevents the confusion and inconsistency of `parse/1`.
+- Configure `dialyxir` in order to run Dializer easily.
+
+### Changed
+
+- Deprecate `Floki.parse/1` and all the functions that uses it underneath. This means that all
+the functions that accepted HTML as binary are deprecated as well. This includes `find/2`, `attr/4`,
+`filter_out/2`, `text/2` and `attribute/2`. The recommendation is to use those functions with an
+already parsed document or fragment.
+- Remove support for `Elixir 1.5`.
+
 ## [0.23.1] - 2019-12-01
 
 ### Fixed
@@ -447,7 +466,8 @@ of the parent element inside HTML.
 
 - Elixir version requirement from "~> 1.0.0" to ">= 1.0.0".
 
-[unreleased]: https://github.com/philss/floki/compare/v0.23.1...HEAD
+[unreleased]: https://github.com/philss/floki/compare/v0.24.0...HEAD
+[0.24.0]: https://github.com/philss/floki/compare/v0.23.1...v0.24.0
 [0.23.1]: https://github.com/philss/floki/compare/v0.23.0...v0.23.1
 [0.23.0]: https://github.com/philss/floki/compare/v0.22.0...v0.23.0
 [0.22.0]: https://github.com/philss/floki/compare/v0.21.0...v0.22.0
