@@ -28,12 +28,19 @@ defmodule Floki.Mixfile do
 
   defp deps do
     # Needed to avoid installing unnecessary deps on the CI
+    parsers_deps = [
+      html5ever:
+        {:html5ever, github: "rusterlium/html5ever_elixir", optional: true, only: [:dev, :test]},
+      fast_html: {:fast_html, ">= 0.0.0", optional: true, only: [:dev, :test]}
+    ]
+
     parsers =
       case System.get_env("PARSER") do
         nil -> [:fast_html, :html5ever]
-        parser -> [String.to_atom(parser)]
+        parser when parser in ~w(html5ever fast_html) -> [String.to_atom(parser)]
+        _ -> []
       end
-      |> Enum.map(fn name -> {name, ">= 0.0.0", optional: true, only: [:dev, :test]} end)
+      |> Enum.map(fn name -> Keyword.fetch!(parsers_deps, name) end)
 
     [
       {:html_entities, "~> 0.5.0"},
