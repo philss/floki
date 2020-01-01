@@ -1,11 +1,18 @@
 defmodule Floki.HTMLParser.Mochiweb do
+  @behaviour Floki.HTMLParser
+
   @moduledoc false
   @root_node "floki"
 
-  def parse(html) do
+  @impl true
+  def parse_document(html) do
     html = "<#{@root_node}>#{html}</#{@root_node}>"
     {@root_node, [], parsed} = :floki_mochi_html.parse(html)
 
-    if length(parsed) == 1, do: hd(parsed), else: parsed
+    {:ok, parsed}
   end
+
+  # NOTE: mochi_html cannot make a distinction of a fragment and document.
+  @impl true
+  def parse_fragment(html), do: parse_document(html)
 end

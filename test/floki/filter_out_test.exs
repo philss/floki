@@ -2,9 +2,22 @@ defmodule Floki.FilterOutTest do
   use ExUnit.Case, async: true
 
   test "filter out elements with complex selectors" do
-    html = Floki.parse("<body> <div class=\"has\">one</div>  <div>two</div> </body>")
+    {:ok, html} =
+      Floki.parse_document(
+        "<html><head></head><body><div class=\"has\">one</div><div>two</div></body></html>"
+      )
 
-    assert Floki.FilterOut.filter_out(html, "div[class]") == {"body", [], [{"div", [], ["two"]}]}
+    assert Floki.FilterOut.filter_out(html, "div[class]") ==
+             [
+               {
+                 "html",
+                 [],
+                 [
+                   {"head", [], []},
+                   {"body", [], [{"div", [], ["two"]}]}
+                 ]
+               }
+             ]
   end
 
   test "filter out returns the elements in the same order they were passed in" do

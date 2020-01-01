@@ -10,10 +10,13 @@ defmodule Floki.Mixfile do
       name: "Floki",
       version: @version,
       description: @description,
-      elixir: "~> 1.5",
+      elixir: "~> 1.6",
       package: package(),
       deps: deps(),
       aliases: aliases(),
+      dialyzer: [
+        plt_file: {:no_warn, "priv/plts/dialyzer.plt"}
+      ],
       source_url: "https://github.com/philss/floki",
       docs: [extras: ["README.md"], main: "Floki", assets: "assets"]
     ]
@@ -25,18 +28,26 @@ defmodule Floki.Mixfile do
 
   defp deps do
     # Needed to avoid installing unnecessary deps on the CI
+    parsers_deps = [
+      html5ever:
+        {:html5ever, github: "rusterlium/html5ever_elixir", optional: true, only: [:dev, :test]},
+      fast_html: {:fast_html, ">= 0.0.0", optional: true, only: [:dev, :test]}
+    ]
+
     parsers =
       case System.get_env("PARSER") do
         nil -> [:fast_html, :html5ever]
-        parser -> [String.to_atom(parser)]
+        parser when parser in ~w(html5ever fast_html) -> [String.to_atom(parser)]
+        _ -> []
       end
-      |> Enum.map(fn name -> {name, ">= 0.0.0", optional: true, only: [:dev, :test]} end)
+      |> Enum.map(fn name -> Keyword.fetch!(parsers_deps, name) end)
 
     [
       {:html_entities, "~> 0.5.0"},
       {:earmark, "~> 1.2", only: :dev},
       {:ex_doc, "~> 0.18", only: :dev},
       {:credo, ">= 0.0.0", only: [:dev, :test]},
+      {:dialyxir, "~> 0.5", only: [:dev], runtime: false},
       {:inch_ex, ">= 0.0.0", only: :docs}
     ] ++ parsers
   end
