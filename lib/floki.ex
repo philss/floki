@@ -105,6 +105,28 @@ defmodule Floki do
   defdelegate parse_document(document), to: Floki.HTMLParser
 
   @doc """
+  Parses a HTML Document from a string.
+
+  Similar to `Floki.parse_document/1`, but raises `Floki.ParseError` if there was an
+  error parsing the document.
+
+  ## Example
+
+      iex> Floki.parse_document!("<html><head></head><body>hello</body></html>")
+      [{"html", [], [{"head", [], []}, {"body", [], ["hello"]}]}]
+
+  """
+
+  @spec parse_document!(binary()) :: html_tree()
+
+  def parse_document!(document) do
+    case parse_document(document) do
+      {:ok, parsed_document} -> parsed_document
+      {:error, message} -> raise Floki.ParseError, message: message
+    end
+  end
+
+  @doc """
   Parses a HTML fragment from a string.
 
   It will use the available parser.
@@ -113,7 +135,23 @@ defmodule Floki do
 
   @spec parse_fragment(binary()) :: {:ok, html_tree()} | {:error, String.t()}
 
-  defdelegate parse_fragment(document), to: Floki.HTMLParser
+  defdelegate parse_fragment(fragment), to: Floki.HTMLParser
+
+  @doc """
+  Parses a HTML fragment from a string.
+
+  Similar to `Floki.parse_fragment/1`, but raises `Floki.ParseError` if there was an
+  error parsing the fragment.
+  """
+
+  @spec parse_fragment!(binary()) :: html_tree()
+
+  def parse_fragment!(fragment) do
+    case parse_fragment(fragment) do
+      {:ok, parsed_fragment} -> parsed_fragment
+      {:error, message} -> raise Floki.ParseError, message: message
+    end
+  end
 
   @doc """
   Converts HTML tree to raw HTML.
