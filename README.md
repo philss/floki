@@ -158,7 +158,7 @@ Then you need to configure your app to use `fast_html`:
 ```elixir
 # in config/config.exs
 
-config :floki, :html_parser, Floki.HTMLParser.FastHTML
+config :floki, :html_parser, Floki.HTMLParser.FastHtml
 ```
 
 ## More about Floki API
