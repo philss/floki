@@ -323,20 +323,74 @@ defmodule Floki do
   def map(html_tree, fun), do: Finder.map(html_tree, fun)
 
   @doc """
-  Traverses a HTML tree structure and returns a new tree structure that is the result of executing a function on all nodes. The function receives a tuple with {name, attributes, children}, and should either return a similar tuple or `nil` to delete the current node.
+  Traverses and updates a HTML tree structure.
+
+  This function returns a new tree structure that is the result of applying the
+  given `fun` on all nodes.
+
+  The function `fun` receives a tuple with `{name, attributes, children}`, and
+  should either return a similar tuple or `nil` to delete the current node.
 
   ## Examples
 
       iex> html = {"div", [], ["hello"]}
-      iex> Floki.traverse_and_update(html, fn {"div", attrs, children} -> {"p", attrs, children} end)
+      iex> Floki.traverse_and_update(html, fn {"div", attrs, children} ->
+      ...>   {"p", attrs, children}
+      ...> end)
       {"p", [], ["hello"]}
 
       iex> html = {"div", [], [{"span", [], ["hello"]}]}
-      iex> Floki.traverse_and_update(html, fn {"span", _attrs, _children} -> nil; tag -> tag end)
+      iex> Floki.traverse_and_update(html, fn
+      ...>   {"span", _attrs, _children} -> nil
+      ...>   tag -> tag
+      ...> end)
       {"div", [], []}
   """
 
+  @spec traverse_and_update(html_tree(), (html_tag() -> html_tag() | nil)) :: html_tree()
+
   defdelegate traverse_and_update(html_tree, fun), to: Floki.Traversal
+
+  @doc """
+  Traverses and updates a HTML tree structure with an accumulator.
+
+  This function returns a new tree structure and the final value of accumulator
+  which are the result of applying the given `fun` on all nodes.
+
+  The function `fun` receives a tuple with `{name, attributes, children}` and
+  an accumulator, and should return a 2-tuple like `{new_node, new_acc}`, where
+  `new_node` is either a similar tuple or `nil` to delete the current node, and
+  `new_acc` is an updated value for the accumulator.
+
+  ## Examples
+
+      iex> html = [{"div", [], ["hello"]}, {"div", [], ["world"]}]
+      iex> Floki.traverse_and_update(html, 0, fn {"div", attrs, children}, acc ->
+      ...>   {{"p", [{"data-count", to_string(acc)} | attrs], children}, acc + 1}
+      ...> end)
+      {[
+         {"p", [{"data-count", "0"}], ["hello"]},
+         {"p", [{"data-count", "1"}], ["world"]}
+       ], 2}
+
+      iex> html = {"div", [], [{"span", [], ["hello"]}]}
+      iex> Floki.traverse_and_update(html, [deleted: 0], fn
+      ...>   {"span", _attrs, _children}, acc ->
+      ...>     {nil, Keyword.put(acc, :deleted, acc[:deleted] + 1)}
+      ...>   tag, acc ->
+      ...>     {tag, acc}
+      ...> end)
+      {{"div", [], []}, [deleted: 1]}
+  """
+
+  @type traverse_acc :: any()
+  @spec traverse_and_update(
+          html_tree(),
+          traverse_acc(),
+          (html_tag(), traverse_acc() -> {html_tag() | nil, traverse_acc()})
+        ) :: html_tree()
+
+  defdelegate traverse_and_update(html_tree, acc, fun), to: Floki.Traversal
 
   @doc """
   Returns the text nodes from a HTML tree.
