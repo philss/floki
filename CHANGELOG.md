@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased][unreleased]
 
+## [0.25.0] - 2020-01-26
+
+### Added
+
+- Add `Floki.parse_fragment!/1` and `Floki.parse_document!/1` that has the same functionality of
+the functions without the bang, but they return the document or fragment without the either tuple
+and will raise exception in case of errors - thanks [@schneiderderek](https://github.com/schneiderderek)
+- Add `Floki.traverse_and_update/3` which accepts an accumulator which is useful to keep
+the state while traversing the HTML tree - thanks [@Dalgona](https://github.com/Dalgona)
+
+### Changed
+
+- Update the `html_entities` dependency from `v0.5.0` to `v0.5.1`
+
 ## [0.24.0] - 2020-01-01
 
 ### Added
@@ -466,7 +480,8 @@ of the parent element inside HTML.
 
 - Elixir version requirement from "~> 1.0.0" to ">= 1.0.0".
 
-[unreleased]: https://github.com/philss/floki/compare/v0.24.0...HEAD
+[unreleased]: https://github.com/philss/floki/compare/v0.25.0...HEAD
+[0.25.0]: https://github.com/philss/floki/compare/v0.24.0...v0.25.0
 [0.24.0]: https://github.com/philss/floki/compare/v0.23.1...v0.24.0
 [0.23.1]: https://github.com/philss/floki/compare/v0.23.0...v0.23.1
 [0.23.0]: https://github.com/philss/floki/compare/v0.22.0...v0.23.0
