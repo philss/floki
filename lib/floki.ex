@@ -388,7 +388,7 @@ defmodule Floki do
           html_tree(),
           traverse_acc(),
           (html_tag(), traverse_acc() -> {html_tag() | nil, traverse_acc()})
-        ) :: html_tree()
+        ) :: {html_tree(), traverse_acc()}
 
   defdelegate traverse_and_update(html_tree, acc, fun), to: Floki.Traversal
 
