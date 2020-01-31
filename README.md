@@ -79,7 +79,7 @@ The packages names may be different depending on your OS.
 ### Alternative HTML parsers
 
 By default Floki uses a patched version of `mochiweb_html` for parsing fragments
-due to it's ease of installation (it's written in Erlang and has no outside dependencies).
+due to its ease of installation (it's written in Erlang and has no outside dependencies).
 
 However one might want to use an alternative parser due to the following
 concerns:
@@ -100,7 +100,7 @@ Floki supports the following alternative parsers:
 
 `fast_html` is generally faster, according to the
 [benchmarks](https://hexdocs.pm/fast_html/readme.html#benchmarks) conducted by
-it's developers. Though `html5ever` does have an advantage on really small
+its developers. Though `html5ever` does have an advantage on really small
 (~4kb) fragments due to it being implemented as a NIF.
 
 #### Using `html5ever` as the HTML parser
