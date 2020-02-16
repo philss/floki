@@ -699,6 +699,7 @@ defmodule FlokiTest do
         <!-- also ignores this comment -->
         <a href="/d">4</a>
         <a href="/e">5</a>
+      </body>
       </html>
       """)
 
@@ -742,6 +743,52 @@ defmodule FlokiTest do
     assert Floki.find(html, "body :last-of-type") == [
              {"h1", [], ["Child 1"]},
              {"div", [], ["Child 4"]},
+             {"a", [{"href", "/e"}], ["5"]}
+           ]
+  end
+
+  test "get elements by nth-last-of-type pseudo-classes" do
+    html =
+      document!("""
+      <html>
+      <body>
+        ignores this text
+        <h1>Child 1</h1>
+        <!-- also ignores this comment -->
+        <a href="/a">1</a>
+        <div>Child 2</div>
+        <div>Child 3</div>
+        <div>Child 4</div>
+        ignores this text
+        <a href="/b">2</a>
+        <a href="/c">3</a>
+        <!-- also ignores this comment -->
+        <a href="/d">4</a>
+        <a href="/e">5</a>
+      </html>
+      """)
+
+    assert Floki.find(html, "a:nth-last-of-type(2)") == [
+             {"a", [{"href", "/d"}], ["4"]}
+           ]
+
+    assert Floki.find(html, "div:nth-last-of-type(even)") == [
+             {"div", [], ["Child 3"]}
+           ]
+
+    assert Floki.find(html, "a:nth-last-of-type(odd)") == [
+             {"a", [{"href", "/a"}], ["1"]},
+             {"a", [{"href", "/c"}], ["3"]},
+             {"a", [{"href", "/e"}], ["5"]}
+           ]
+
+    assert Floki.find(html, "a:nth-last-of-type(2n+1)") == [
+             {"a", [{"href", "/a"}], ["1"]},
+             {"a", [{"href", "/c"}], ["3"]},
+             {"a", [{"href", "/e"}], ["5"]}
+           ]
+
+    assert Floki.find(html, "a:nth-last-of-type(0n+1)") == [
              {"a", [{"href", "/e"}], ["5"]}
            ]
   end
