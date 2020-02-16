@@ -609,6 +609,49 @@ defmodule FlokiTest do
            ]
   end
 
+  test "get elements by nth-last-child pseudo-class" do
+    html = """
+    <html>
+    <body>
+      <a href="/a">1</a>
+      ignores this text
+      <a href="/b">2</a>
+      <a href="/c">3</a>
+      <!-- also ignores this comment -->
+      <a href="/d">4</a>
+      <a href="/e">5</a>
+      <a href="/f">6</a>
+      <a href="/g">7</a>
+    </html>
+    """
+
+    assert Floki.find(document!(html), "a:nth-last-child(2)") == [
+             {"a", [{"href", "/f"}], ["6"]}
+           ]
+
+    assert Floki.find(document!(html), "a:nth-last-child(even)") == [
+             {"a", [{"href", "/b"}], ["2"]},
+             {"a", [{"href", "/d"}], ["4"]},
+             {"a", [{"href", "/f"}], ["6"]}
+           ]
+
+    assert Floki.find(document!(html), "a:nth-last-child(odd)") == [
+             {"a", [{"href", "/a"}], ["1"]},
+             {"a", [{"href", "/c"}], ["3"]},
+             {"a", [{"href", "/e"}], ["5"]},
+             {"a", [{"href", "/g"}], ["7"]}
+           ]
+
+    assert Floki.find(document!(html), "a:nth-last-child(0n+1)") == [
+             {"a", [{"href", "/g"}], ["7"]}
+           ]
+
+    assert Floki.find(document!(html), "a:nth-last-child(3n+4)") == [
+             {"a", [{"href", "/a"}], ["1"]},
+             {"a", [{"href", "/d"}], ["4"]}
+           ]
+  end
+
   test "get elements by last-child pseudo-class" do
     html = """
     <html>

@@ -151,7 +151,14 @@ defmodule Floki.Selector do
   end
 
   defp pseudo_class_match?(html_node, %{name: "last-child"}, tree) do
-    PseudoClass.match_nth_child?(tree, html_node, %PseudoClass{name: "nth-child", value: -1})
+    PseudoClass.match_nth_last_child?(tree, html_node, %PseudoClass{
+      name: "nth-last-child",
+      value: 1
+    })
+  end
+
+  defp pseudo_class_match?(html_node, pseudo_class = %{name: "nth-last-child"}, tree) do
+    PseudoClass.match_nth_last_child?(tree, html_node, pseudo_class)
   end
 
   defp pseudo_class_match?(html_node, pseudo_class = %{name: "nth-of-type"}, tree) do

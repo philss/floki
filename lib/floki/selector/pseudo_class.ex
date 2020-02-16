@@ -25,15 +25,6 @@ defmodule Floki.Selector.PseudoClass do
 
   def match_nth_child?(_tree, %HTMLNode{parent_node_id: nil}, _pseudo_class), do: false
 
-  def match_nth_child?(tree, html_node, %__MODULE__{value: -1}) do
-    {last_child_id, _} =
-      tree
-      |> indexed_children_nodes(html_node)
-      |> Enum.max_by(fn {_, pos} -> pos end)
-
-    last_child_id == html_node.node_id
-  end
-
   def match_nth_child?(tree, html_node, %__MODULE__{value: value}) do
     relative_position =
       tree
@@ -61,6 +52,17 @@ defmodule Floki.Selector.PseudoClass do
       |> node_position(html_node)
 
     match_position?(value, relative_position, "nth-of-type")
+  end
+
+  def match_nth_last_child?(_, %HTMLNode{parent_node_id: nil}, _), do: false
+
+  def match_nth_last_child?(tree, html_node, %__MODULE__{value: value}) do
+    relative_position =
+      tree
+      |> reverse_indexed_children_nodes(html_node)
+      |> node_position(html_node)
+
+    match_position?(value, relative_position, "nth-last-child")
   end
 
   def match_contains?(tree, html_node, %__MODULE__{value: value}) do
@@ -123,6 +125,19 @@ defmodule Floki.Selector.PseudoClass do
     parent_node.children_nodes_ids
     |> Enum.reverse()
     |> filter_only_html_nodes(tree.nodes)
+  end
+
+  defp reverse_children_nodes(tree, parent_node_id) do
+    parent_node = Map.get(tree.nodes, parent_node_id)
+
+    parent_node.children_nodes_ids
+    |> filter_only_html_nodes(tree.nodes)
+  end
+
+  defp reverse_indexed_children_nodes(tree, html_node) do
+    tree
+    |> reverse_children_nodes(html_node.parent_node_id)
+    |> Enum.with_index(1)
   end
 
   defp filter_only_html_nodes(ids, nodes) do
