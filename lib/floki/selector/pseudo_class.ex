@@ -23,75 +23,44 @@ defmodule Floki.Selector.PseudoClass do
     end
   end
 
-  def match_nth_child?(_, %HTMLNode{parent_node_id: nil}, _), do: false
+  def match_nth_child?(_tree, %HTMLNode{parent_node_id: nil}, _pseudo_class), do: false
 
   def match_nth_child?(tree, html_node, %__MODULE__{value: -1}) do
-    children_nodes_ids = get_children_nodes_indexed(tree, html_node.parent_node_id)
-    {last_child_id, _} = Enum.max_by(children_nodes_ids, fn {_, pos} -> pos end)
+    {last_child_id, _} =
+      tree
+      |> indexed_children_nodes(html_node)
+      |> Enum.max_by(fn {_, pos} -> pos end)
+
     last_child_id == html_node.node_id
   end
 
-  def match_nth_child?(tree, html_node, %__MODULE__{value: position}) when is_integer(position) do
-    node_position(tree, html_node) == position
-  end
+  def match_nth_child?(tree, html_node, %__MODULE__{value: value}) do
+    relative_position =
+      tree
+      |> indexed_children_nodes(html_node)
+      |> node_position(html_node)
 
-  def match_nth_child?(tree, html_node, %__MODULE__{value: "even"}) do
-    position = node_position(tree, html_node)
-    rem(position, 2) == 0
-  end
-
-  def match_nth_child?(tree, html_node, %__MODULE__{value: "odd"}) do
-    position = node_position(tree, html_node)
-    rem(position, 2) == 1
-  end
-
-  def match_nth_child?(tree, html_node, %__MODULE__{value: %Functional{stream: s}}) do
-    position = node_position(tree, html_node)
-    position in s
-  end
-
-  def match_nth_child?(_tree, _html_node, %__MODULE__{value: expression}) do
-    Logger.info(fn ->
-      "Pseudo-class nth-child with expressions like #{inspect(expression)} are not supported yet. Ignoring."
-    end)
-
-    false
+    match_position?(value, relative_position, "nth-child")
   end
 
   def match_nth_of_type?(_, %HTMLNode{parent_node_id: nil}, _), do: false
 
   def match_nth_of_type?(tree, html_node, %__MODULE__{value: -1}) do
-    children_nodes_ids = get_children_nodes_indexed_by_type(tree, html_node)
-    {last_child_id, _} = Enum.max_by(children_nodes_ids, fn {_, pos} -> pos end)
+    {last_child_id, _} =
+      tree
+      |> indexed_children_nodes_by_type(html_node)
+      |> Enum.max_by(fn {_, pos} -> pos end)
+
     last_child_id == html_node.node_id
   end
 
-  def match_nth_of_type?(tree, html_node, %__MODULE__{value: position})
-      when is_integer(position) do
-    node_type_position(tree, html_node) == position
-  end
+  def match_nth_of_type?(tree, html_node, %__MODULE__{value: value}) do
+    relative_position =
+      tree
+      |> indexed_children_nodes_by_type(html_node)
+      |> node_position(html_node)
 
-  def match_nth_of_type?(tree, html_node, %__MODULE__{value: "even"}) do
-    position = node_type_position(tree, html_node)
-    rem(position, 2) == 0
-  end
-
-  def match_nth_of_type?(tree, html_node, %__MODULE__{value: "odd"}) do
-    position = node_type_position(tree, html_node)
-    rem(position, 2) == 1
-  end
-
-  def match_nth_of_type?(tree, html_node, %__MODULE__{value: %Functional{stream: s}}) do
-    position = node_type_position(tree, html_node)
-    position in s
-  end
-
-  def match_nth_of_type?(_, _, %__MODULE__{value: expression}) do
-    Logger.info(fn ->
-      "Pseudo-class nth-of-type with expressions like #{inspect(expression)} are not supported yet. Ignoring."
-    end)
-
-    false
+    match_position?(value, relative_position, "nth-of-type")
   end
 
   def match_contains?(tree, html_node, %__MODULE__{value: value}) do
@@ -106,34 +75,49 @@ defmodule Floki.Selector.PseudoClass do
     res != nil
   end
 
-  defp node_position(tree, html_node) do
-    children_nodes_ids = get_children_nodes_indexed(tree, html_node.parent_node_id)
-    find_node_position(children_nodes_ids, html_node.node_id)
+  defp match_position?(value, relative_position, name) do
+    case value do
+      position when is_integer(position) ->
+        relative_position == position
+
+      "even" ->
+        rem(relative_position, 2) == 0
+
+      "odd" ->
+        rem(relative_position, 2) == 1
+
+      %Functional{stream: s} ->
+        relative_position in s
+
+      expression ->
+        Logger.info(fn ->
+          "Pseudo-class #{name} with expressions like #{inspect(expression)} are not supported yet. Ignoring."
+        end)
+
+        false
+    end
   end
 
-  defp node_type_position(tree, html_node) do
-    children_nodes_ids = get_children_nodes_indexed_by_type(tree, html_node)
-    find_node_position(children_nodes_ids, html_node.node_id)
-  end
-
-  defp find_node_position(ids, node_id) do
+  defp node_position(ids, %HTMLNode{node_id: node_id}) do
     {_node_id, position} = Enum.find(ids, fn {id, _} -> id == node_id end)
 
     position
   end
 
-  defp get_children_nodes_indexed(tree, parent_node_id) do
-    nodes = get_children_nodes(tree, parent_node_id)
-    Enum.with_index(nodes, 1)
+  defp indexed_children_nodes(tree, html_node) do
+    tree
+    |> children_nodes(html_node.parent_node_id)
+    |> Enum.with_index(1)
   end
 
-  defp get_children_nodes_indexed_by_type(tree, html_node) do
-    get_children_nodes(tree, html_node.parent_node_id)
+  defp indexed_children_nodes_by_type(tree, html_node) do
+    tree
+    |> children_nodes(html_node.parent_node_id)
     |> filter_nodes_by_type(tree.nodes, html_node.type)
     |> Enum.with_index(1)
   end
 
-  defp get_children_nodes(tree, parent_node_id) do
+  defp children_nodes(tree, parent_node_id) do
     parent_node = Map.get(tree.nodes, parent_node_id)
 
     parent_node.children_nodes_ids
