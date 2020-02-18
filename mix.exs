@@ -2,7 +2,7 @@ defmodule Floki.Mixfile do
   use Mix.Project
 
   @description "Floki is a simple HTML parser that enables search for nodes using CSS selectors."
-  @version "0.25.0"
+  @version "0.26.0"
 
   def project do
     [
@@ -45,7 +45,7 @@ defmodule Floki.Mixfile do
     [
       {:html_entities, "~> 0.5.0"},
       {:earmark, "~> 1.2", only: :dev},
-      {:ex_doc, "~> 0.18", only: :dev},
+      {:ex_doc, "~> 0.21.3", only: :dev},
       {:credo, ">= 0.0.0", only: [:dev, :test]},
       {:dialyxir, "~> 0.5", only: [:dev], runtime: false},
       {:inch_ex, ">= 0.0.0", only: :docs}
