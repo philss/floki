@@ -383,12 +383,12 @@ defmodule Floki do
       {{"div", [], []}, [deleted: 1]}
   """
 
-  @type traverse_acc :: any()
   @spec traverse_and_update(
           html_tree(),
-          traverse_acc(),
-          (html_tag(), traverse_acc() -> {html_tag() | nil, traverse_acc()})
-        ) :: {html_tree(), traverse_acc()}
+          traverse_acc,
+          (html_tag(), traverse_acc -> {html_tag() | nil, traverse_acc})
+        ) :: {html_tree(), traverse_acc}
+        when traverse_acc: any()
 
   defdelegate traverse_and_update(html_tree, acc, fun), to: Floki.Traversal
 
