@@ -47,7 +47,7 @@ jobs:
 
       - name: Run tests
         run: |-
-          mix test.$PARSER
+          MIX_ENV=test mix test.$PARSER
 
       - name: Run inch.report
         run: |-
