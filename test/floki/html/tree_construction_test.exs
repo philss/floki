@@ -43,7 +43,7 @@ defmodule Floki.HTML.TreeConstructionTest do
 
     test "build_document/1 with a start tag" do
       tokenizer_state = %Tokenizer.State{
-        tokens: [%Tokenizer.Tag{name: "body", type: :start}]
+        tokens: [%Tokenizer.StartTag{name: "body"}]
       }
 
       {:ok, doc} = TreeConstruction.build_document(tokenizer_state)

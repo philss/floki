@@ -97,7 +97,7 @@ defmodule Floki.HTML.TreeConstruction do
 
   defp before_html(
          state,
-         tstate = %TState{tokens: [token = %Tokenizer.Tag{type: :start} | tokens]}
+         tstate = %TState{tokens: [token = %Tokenizer.StartTag{} | tokens]}
        ) do
     new_element = %HTree.HTMLNode{type: token.name, attributes: token.attributes}
     {:ok, doc, new_node} = Document.add_node(state.document, new_element)
@@ -110,7 +110,7 @@ defmodule Floki.HTML.TreeConstruction do
 
   defp before_html(
          state,
-         tstate = %TState{tokens: [%Tokenizer.Tag{name: name, type: :end} | _tokens]}
+         tstate = %TState{tokens: [%Tokenizer.StartTag{name: name} | _tokens]}
        )
        when name in ~w(head body html br) do
     new_element = %HTree.HTMLNode{type: "html"}
@@ -124,7 +124,7 @@ defmodule Floki.HTML.TreeConstruction do
 
   defp before_html(
          state,
-         tstate = %TState{tokens: [%Tokenizer.Tag{type: :end} | tokens]}
+         tstate = %TState{tokens: [%Tokenizer.EndTag{} | tokens]}
        ) do
     # TODO: add parse error
     before_html(state, %{tstate | tokens: tokens})

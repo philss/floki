@@ -99,7 +99,7 @@ defmodule TokenizerTestLoader do
     ]
   end
 
-  defp transform_token(tag = %Tokenizer.Tag{type: :start}) do
+  defp transform_token(tag = %Tokenizer.StartTag{}) do
     list_tag = [
       "StartTag",
       tag.name,
@@ -115,7 +115,7 @@ defmodule TokenizerTestLoader do
     end
   end
 
-  defp transform_token(tag = %Tokenizer.Tag{type: :end}) do
+  defp transform_token(tag = %Tokenizer.EndTag{}) do
     [
       "EndTag",
       tag.name

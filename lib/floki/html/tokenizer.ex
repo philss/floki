@@ -24,9 +24,15 @@ defmodule Floki.HTML.Tokenizer do
     defstruct name: "", value: "", position: %Position{}
   end
 
-  defmodule Tag do
+  defmodule StartTag do
     defstruct name: "",
-              type: :start,
+              self_close: nil,
+              attributes: [],
+              position: %Position{}
+  end
+
+  defmodule EndTag do
+    defstruct name: "",
               self_close: nil,
               attributes: [],
               position: %Position{}
@@ -221,7 +227,7 @@ defmodule Floki.HTML.Tokenizer do
 
   defp tag_open(html = <<c::utf8, _rest::binary>>, s)
        when <<c::utf8>> in @all_ASCII_letters do
-    token = %Tag{type: :start, name: "", position: s.position}
+    token = %StartTag{name: "", position: s.position}
 
     tag_name(html, %{s | token: token})
   end
@@ -244,7 +250,7 @@ defmodule Floki.HTML.Tokenizer do
 
   defp end_tag_open(html = <<c::utf8, _rest::binary>>, s)
        when <<c::utf8>> in @all_ASCII_letters do
-    token = %Tag{type: :end, name: "", position: s.position}
+    token = %EndTag{name: "", position: s.position}
 
     tag_name(html, %{s | token: token})
   end
@@ -341,7 +347,7 @@ defmodule Floki.HTML.Tokenizer do
          s
        )
        when <<c::utf8>> in @all_ASCII_letters do
-    token = %Tag{type: :end, name: "", position: s.position}
+    token = %EndTag{name: "", position: s.position}
     rcdata_end_tag_name(html, %{s | token: token})
   end
 
@@ -651,7 +657,7 @@ defmodule Floki.HTML.Tokenizer do
          s
        )
        when <<c::utf8>> in @all_ASCII_letters do
-    token = %Tag{type: :end, name: "", position: s.position}
+    token = %EndTag{name: "", position: s.position}
     rawtext_end_tag_name(html, %{s | token: token})
   end
 
@@ -683,7 +689,7 @@ defmodule Floki.HTML.Tokenizer do
          s
        )
        when <<c::utf8>> in @all_ASCII_letters do
-    end_tag = %Tag{type: :end, name: "", position: pos_c(s.position)}
+    end_tag = %EndTag{name: "", position: pos_c(s.position)}
     script_data_end_tag_name(html, %{s | token: end_tag, position: pos_c(s.position)})
   end
 
@@ -870,7 +876,7 @@ defmodule Floki.HTML.Tokenizer do
       html,
       %{
         s
-        | token: %Tag{type: :end, name: "", position: s.position}
+        | token: %EndTag{name: "", position: s.position}
       }
     )
   end
@@ -1121,7 +1127,7 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defp before_attribute_name(<<"=", html::binary>>, s) do
-    new_token = %Tag{
+    new_token = %StartTag{
       s.token
       | attributes: [
           %Attribute{name: "=", value: "", position: s.position} | s.token.attributes
@@ -1136,7 +1142,8 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defp before_attribute_name(html, s) do
-    new_token = %Tag{
+    # NOTE: token here can be a StartTag or EndTag. Attributes on end tags will be ignored.
+    new_token = %{
       s.token
       | attributes: [
           %Attribute{name: "", value: "", position: s.position} | s.token.attributes
@@ -1171,7 +1178,7 @@ defmodule Floki.HTML.Tokenizer do
        when <<c::utf8>> in @upper_ASCII_letters do
     [attr | attrs] = s.token.attributes
     new_attr = %Attribute{attr | name: attr.name <> String.downcase(<<c::utf8>>)}
-    new_token = %Tag{s.token | attributes: [new_attr | attrs]}
+    new_token = %StartTag{s.token | attributes: [new_attr | attrs]}
 
     attribute_name(html, %{s | token: new_token, position: pos_c(s.position)})
   end
@@ -1179,7 +1186,7 @@ defmodule Floki.HTML.Tokenizer do
   defp attribute_name(<<"\0", html::binary>>, s) do
     [attr | attrs] = s.token.attributes
     new_attr = %Attribute{attr | name: attr.name <> @replacement_char}
-    new_token = %Tag{s.token | attributes: [new_attr | attrs]}
+    new_token = %StartTag{s.token | attributes: [new_attr | attrs]}
 
     attribute_name(html, %{s | token: new_token, position: pos_c(s.position)})
   end
@@ -1188,7 +1195,7 @@ defmodule Floki.HTML.Tokenizer do
        when <<c::utf8>> in ["\"", "'", "<"] do
     [attr | attrs] = s.token.attributes
     new_attr = %Attribute{attr | name: attr.name <> <<c::utf8>>}
-    new_token = %Tag{s.token | attributes: [new_attr | attrs]}
+    new_token = %StartTag{s.token | attributes: [new_attr | attrs]}
 
     attribute_name(html, %{
       s
@@ -1201,7 +1208,9 @@ defmodule Floki.HTML.Tokenizer do
   defp attribute_name(<<c::utf8, html::binary>>, s) do
     [attr | attrs] = s.token.attributes
     new_attr = %Attribute{attr | name: attr.name <> <<c::utf8>>}
-    new_token = %Tag{s.token | attributes: [new_attr | attrs]}
+
+    # NOTE: token here can be a StartTag or EndTag. Attributes on end tags will be ignored.
+    new_token = %{s.token | attributes: [new_attr | attrs]}
 
     attribute_name(html, %{s | token: new_token, position: pos_c(s.position)})
   end
@@ -1239,7 +1248,7 @@ defmodule Floki.HTML.Tokenizer do
 
   defp after_attribute_name(html, s) do
     attribute = %Attribute{name: "", value: "", position: s.position}
-    new_token = %Tag{s.token | attributes: [attribute | s.token.attributes]}
+    new_token = %StartTag{s.token | attributes: [attribute | s.token.attributes]}
 
     attribute_name(html, %{s | token: new_token})
   end
@@ -1287,7 +1296,7 @@ defmodule Floki.HTML.Tokenizer do
     attribute_value_double_quoted(html, %{
       s
       | errors: [%ParseError{position: s.position} | s.errors],
-        token: %Tag{s.token | attributes: [new_attr | attrs]}
+        token: %StartTag{s.token | attributes: [new_attr | attrs]}
     })
   end
 
@@ -1304,7 +1313,7 @@ defmodule Floki.HTML.Tokenizer do
 
     attribute_value_double_quoted(html, %{
       s
-      | token: %Tag{s.token | attributes: [new_attr | attrs]}
+      | token: %StartTag{s.token | attributes: [new_attr | attrs]}
     })
   end
 
@@ -1325,7 +1334,7 @@ defmodule Floki.HTML.Tokenizer do
     attribute_value_single_quoted(html, %{
       s
       | errors: [%ParseError{position: s.position} | s.errors],
-        token: %Tag{s.token | attributes: [new_attr | attrs]}
+        token: %StartTag{s.token | attributes: [new_attr | attrs]}
     })
   end
 
@@ -1340,9 +1349,10 @@ defmodule Floki.HTML.Tokenizer do
     [attr | attrs] = s.token.attributes
     new_attr = %Attribute{attr | value: attr.value <> <<c::utf8>>}
 
+    # NOTE: token here can be a StartTag or EndTag. Attributes on end tags will be ignored.
     attribute_value_single_quoted(html, %{
       s
-      | token: %Tag{s.token | attributes: [new_attr | attrs]}
+      | token: %{s.token | attributes: [new_attr | attrs]}
     })
   end
 
@@ -1367,7 +1377,7 @@ defmodule Floki.HTML.Tokenizer do
     attribute_value_unquoted(html, %{
       s
       | errors: [%ParseError{position: s.position} | s.errors],
-        token: %Tag{s.token | attributes: [new_attr | attrs]}
+        token: %{s.token | attributes: [new_attr | attrs]}
     })
   end
 
@@ -1379,7 +1389,7 @@ defmodule Floki.HTML.Tokenizer do
     attribute_value_unquoted(html, %{
       s
       | errors: [%ParseError{position: s.position} | s.errors],
-        token: %Tag{s.token | attributes: [new_attr | attrs]}
+        token: %{s.token | attributes: [new_attr | attrs]}
     })
   end
 
@@ -1396,7 +1406,7 @@ defmodule Floki.HTML.Tokenizer do
 
     attribute_value_unquoted(html, %{
       s
-      | token: %Tag{s.token | attributes: [new_attr | attrs]}
+      | token: %{s.token | attributes: [new_attr | attrs]}
     })
   end
 
@@ -1429,7 +1439,7 @@ defmodule Floki.HTML.Tokenizer do
   # § tokenizer-self-closing-start-tag-state
 
   defp self_closing_start_tag(<<">", html::binary>>, s) do
-    tag = %Tag{s.token | self_close: true}
+    tag = %StartTag{s.token | self_close: true}
     data(html, %{s | tokens: [tag | s.tokens], token: nil})
   end
 
@@ -2771,7 +2781,7 @@ defmodule Floki.HTML.Tokenizer do
         part_of_attr?(s) ->
           [attr | attrs] = s.token.attributes
           new_attr = %Attribute{attr | value: attr.value <> s.buffer}
-          new_tag = %Tag{s.token | attributes: [new_attr | attrs]}
+          new_tag = %StartTag{s.token | attributes: [new_attr | attrs]}
 
           %{s | token: new_tag}
 
@@ -2816,8 +2826,8 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defp appropriate_tag?(state) do
-    with %Tag{type: :start, name: start_tag_name} <- state.last_start_tag,
-         %Tag{type: :end, name: end_tag_name} <- state.token,
+    with %StartTag{name: start_tag_name} <- state.last_start_tag,
+         %EndTag{name: end_tag_name} <- state.token,
          true <- start_tag_name == end_tag_name do
       true
     else
