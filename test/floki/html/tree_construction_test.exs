@@ -14,7 +14,9 @@ defmodule Floki.HTML.TreeConstructionTest do
       }
 
       {:ok, doc} = TreeConstruction.build_document(tokenizer_state)
-      assert %Document{tree: %HTMLTree{nodes: %{1 => %HTMLTree.Comment{content: "some comment"}}}} = doc
+
+      assert %Document{tree: %HTMLTree{nodes: %{1 => %HTMLTree.Comment{content: "some comment"}}}} =
+               doc
     end
 
     test "build_document/1 with space chars" do
