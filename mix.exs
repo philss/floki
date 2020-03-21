@@ -47,7 +47,7 @@ defmodule Floki.Mixfile do
       {:earmark, "~> 1.2", only: :dev},
       {:ex_doc, "~> 0.21.3", only: :dev},
       {:credo, ">= 0.0.0", only: [:dev, :test]},
-      {:dialyxir, "~> 0.5", only: [:dev], runtime: false},
+      {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
       {:inch_ex, ">= 0.0.0", only: :docs}
     ] ++ parsers
   end
