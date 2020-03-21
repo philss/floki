@@ -9,14 +9,16 @@ jobs:
       PARSER: ${{ matrix.parser }}
 
     container:
-      image: elixir:${{ matrix.elixir }}-slim
+      image: hexpm/elixir:${{ matrix.elixir }}-erlang-${{ matrix.erlang }}-ubuntu-${{ matrix.ubuntu }}
 
-    name: Elixir ${{ matrix.elixir }} with ${{ matrix.parser }}
+    name: Elixir ${{ matrix.elixir }} / Erlang ${{ matrix.erlang }} with ${{ matrix.parser }} and Ubuntu ${{matrix.ubuntu}}
 
     strategy:
       fail-fast: false
       matrix:
-        elixir: [1.9, 1.8, 1.7, 1.6]
+        elixir: ["1.9.4", "1.8.2", "1.7.4", "1.6.6"]
+        erlang: ["21.3.8"]
+        ubuntu: ["bionic-20200219"]
         parser: [fast_html, html5ever, mochiweb]
 
     steps:
