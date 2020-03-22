@@ -32,7 +32,7 @@ defmodule Floki.HTML.TreeConstruction do
   end
 
   defp initial(
-         state,
+         state = %State{},
          tstate = %TState{tokens: [token = %Tokenizer.Comment{} | tokens]}
        ) do
     {:ok, doc, _} = Document.add_node(state.document, %HTree.Comment{content: token.data})
@@ -40,7 +40,7 @@ defmodule Floki.HTML.TreeConstruction do
   end
 
   defp initial(
-         state,
+         state = %State{},
          tstate = %TState{tokens: [token = %Tokenizer.Char{} | tokens]}
        ) do
     if String.trim(token.data) == "" do
@@ -51,7 +51,7 @@ defmodule Floki.HTML.TreeConstruction do
   end
 
   defp initial(
-         state,
+         state = %State{},
          tstate = %TState{tokens: [token = %Tokenizer.Doctype{} | tokens]}
        ) do
     # TODO: check for parse errors
@@ -60,7 +60,7 @@ defmodule Floki.HTML.TreeConstruction do
     initial(%{state | document: doc}, %{tstate | tokens: tokens})
   end
 
-  defp initial(state, tstate) do
+  defp initial(state = %State{}, tstate = %TState{}) do
     before_html(
       %{state | document: Document.set_mode(state.document, "quirks")},
       tstate
@@ -70,14 +70,15 @@ defmodule Floki.HTML.TreeConstruction do
   # the-before-html-insertion-mode
 
   defp before_html(
-         state,
+         state = %State{},
          tstate = %TState{tokens: [%Tokenizer.Doctype{} | tokens]}
        ) do
+    # TODO: set parse error
     before_html(state, %{tstate | tokens: tokens})
   end
 
   defp before_html(
-         state,
+         state = %State{},
          tstate = %TState{tokens: [token = %Tokenizer.Comment{} | tokens]}
        ) do
     {:ok, doc, _} = Document.add_node(state.document, %HTree.Comment{content: token.data})
@@ -86,7 +87,7 @@ defmodule Floki.HTML.TreeConstruction do
   end
 
   defp before_html(
-         state,
+         state = %State{},
          tstate = %TState{tokens: [%Tokenizer.Char{data: data} | tokens]}
        )
        when data in @space_chars do
@@ -96,8 +97,8 @@ defmodule Floki.HTML.TreeConstruction do
   end
 
   defp before_html(
-         state,
-         tstate = %TState{tokens: [token = %Tokenizer.StartTag{} | tokens]}
+         state = %State{},
+         tstate = %TState{tokens: [token = %Tokenizer.StartTag{name: "html"} | tokens]}
        ) do
     new_element = %HTree.HTMLNode{type: token.name, attributes: token.attributes}
     {:ok, doc, new_node} = Document.add_node(state.document, new_element)
@@ -109,8 +110,8 @@ defmodule Floki.HTML.TreeConstruction do
   end
 
   defp before_html(
-         state,
-         tstate = %TState{tokens: [%Tokenizer.StartTag{name: name} | _tokens]}
+         state = %State{},
+         tstate = %TState{tokens: [%Tokenizer.EndTag{name: name} | _tokens]}
        )
        when name in ~w(head body html br) do
     new_element = %HTree.HTMLNode{type: "html"}
@@ -123,7 +124,15 @@ defmodule Floki.HTML.TreeConstruction do
   end
 
   defp before_html(
-         state,
+         state = %State{},
+         tstate = %TState{tokens: [%Tokenizer.StartTag{} | tokens]}
+       ) do
+    # TODO: add parse error
+    before_html(state, %{tstate | tokens: tokens})
+  end
+
+  defp before_html(
+         state = %State{},
          tstate = %TState{tokens: [%Tokenizer.EndTag{} | tokens]}
        ) do
     # TODO: add parse error
@@ -131,11 +140,10 @@ defmodule Floki.HTML.TreeConstruction do
   end
 
   defp before_html(
-         state,
-         tstate = %TState{tokens: [_token | _tokens]}
+         state = %State{},
+         tstate = %TState{tokens: []}
        ) do
-    new_element = %HTree.HTMLNode{type: "html"}
-    {:ok, doc, new_node} = Document.add_node(state.document, new_element)
+    {:ok, doc, new_node} = add_node(state, %HTree.HTMLNode{type: "html"})
 
     before_head(
       %{state | document: doc, open_elements: [new_node.node_id | state.open_elements]},
@@ -143,11 +151,15 @@ defmodule Floki.HTML.TreeConstruction do
     )
   end
 
-  defp before_html(state, %TState{}) do
+  defp before_head(state = %State{}, %TState{}) do
     {:ok, state.document}
   end
 
-  defp before_head(state, %TState{}) do
-    {:ok, state.document}
+  defp add_node(%State{document: doc, open_elements: []}, element) do
+    Document.add_node(doc, element)
+  end
+
+  defp add_node(%State{document: doc, open_elements: [current_node_id | _]}, element) do
+    Document.add_node(doc, element, current_node_id)
   end
 end

@@ -50,10 +50,10 @@ defmodule Floki.HTML.Document do
   @doc """
   Creates a new node with a parent node.
   """
-  def add_node(document = %Document{tree: tree}, node, parent = %HTMLNode{}) do
+  def add_node(document = %Document{tree: tree}, node, parent_node_id) do
     new_id = id(tree.node_ids)
 
-    new_node = %{node | node_id: new_id, parent_node_id: parent.node_id}
+    new_node = %{node | node_id: new_id, parent_node_id: parent_node_id}
 
     nodes = put_new_node(tree.nodes, new_node)
     new_tree = %{tree | node_ids: [new_id | tree.node_ids], nodes: nodes}
