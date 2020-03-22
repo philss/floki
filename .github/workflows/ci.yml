@@ -25,6 +25,8 @@ jobs:
             erlang: "23.0"
     steps:
       - uses: actions/checkout@v1.0.0
+        with:
+          submodules: 'recursive'
       - name: Install dependencies
         run: |-
           apt-get update
