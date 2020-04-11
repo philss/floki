@@ -15,9 +15,9 @@ Documentation is a very important portion of software. We want to always improve
 ### Ideas
 
 To contribute with ideas, you can [open issues](https://github.com/philss/floki/issues/new) using Github. Please write a clear description of
-what you want to propouse, along with a motivation and examples.
+what you want to propose, along with a motivation and examples.
 
-This can make the project very rich, even if your propouse is not accepted. It worth the discussion and possible implementations.
+This can make the project very rich, even if your proposal is not accepted. It worth the discussion and possible implementations.
 
 ### Code
 
