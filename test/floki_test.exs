@@ -191,7 +191,9 @@ defmodule FlokiTest do
   end
 
   test "raw_html (with both quote and double quote inside the attribute)" do
-    expected_html = "<html><head></head><body><span data-stuff=\"&quot;'\"></span></body></html>"
+    expected_html =
+      "<html><head></head><body><span data-stuff=\"&quot;&#39;\"></span></body></html>"
+
     tree = document!(html_body("<span data-stuff=\"&quot;&#39;\"></span>"))
     assert Floki.raw_html(tree) == expected_html
 
@@ -199,6 +201,20 @@ defmodule FlokiTest do
     assert Floki.raw_html(tree) == expected_html
 
     tree = document!(html_body("<span data-stuff=\"&quot;'\"></span>"))
+    assert Floki.raw_html(tree) == expected_html
+  end
+
+  test "raw_html (with >)" do
+    expected_html = "<html><head></head><body><span data-stuff=\"&gt;\"></span></body></html>"
+
+    tree = document!(html_body("<span data-stuff=\">\"></span>"))
+    assert Floki.raw_html(tree) == expected_html
+  end
+
+  test "raw_html (with <)" do
+    expected_html = "<html><head></head><body><span data-stuff=\"&lt;\"></span></body></html>"
+
+    tree = document!(html_body("<span data-stuff=\"<\"></span>"))
     assert Floki.raw_html(tree) == expected_html
   end
 
