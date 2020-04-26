@@ -117,7 +117,7 @@ defmodule Floki.RawHTML do
   # html_escape
 
   def html_escape_attribute_value(attribute_value) do
-    html_escape_chars(attribute_value, ~r/&|"/)
+    html_escape_chars(attribute_value, ~r/&|"|<|>|'/)
   end
 
   defp html_escape_chars(subject, escaped_chars_regex) do
