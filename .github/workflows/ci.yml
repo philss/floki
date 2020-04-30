@@ -40,7 +40,7 @@ jobs:
         if: matrix.parser == 'html5ever'
 
       - name: Check format
-        if: matrix.elixir >= 1.8
+        if: (!startsWith(matrix.elixir, '1.6') && !startsWith(matrix.elixir, '1.7'))
         run: mix format --check-formatted
 
       - name: Run tests
