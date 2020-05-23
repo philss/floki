@@ -25,8 +25,7 @@ defmodule Floki.HTML.TreeConstructionTest do
       }
 
       {:ok, doc} = TreeConstruction.build_document(tokenizer_state)
-      assert %Document{tree: %HTMLTree{nodes: nodes = %{}}} = doc
-      assert nodes == %{}
+      assert %Document{tree: %HTMLTree{nodes: _nodes = %{}}} = doc
     end
 
     test "build_document/1 with a doctype" do
@@ -36,8 +35,7 @@ defmodule Floki.HTML.TreeConstructionTest do
 
       {:ok, doc} = TreeConstruction.build_document(tokenizer_state)
 
-      assert %Document{doctype: doctype, tree: %HTMLTree{nodes: nodes = %{}}} = doc
-      assert nodes == %{}
+      assert %Document{doctype: doctype, tree: %HTMLTree{nodes: _nodes = %{}}} = doc
       assert %Doctype{name: "html"} = doctype
     end
 

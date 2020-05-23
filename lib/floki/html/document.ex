@@ -6,7 +6,6 @@ defmodule Floki.HTML.Document do
   alias __MODULE__
   alias Floki.HTML.Doctype
   alias Floki.HTMLTree
-  alias Floki.HTMLTree.HTMLNode
 
   defstruct doctype: nil,
             tree: %HTMLTree{},
@@ -59,6 +58,19 @@ defmodule Floki.HTML.Document do
     new_tree = %{tree | node_ids: [new_id | tree.node_ids], nodes: nodes}
 
     {:ok, %{document | tree: new_tree}, new_node}
+  end
+
+  @doc """
+  Returns a node based on its ID.
+  """
+  def get_node(document = %Document{tree: tree}, node_id) do
+    node = Map.get(tree, node_id)
+
+    if node do
+      {:ok, node}
+    else
+      {:error, :node_not_found}
+    end
   end
 
   defp id([]), do: 1
