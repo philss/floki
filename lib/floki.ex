@@ -454,8 +454,10 @@ defmodule Floki do
   @doc """
   Returns the direct child nodes of a HTML tree.
 
-  By default, it will also include all texts. You can disable this behaviour
-  by using the option `include_text` to `false`
+  By default, it will also include all texts. You can disable
+  this behaviour by using the option `include_text` to `false`.
+
+  If the given node is not an HTML tag, then it returns nil.
 
   ## Examples
 
@@ -465,9 +467,12 @@ defmodule Floki do
       iex> Floki.children({"div", [], ["text", {"span", [], []}]}, include_text: false)
       [{"span", [], []}]
 
+      iex> Floki.children({:comment, "comment"})
+      nil
+
   """
 
-  @spec children(html_tree, Keyword.t()) :: html_tree
+  @spec children(html_tree, Keyword.t()) :: html_tree | nil
 
   def children(html, opts \\ [include_text: true]) do
     case html do
