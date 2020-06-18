@@ -542,14 +542,18 @@ defmodule Floki do
       Enum.reduce(
         elements,
         [],
-        fn {_, attributes, _}, acc ->
-          case attribute_match?(attributes, attr_name) do
-            {_attr_name, value} ->
-              [value | acc]
+        fn
+          {_, attributes, _}, acc ->
+            case attribute_match?(attributes, attr_name) do
+              {_attr_name, value} ->
+                [value | acc]
 
-            _ ->
-              acc
-          end
+              _ ->
+                acc
+            end
+
+          _, acc ->
+            acc
         end
       )
 
