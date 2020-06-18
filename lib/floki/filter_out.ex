@@ -49,7 +49,7 @@ defmodule Floki.FilterOut do
 
   defp filter({nodetext, _, _}, selector) when nodetext === selector, do: false
   defp filter({nodetext, _}, selector) when nodetext === selector, do: false
-  defp filter(text, :text) when is_bitstring(text), do: false
+  defp filter(text, :text) when is_binary(text), do: false
   defp filter(_, _), do: true
 
   defp mapper(nodes, selector) when is_list(nodes) do
