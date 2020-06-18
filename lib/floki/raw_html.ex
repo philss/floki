@@ -30,7 +30,7 @@ defmodule Floki.RawHTML do
         :error -> default_encoder()
       end
 
-    build_raw_html(html_tree, "", encoder)
+    IO.iodata_to_binary(build_raw_html(html_tree, [], encoder))
   end
 
   defp build_raw_html([], html, _encoder), do: html
@@ -41,58 +41,49 @@ defmodule Floki.RawHTML do
     do: build_raw_html([tuple], html, encoder)
 
   defp build_raw_html([string | tail], html, encoder) when is_binary(string) do
-    build_raw_html(tail, html <> encoder.(string), encoder)
+    build_raw_html(tail, [html | encoder.(string)], encoder)
   end
 
   defp build_raw_html([{:comment, comment} | tail], html, encoder),
-    do: build_raw_html(tail, html <> "<!--#{comment}-->", encoder)
+    do: build_raw_html(tail, [html, "<!--", comment | "-->"], encoder)
 
   defp build_raw_html([{:pi, "xml", attrs} | tail], html, encoder) do
-    build_raw_html(tail, html <> "<?xml " <> tag_attrs(attrs) <> "?>", encoder)
+    build_raw_html(tail, [html, "<?xml ", tag_attrs(attrs) | "?>"], encoder)
   end
 
   defp build_raw_html([{:doctype, type, public, system} | tail], html, encoder) do
     attr =
       case {public, system} do
-        {"", ""} -> ""
-        {"", system} -> " SYSTEM \"#{system}\""
-        {public, system} -> " PUBLIC \"#{public}\" \"#{system}\""
+        {"", ""} -> []
+        {"", system} -> [" SYSTEM \"", system | "\""]
+        {public, system} -> [" PUBLIC \"", public, "\" \"", system | "\""]
       end
 
-    build_raw_html(tail, html <> "<!DOCTYPE #{type}#{attr}>", encoder)
+    build_raw_html(tail, [html, "<!DOCTYPE ", type, attr | ">"], encoder)
   end
 
   defp build_raw_html([{type, attrs, children} | tail], html, encoder) do
-    build_raw_html(tail, html <> tag_for(type, attrs, children, encoder), encoder)
+    build_raw_html(tail, [html | tag_for(type, attrs, children, encoder)], encoder)
   end
 
   defp tag_attrs(attr_list) do
-    attr_list
-    |> Enum.reduce("", &build_attrs/2)
-    |> String.trim()
+    map_intersperse(attr_list, ?\s, &build_attrs/1)
   end
 
-  defp tag_with_attrs(type, [], children), do: "<#{type}" <> close_open_tag(type, children)
+  defp tag_with_attrs(type, [], children),
+    do: ["<", type | close_open_tag(type, children)]
 
-  defp tag_with_attrs(type, attrs, children) do
-    "<#{type} #{tag_attrs(attrs)}" <> close_open_tag(type, children)
-  end
+  defp tag_with_attrs(type, attrs, children),
+    do: ["<", type, ?\s, tag_attrs(attrs) | close_open_tag(type, children)]
 
   defp close_open_tag(type, []) when type in @self_closing_tags, do: "/>"
   defp close_open_tag(_type, _), do: ">"
 
   defp close_end_tag(type, []) when type in @self_closing_tags, do: ""
-  defp close_end_tag(type, _), do: "</#{type}>"
+  defp close_end_tag(type, _), do: ["</", type, ">"]
 
-  defp build_attrs({attr, iodata}, attrs) when is_list(iodata) do
-    build_attrs({attr, IO.iodata_to_binary(iodata)}, attrs)
-  end
-
-  defp build_attrs({attr, <<value::binary>>}, attrs) do
-    "#{attrs} #{attr}=\"#{html_escape_attribute_value(value)}\""
-  end
-
-  defp build_attrs(<<attr::binary>>, attrs), do: "#{attrs} #{attr}"
+  defp build_attrs({attr, value}), do: [attr, "=\"", html_escape(value) | "\""]
+  defp build_attrs(attr), do: attr
 
   defp tag_for(type, attrs, children, encoder) do
     encoder =
@@ -102,8 +93,11 @@ defmodule Floki.RawHTML do
         _ -> encoder
       end
 
-    tag_with_attrs(type, attrs, children) <>
-      build_raw_html(children, "", encoder) <> close_end_tag(type, children)
+    [
+      tag_with_attrs(type, attrs, children),
+      build_raw_html(children, "", encoder)
+      | close_end_tag(type, children)
+    ]
   end
 
   defp default_encoder do
@@ -115,18 +109,62 @@ defmodule Floki.RawHTML do
   end
 
   # html_escape
+  # Optimized IO data implementation from Plug.HTML
 
-  def html_escape_attribute_value(attribute_value) do
-    html_escape_chars(attribute_value, ~r/&|"|<|>|'/)
+  defp html_escape(data) when is_binary(data), do: html_escape(data, 0, data, [])
+  defp html_escape(data), do: html_escape(IO.iodata_to_binary(data))
+
+  escapes = [
+    {?<, "&lt;"},
+    {?>, "&gt;"},
+    {?&, "&amp;"},
+    {?", "&quot;"},
+    {?', "&#39;"}
+  ]
+
+  for {match, insert} <- escapes do
+    defp html_escape(<<unquote(match), rest::bits>>, skip, original, acc) do
+      html_escape(rest, skip + 1, original, [acc | unquote(insert)])
+    end
   end
 
-  defp html_escape_chars(subject, escaped_chars_regex) do
-    Regex.replace(escaped_chars_regex, subject, &html_escape_char/1)
+  defp html_escape(<<_char, rest::bits>>, skip, original, acc) do
+    html_escape(rest, skip, original, acc, 1)
   end
 
-  defp html_escape_char("<"), do: "&lt;"
-  defp html_escape_char(">"), do: "&gt;"
-  defp html_escape_char("&"), do: "&amp;"
-  defp html_escape_char("\""), do: "&quot;"
-  defp html_escape_char("'"), do: "&#39;"
+  defp html_escape(<<>>, _skip, _original, acc) do
+    acc
+  end
+
+  for {match, insert} <- escapes do
+    defp html_escape(<<unquote(match), rest::bits>>, skip, original, acc, len) do
+      part = binary_part(original, skip, len)
+      html_escape(rest, skip + len + 1, original, [acc, part | unquote(insert)])
+    end
+  end
+
+  defp html_escape(<<_char, rest::bits>>, skip, original, acc, len) do
+    html_escape(rest, skip, original, acc, len + 1)
+  end
+
+  defp html_escape(<<>>, 0, original, _acc, _len) do
+    original
+  end
+
+  defp html_escape(<<>>, skip, original, acc, len) do
+    [acc | binary_part(original, skip, len)]
+  end
+
+  # helpers
+
+  # TODO: Use Enum.map_intersperse/3 when we require Elixir v1.10+
+
+  defp map_intersperse([], _, _),
+    do: []
+
+  defp map_intersperse([last], _, mapper),
+    do: [mapper.(last)]
+
+  defp map_intersperse([head | rest], separator, mapper),
+    do: [mapper.(head), separator | map_intersperse(rest, separator, mapper)]
 end

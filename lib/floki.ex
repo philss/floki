@@ -166,13 +166,13 @@ defmodule Floki do
 
   ## Examples
 
-      iex> Floki.raw_html({:div, [class: "wrapper"], ["my content"]})
+      iex> Floki.raw_html({"div", [{"class", "wrapper"}], ["my content"]})
       ~s(<div class="wrapper">my content</div>)
 
-      iex> Floki.raw_html({:div, [class: "wrapper"], ["10 > 5"]}, encode: true)
+      iex> Floki.raw_html({"div", [{"class", "wrapper"}], ["10 > 5"]}, encode: true)
       ~s(<div class="wrapper">10 &gt; 5</div>)
 
-      iex> Floki.raw_html({:div, [class: "wrapper"], ["10 > 5"]}, encode: false)
+      iex> Floki.raw_html({"div", [{"class", "wrapper"}], ["10 > 5"]}, encode: false)
       ~s(<div class="wrapper">10 > 5</div>)
   """
 
