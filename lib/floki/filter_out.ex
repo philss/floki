@@ -6,12 +6,12 @@ defmodule Floki.FilterOut do
   # Helper functions for filtering out a specific element from the tree.
 
   @type html_tree :: tuple | list
-  @type selector :: :comment | Finder.selector()
+  @type selector :: :comment | :text | Finder.selector()
 
   @spec filter_out(html_tree, selector) :: tuple | list
 
-  def filter_out(html_tree, :comment) do
-    mapper(html_tree, :comment)
+  def filter_out(html_tree, type) when type in [:text, :comment] do
+    mapper(html_tree, type)
   end
 
   def filter_out(html_tree, selector) do
@@ -49,6 +49,7 @@ defmodule Floki.FilterOut do
 
   defp filter({nodetext, _, _}, selector) when nodetext === selector, do: false
   defp filter({nodetext, _}, selector) when nodetext === selector, do: false
+  defp filter(text, :text) when is_binary(text), do: false
   defp filter(_, _), do: true
 
   defp mapper(nodes, selector) when is_list(nodes) do

@@ -600,6 +600,9 @@ defmodule Floki do
       iex> Floki.filter_out({"div", [], [{:comment, "comment"}, " text"]}, :comment)
       {"div", [], [" text"]}
 
+      iex> Floki.filter_out({"div", [], ["text"]}, :text)
+      {"div", [], []}
+
   """
 
   @spec filter_out(binary | html_tree, FilterOut.selector()) :: list

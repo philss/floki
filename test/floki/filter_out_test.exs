@@ -29,4 +29,8 @@ defmodule Floki.FilterOutTest do
   test "filter out filters script when it is the only node" do
     assert Floki.FilterOut.filter_out({"script", [], ["wat"]}, "script") == []
   end
+
+  test "filter out text nodes" do
+    assert Floki.FilterOut.filter_out({"p", [], ["test"]}, :text) == {"p", [], []}
+  end
 end
