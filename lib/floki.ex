@@ -61,11 +61,13 @@ defmodule Floki do
   inside a list.
   """
 
+  @type html_declaration :: {:pi, String.t(), [html_attribute()]}
   @type html_comment :: {:comment, String.t()}
   @type html_doctype :: {:doctype, String.t(), String.t(), String.t()}
   @type html_attribute :: {String.t(), String.t()}
   @type html_tag :: {String.t(), [html_attribute()], [html_tag() | String.t() | html_comment()]}
-  @type html_tree :: [html_comment() | html_doctype() | html_tag()]
+  @type html_node :: html_comment() | html_doctype() | html_tag() | html_declaration()
+  @type html_tree :: [html_node()]
 
   @doc """
   Parses a HTML Document from a String.
@@ -326,7 +328,8 @@ defmodule Floki do
   Traverses and updates a HTML tree structure.
 
   This function returns a new tree structure that is the result of applying the
-  given `fun` on all nodes.
+  given `fun` on all nodes. The tree is traversed in a post-walk fashion, where
+  the children are traversed before the parent.
 
   The function `fun` receives a tuple with `{name, attributes, children}`, and
   should either return a similar tuple or `nil` to delete the current node.
@@ -347,7 +350,7 @@ defmodule Floki do
       {"div", [], []}
   """
 
-  @spec traverse_and_update(html_tree(), (html_tag() -> html_tag() | nil)) :: html_tree()
+  @spec traverse_and_update(html_tree(), (html_node() -> html_node() | nil)) :: html_tree()
 
   defdelegate traverse_and_update(html_tree, fun), to: Floki.Traversal
 
@@ -355,7 +358,9 @@ defmodule Floki do
   Traverses and updates a HTML tree structure with an accumulator.
 
   This function returns a new tree structure and the final value of accumulator
-  which are the result of applying the given `fun` on all nodes.
+  which are the result of applying the given `fun` on all nodes. The tree is
+  traversed in a post-walk fashion, where the children are traversed before
+  the parent.
 
   The function `fun` receives a tuple with `{name, attributes, children}` and
   an accumulator, and should return a 2-tuple like `{new_node, new_acc}`, where
@@ -386,8 +391,8 @@ defmodule Floki do
   @spec traverse_and_update(
           html_tree(),
           traverse_acc,
-          (html_tag(), traverse_acc -> {html_tag() | nil, traverse_acc})
-        ) :: {html_tree(), traverse_acc}
+          (html_node(), traverse_acc -> {html_node() | nil, traverse_acc})
+        ) :: {html_node(), traverse_acc}
         when traverse_acc: any()
 
   defdelegate traverse_and_update(html_tree, acc, fun), to: Floki.Traversal
