@@ -47,8 +47,8 @@ defmodule Floki.RawHTML do
   defp build_raw_html([{:comment, comment} | tail], html, encoder),
     do: build_raw_html(tail, [html, "<!--", comment | "-->"], encoder)
 
-  defp build_raw_html([{:pi, "xml", attrs} | tail], html, encoder) do
-    build_raw_html(tail, [html, "<?xml ", tag_attrs(attrs) | "?>"], encoder)
+  defp build_raw_html([{:pi, tag, attrs} | tail], html, encoder) do
+    build_raw_html(tail, [html, "<?", tag, " ", tag_attrs(attrs) | "?>"], encoder)
   end
 
   defp build_raw_html([{:doctype, type, public, system} | tail], html, encoder) do
