@@ -29,8 +29,7 @@ defmodule Floki.Mixfile do
   defp deps do
     # Needed to avoid installing unnecessary deps on the CI
     parsers_deps = [
-      html5ever:
-        {:html5ever, ">= 0.8.0", optional: true, only: [:dev, :test]},
+      html5ever: {:html5ever, ">= 0.8.0", optional: true, only: [:dev, :test]},
       fast_html: {:fast_html, ">= 0.0.0", optional: true, only: [:dev, :test]}
     ]
 
