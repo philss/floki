@@ -10,7 +10,7 @@ defmodule Floki.Finder do
   alias HTMLTree.HTMLNode
 
   @type html_tree :: tuple | list
-  @type selector :: binary | %Selector{} | [%Selector{}]
+  @type selector :: binary() | %Selector{} | [%Selector{}]
 
   # Find elements inside a HTML tree.
   # Second argument can be either a selector string, a selector struct or a list of selector structs.

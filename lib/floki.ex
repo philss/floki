@@ -599,7 +599,7 @@ defmodule Floki do
       iex> Floki.filter_out({"div", [], [{"script", [], ["hello"]}, " world"]}, "script")
       {"div", [], [" world"]}
 
-      iex> Floki.filter_out([{"body", [], [{"script", [], []},{"div", [], []}]}], "script")
+      iex> Floki.filter_out([{"body", [], [{"script", [], []}, {"div", [], []}]}], "script")
       [{"body", [], [{"div", [], []}]}]
 
       iex> Floki.filter_out({"div", [], [{:comment, "comment"}, " text"]}, :comment)
@@ -610,7 +610,8 @@ defmodule Floki do
 
   """
 
-  @spec filter_out(binary | html_tree, FilterOut.selector()) :: list
+  @spec filter_out(binary() | html_tree() | html_tag(), FilterOut.selector()) ::
+          html_tree() | html_tag()
 
   def filter_out(html, selector) when is_binary(html) do
     IO.warn(
