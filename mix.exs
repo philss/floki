@@ -2,7 +2,7 @@ defmodule Floki.Mixfile do
   use Mix.Project
 
   @description "Floki is a simple HTML parser that enables search for nodes using CSS selectors."
-  @version "0.26.0"
+  @version "0.27.0"
 
   def project do
     [
@@ -30,7 +30,7 @@ defmodule Floki.Mixfile do
     # Needed to avoid installing unnecessary deps on the CI
     parsers_deps = [
       html5ever:
-        {:html5ever, github: "rusterlium/html5ever_elixir", optional: true, only: [:dev, :test]},
+        {:html5ever, ">= 0.8.0", optional: true, only: [:dev, :test]},
       fast_html: {:fast_html, ">= 0.0.0", optional: true, only: [:dev, :test]}
     ]
 

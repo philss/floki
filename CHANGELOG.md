@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased][unreleased]
 
+## [0.27.0] - 2020-07-07
+
+### Added
+
+- `Floki.filter_out/2` now can filter text nodes - thanks [@ckruse](https://github.com/ckruse)
+- Support more enconding entities in `Floki.raw_html/1` - thanks [@ntenczar](https://github.com/ntenczar)
+
+### Fixed
+
+- Fix `Floki.attribute/2` when there is only text nodes in the document - thanks [@ckruse](https://github.com/ckruse)
+
+### Improvements
+
+- Performance improvements of `Floki.raw_html/1` function - thanks [@josevalim](https://github.com/josevalim)
+- Improvements in the docs and specs of `Floki.traverse_and_update/2` and `Floki.children/1` - thanks [@josevalim](https://github.com/josevalim)
+- Improvements in the spec of `Floki.traverse_and_update/2` - thanks [@Dalgona](https://github.com/Dalgona)
+- Improve the CI setup to run the formatter correctly - thanks [@Cleidiano](https://github.com/Cleidiano)
+
 ## [0.26.0] - 2020-02-17
 
 ### Added
@@ -494,7 +512,8 @@ of the parent element inside HTML.
 
 - Elixir version requirement from "~> 1.0.0" to ">= 1.0.0".
 
-[unreleased]: https://github.com/philss/floki/compare/v0.26.0...HEAD
+[unreleased]: https://github.com/philss/floki/compare/v0.27.0...HEAD
+[0.27.0]: https://github.com/philss/floki/compare/v0.26.0...v0.27.0
 [0.26.0]: https://github.com/philss/floki/compare/v0.25.0...v0.26.0
 [0.25.0]: https://github.com/philss/floki/compare/v0.24.0...v0.25.0
 [0.24.0]: https://github.com/philss/floki/compare/v0.23.1...v0.24.0
