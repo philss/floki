@@ -97,13 +97,12 @@ concerns:
 
 Floki supports the following alternative parsers:
 
-- `fast_html` - A wrapper for lexborisov's [myhtml](https://github.com/lexborisov/myhtml/). A pure C HTML parser.
+- `fast_html` - A wrapper for [lexbor](https://github.com/lexbor/lexbor). A pure C HTML parser.
 - `html5ever` - A wrapper for [html5ever](https://github.com/servo/html5ever) written in Rust, developed as a part of the Servo project.
 
 `fast_html` is generally faster, according to the
 [benchmarks](https://hexdocs.pm/fast_html/readme.html#benchmarks) conducted by
-its developers. Though `html5ever` does have an advantage on really small
-(~4kb) fragments due to it being implemented as a NIF.
+its developers.
 
 #### Using `html5ever` as the HTML parser
 
@@ -135,12 +134,8 @@ For more info, check the article [Rustler - Safe Erlang and Elixir NIFs in Rust]
 
 #### Using `fast_html` as the HTML parser
 
-A C compiler and GNU\Make needs to be installed on the system in order to
-compile myhtml. It's likely that your machine has them already.
-
-Note that you also need to have `epmd` started/available to start due to `fast_html` relying on a
-C-Node worker, usually it will be started automatically, but some distributions
-(i.e Gentoo Linux) enforce only being able to start it as a service.
+A C compiler, GNU\Make and CMake need to be installed on the system in order to
+compile lexbor.
 
 First, add `fast_html` to your dependencies:
 
@@ -148,7 +143,7 @@ First, add `fast_html` to your dependencies:
 defp deps do
   [
     {:floki, "~> 0.27.0"},
-    {:fast_html, "~> 1.0"}
+    {:fast_html, "~> 2.0"}
   ]
 end
 ```
