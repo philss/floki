@@ -20,13 +20,18 @@ jobs:
         erlang: ["21.3.8"]
         ubuntu: ["bionic-20200219"]
         parser: [fast_html, html5ever, mochiweb]
+        # nimble_pool, which fast_html depends on,
+        # does not work on Elixir 1.6.6
+        exclude:
+          - elixir: "1.6.6"
+            parser: fast_html
 
     steps:
       - uses: actions/checkout@v1.0.0
       - name: Install dependencies
         run: |-
           apt-get update
-          if [ "$PARSER" = "fast_html" ]; then apt-get -y install build-essential; fi
+          if [ "$PARSER" = "fast_html" ]; then apt-get -y install build-essential cmake; fi
           if [ "$PARSER" = "html5ever" ]; then apt-get -y install build-essential git curl; fi
           mix local.rebar --force
           mix local.hex --force
