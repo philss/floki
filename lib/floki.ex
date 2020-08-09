@@ -336,18 +336,18 @@ defmodule Floki do
 
   ## Examples
 
-      iex> html = {"div", [], ["hello"]}
+      iex> html = [{"div", [], ["hello"]}]
       iex> Floki.traverse_and_update(html, fn {"div", attrs, children} ->
       ...>   {"p", attrs, children}
       ...> end)
-      {"p", [], ["hello"]}
+      [{"p", [], ["hello"]}]
 
-      iex> html = {"div", [], [{"span", [], ["hello"]}]}
+      iex> html = [{"div", [], [{"span", [], ["hello"]}]}]
       iex> Floki.traverse_and_update(html, fn
       ...>   {"span", _attrs, _children} -> nil
       ...>   tag -> tag
       ...> end)
-      {"div", [], []}
+      [{"div", [], []}]
   """
 
   @spec traverse_and_update(html_tree(), (html_node() -> html_node() | nil)) :: html_tree()
@@ -457,7 +457,7 @@ defmodule Floki do
   end
 
   @doc """
-  Returns the direct child nodes of a HTML tree.
+  Returns the direct child nodes of a HTML node.
 
   By default, it will also include all texts. You can disable
   this behaviour by using the option `include_text` to `false`.
@@ -477,10 +477,10 @@ defmodule Floki do
 
   """
 
-  @spec children(html_tree, Keyword.t()) :: html_tree | nil
+  @spec children(html_node(), Keyword.t()) :: html_tree() | nil
 
-  def children(html, opts \\ [include_text: true]) do
-    case html do
+  def children(html_node, opts \\ [include_text: true]) do
+    case html_node do
       {_, _, subtree} ->
         filter_children(subtree, opts[:include_text])
 
