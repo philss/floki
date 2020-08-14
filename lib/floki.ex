@@ -331,23 +331,31 @@ defmodule Floki do
   given `fun` on all nodes. The tree is traversed in a post-walk fashion, where
   the children are traversed before the parent.
 
-  The function `fun` receives a tuple with `{name, attributes, children}`, and
-  should either return a similar tuple or `nil` to delete the current node.
+  When the function `fun` encounters HTML tag, it receives a tuple with
+  `{name, attributes, children}`, and should either return a similar tuple or
+  `nil` to delete the current node.
+
+  The function `fun` can also encounter HTML doctype, comment or declaration and
+  will receive, and should return, different tuple for these types. See the
+  documentation for `t:html_comment/0`, `t:html_doctype/0` and
+  `t:html_declaration/0` for details.
 
   ## Examples
 
       iex> html = [{"div", [], ["hello"]}]
-      iex> Floki.traverse_and_update(html, fn {"div", attrs, children} ->
-      ...>   {"p", attrs, children}
+      iex> Floki.traverse_and_update(html, fn
+      ...>   {"div", attrs, children} -> {"p", attrs, children}
+      ...>   other -> other
       ...> end)
       [{"p", [], ["hello"]}]
 
-      iex> html = [{"div", [], [{"span", [], ["hello"]}]}]
+      iex> html = [{"div", [], [{:comment, "I am comment"}, {"span", [], ["hello"]}]}]
       iex> Floki.traverse_and_update(html, fn
       ...>   {"span", _attrs, _children} -> nil
-      ...>   tag -> tag
+      ...>   {:comment, text} -> {"span", [], text}
+      ...>   other -> other
       ...> end)
-      [{"div", [], []}]
+      [{"div", [], [{"span", [], "I am comment"}]}]
   """
 
   @spec traverse_and_update(html_tree(), (html_node() -> html_node() | nil)) :: html_tree()
@@ -362,19 +370,27 @@ defmodule Floki do
   traversed in a post-walk fashion, where the children are traversed before
   the parent.
 
-  The function `fun` receives a tuple with `{name, attributes, children}` and
-  an accumulator, and should return a 2-tuple like `{new_node, new_acc}`, where
-  `new_node` is either a similar tuple or `nil` to delete the current node, and
-  `new_acc` is an updated value for the accumulator.
+  When the function `fun` encounters HTML tag, it receives a tuple with
+  `{name, attributes, children}` and an accumulator. It and should return a
+  2-tuple like `{new_node, new_acc}`, where `new_node` is either a similar tuple
+  or `nil` to delete the current node, and `new_acc` is an updated value for the
+  accumulator.
+
+  The function `fun` can also encounter HTML doctype, comment or declaration and
+  will receive, and should return, different tuple for these types. See the
+  documentation for `t:html_comment/0`, `t:html_doctype/0` and
+  `t:html_declaration/0` for details.
 
   ## Examples
 
-      iex> html = [{"div", [], ["hello"]}, {"div", [], ["world"]}]
-      iex> Floki.traverse_and_update(html, 0, fn {"div", attrs, children}, acc ->
-      ...>   {{"p", [{"data-count", to_string(acc)} | attrs], children}, acc + 1}
+      iex> html = [{"div", [], [{:comment, "I am a comment"}, "hello"]}, {"div", [], ["world"]}]
+      iex> Floki.traverse_and_update(html, 0, fn
+      ...>   {"div", attrs, children}, acc ->
+      ...>     {{"p", [{"data-count", to_string(acc)} | attrs], children}, acc + 1}
+      ...>   other, acc -> {other, acc}
       ...> end)
       {[
-         {"p", [{"data-count", "0"}], ["hello"]},
+         {"p", [{"data-count", "0"}], [{:comment, "I am a comment"}, "hello"]},
          {"p", [{"data-count", "1"}], ["world"]}
        ], 2}
 
