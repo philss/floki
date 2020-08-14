@@ -89,7 +89,7 @@ concerns:
 - Performance - It can be [up to 20 times slower than the alternatives](https://hexdocs.pm/fast_html/readme.html#benchmarks) on big HTML
   documents.
 - Correctness - in some cases `mochiweb_html` will produce different results
-  from what is specified in [HTML5 specification](https://html.spec.whatwg.org/)](https://html.spec.whatwg.org/).
+  from what is specified in [HTML5 specification](https://html.spec.whatwg.org/).
   For example, a correct parser would parse `<title> <b> bold </b> text </title>`
   as `{"title", [], [" <b> bold </b> text "]}` since content inside `<title>` is
   to be [treated as plaintext](https://html.spec.whatwg.org/#the-title-element).
