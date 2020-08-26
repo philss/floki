@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased][unreleased]
 
+## [0.28.0] - 2020-08-26
+
+### Added
+
+- Add suport for `:checked` pseudo-class selector - thanks [@wojtekmach](https://github.com/wojtekmach)
+
+### Changed
+
+- Drop support for Elixir 1.6
+- Update version of `fast_html` to 2.0 in docs and CI - thanks [@rinpatch](https://github.com/rinpatch)
+
+### Fixed
+
+- Fix docs by mentioning HTML nodes supported for `traverse_and_update` - thanks [@hubertlepicki](https://github.com/hubertlepicki)
+
 ## [0.27.0] - 2020-07-07
 
 ### Added
@@ -512,7 +527,8 @@ of the parent element inside HTML.
 
 - Elixir version requirement from "~> 1.0.0" to ">= 1.0.0".
 
-[unreleased]: https://github.com/philss/floki/compare/v0.27.0...HEAD
+[unreleased]: https://github.com/philss/floki/compare/v0.28.0...HEAD
+[0.28.0]: https://github.com/philss/floki/compare/v0.27.0...v0.28.0
 [0.27.0]: https://github.com/philss/floki/compare/v0.26.0...v0.27.0
 [0.26.0]: https://github.com/philss/floki/compare/v0.25.0...v0.26.0
 [0.25.0]: https://github.com/philss/floki/compare/v0.24.0...v0.25.0
