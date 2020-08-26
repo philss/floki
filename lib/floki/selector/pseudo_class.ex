@@ -108,6 +108,24 @@ defmodule Floki.Selector.PseudoClass do
     end
   end
 
+  def match_checked?(%{type: "input"} = html_node) do
+    case List.keyfind(html_node.attributes, "checked", 0) do
+      {"checked", _} -> true
+      _ -> false
+    end
+  end
+
+  def match_checked?(%{type: "option"} = html_node) do
+    case List.keyfind(html_node.attributes, "selected", 0) do
+      {"selected", _} -> true
+      _ -> false
+    end
+  end
+
+  def match_checked?(_) do
+    false
+  end
+
   defp node_position(ids, %HTMLNode{node_id: node_id}) do
     {_node_id, position} = Enum.find(ids, fn {id, _} -> id == node_id end)
 
