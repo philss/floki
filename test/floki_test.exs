@@ -892,6 +892,30 @@ defmodule FlokiTest do
     assert Floki.find(html, ":fl-contains(' podcast')") == expected
   end
 
+  test "checked pseudo-class" do
+    doc =
+      document!(
+        html_body(~s"""
+        <input type="checkbox" name="1" checked>
+        <input type="checkbox" name="2" checked="checked">
+        <input type="checkbox" name="3">
+        <input type="radio" name="4" checked>
+        <input type="radio" name="5">
+        <select>
+          <option selected>6</option>
+          <option>7</option>
+        </select>
+        """)
+      )
+
+    assert [
+             {"input", [{"type", "checkbox"}, {"name", "1"}, {"checked", _}], []},
+             {"input", [{"type", "checkbox"}, {"name", "2"}, {"checked", _}], []},
+             {"input", [{"type", "radio"}, {"name", "4"}, {"checked", _}], []},
+             {"option", [{"selected", _}], ["6"]}
+           ] = Floki.find(doc, ":checked")
+  end
+
   # Floki.find/2 - XML and invalid HTML
 
   test "get elements inside a XML structure" do

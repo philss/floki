@@ -187,6 +187,10 @@ defmodule Floki.Selector do
     Enum.all?(pseudo_class.value, &(!Selector.match?(html_node, &1, tree)))
   end
 
+  defp pseudo_class_match?(html_node, %{name: "checked"}, _tree) do
+    PseudoClass.match_checked?(html_node)
+  end
+
   defp pseudo_class_match?(html_node, pseudo_class = %{name: "fl-contains"}, tree) do
     PseudoClass.match_contains?(tree, html_node, pseudo_class)
   end
