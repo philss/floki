@@ -318,6 +318,24 @@ defmodule Floki do
       {"div", [{"data-name", "bar"}, {"class", "foo"}], ["text"]}
 
   """
+
+  @deprecated """
+  Use `traverse_and_update/2` instead. Example:
+
+      def map(html_tree_list, fun) do
+        traverse_and_update(html_tree_list, fn
+          {tag, attrs, children} ->
+            {tag, attrs} = fun.({tag, attrs})
+            {tag, attrs, children}
+
+          other ->
+            other
+        end)
+      end
+
+  """
+  def map(_html_tree_or_list, _fun)
+
   def map(html_tree_list, fun) when is_list(html_tree_list) do
     Enum.map(html_tree_list, &Finder.map(&1, fun))
   end
