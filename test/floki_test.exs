@@ -3,6 +3,8 @@ defmodule FlokiTest do
 
   doctest Floki
 
+  alias Floki.HTMLParser.{Html5ever, Mochiweb, FastHtml}
+
   @html """
   <html>
   <head>
@@ -49,28 +51,96 @@ defmodule FlokiTest do
   </html>
   """
 
-  test "parse simple HTML" do
-    html =
-      html_body(
-        ~s(<div><a href="https://dev.to" class="link">Dev.to</a><p>Content <b>here</b>!</p></div>)
-      )
+  describe "parse_document/2" do
+    test "parse a simple HTML" do
+      html =
+        html_body(
+          ~s(<div><a href="https://dev.to" class="link">Dev.to</a><p>Content <b>here</b>!</p></div>)
+        )
 
-    {:ok, parsed} = Floki.parse_document(html)
+      {:ok, parsed} = Floki.parse_document(html)
 
-    assert [
-             {"html", [],
-              [
-                {"head", [], []},
-                {"body", [],
-                 [
-                   {"div", [],
-                    [
-                      {"a", [{"href", "https://dev.to"}, {"class", "link"}], ["Dev.to"]},
-                      {"p", [], ["Content ", {"b", [], ["here"]}, "!"]}
-                    ]}
-                 ]}
-              ]}
-           ] = parsed
+      assert [
+               {"html", [],
+                [
+                  {"head", [], []},
+                  {"body", [],
+                   [
+                     {"div", [],
+                      [
+                        {"a", [{"href", "https://dev.to"}, {"class", "link"}], ["Dev.to"]},
+                        {"p", [], ["Content ", {"b", [], ["here"]}, "!"]}
+                      ]}
+                   ]}
+                ]}
+             ] = parsed
+    end
+
+    test "parse a HTML with XML inside" do
+      html =
+        html_body(
+          ~s(<P><B><U><SPAN lang="EN-AU" style='FONT-FAMILY: &quot;Times New Roman&quot;,serif; mso-ansi-language: EN-AU'>Overview<?xml:namespace prefix = "o" ns = "urn:schemas-microsoft-com:office:office" /?><o:p></o:p></SPAN></U></B></P>)
+        )
+
+      {:ok, parsed} = Floki.parse_document(html)
+
+      assert [
+               {"html", [],
+                [
+                  {"head", [], []},
+                  {"body", [],
+                   [
+                     {"p", [],
+                      [
+                        {"b", [],
+                         [
+                           {"u", [],
+                            [
+                              {"span",
+                               [
+                                 {"lang", "EN-AU"},
+                                 {"style",
+                                  "FONT-FAMILY: \"Times New Roman\",serif; mso-ansi-language: EN-AU"}
+                               ], overview_section}
+                            ]}
+                         ]}
+                      ]}
+                   ]}
+                ]}
+             ] = parsed
+
+      current_parser = Application.get_env(:floki, :html_parser)
+
+      case current_parser do
+        Mochiweb ->
+          assert overview_section ==
+                   [
+                     "Overview",
+                     {:pi, "xml:namespace",
+                      [
+                        {"prefix", "o"},
+                        {"ns", "urn:schemas-microsoft-com:office:office"}
+                      ]},
+                     {"o:p", [], []}
+                   ]
+
+        Html5ever ->
+          assert overview_section ==
+                   [
+                     "Overview",
+                     {"o:p", [], []}
+                   ]
+
+        FastHtml ->
+          assert overview_section ==
+                   [
+                     "Overview",
+                     {:comment,
+                      "?xml:namespace prefix = \"o\" ns = \"urn:schemas-microsoft-com:office:office\" /?"},
+                     {"o:p", [], []}
+                   ]
+      end
+    end
   end
 
   # Floki.raw_html/2
