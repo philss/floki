@@ -624,9 +624,8 @@ find_qgt(Bin, S=#decoder{offset=O}) ->
                         ?ADV_COL(S, 1);
         <<_:O/binary, "/>", _/binary>> ->
                         ?ADV_COL(S, 2);
-        %% tokenize_attributes takes care of this state:
-        %% <<_:O/binary, C, _/binary>> ->
-        %%     find_qgt(Bin, ?INC_CHAR(S, C));
+        <<_:O/binary, C, _/binary>> ->
+          find_qgt(Bin, ?INC_CHAR(S, C));
         <<_:O/binary>> ->
             S
     end.
