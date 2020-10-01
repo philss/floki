@@ -320,19 +320,7 @@ defmodule Floki do
   """
 
   @deprecated """
-  Use `traverse_and_update/2` instead. Example:
-
-      def map(html_tree_list, fun) do
-        traverse_and_update(html_tree_list, fn
-          {tag, attrs, children} ->
-            {tag, attrs} = fun.({tag, attrs})
-            {tag, attrs, children}
-
-          other ->
-            other
-        end)
-      end
-
+  Use `find_and_update/3` or `traverse_and_update/2` instead.:
   """
   def map(_html_tree_or_list, _fun)
 
@@ -341,6 +329,43 @@ defmodule Floki do
   end
 
   def map(html_tree, fun), do: Finder.map(html_tree, fun)
+
+  @doc """
+  Searchs for elements inside the HTML tree and update those that matches the selector.
+
+  This function works in a way similar to `traverse_and_update`, but instead of updating
+  the children nodes, it will only update the `tag` and `attributes` of the resultant nodes.
+
+  If `fun` returns `nil`, the HTML node will be removed from the results.
+  """
+
+  @spec find_and_update(
+          html_tree(),
+          Finder.selector(),
+          ({String.t(), [html_attribute()]} -> {String.t(), [html_attribute()]} | nil)
+        ) :: html_tree()
+  def find_and_update(html_tree, selector, fun) do
+    {tree, results} = Finder.find(html_tree, selector)
+
+    results
+    |> Enum.map(fn html_node -> HTMLTree.to_tuple(tree, html_node) end)
+    |> traverse_and_update(fn
+      html_node = {tag, attrs, children} ->
+        case fun.({tag, attrs}) do
+          {updated_tag, updated_attrs} ->
+            {updated_tag, updated_attrs, children}
+
+          nil ->
+            nil
+
+          _ ->
+            html_node
+        end
+
+      other ->
+        other
+    end)
+  end
 
   @doc """
   Traverses and updates a HTML tree structure.

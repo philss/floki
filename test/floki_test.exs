@@ -1112,6 +1112,51 @@ defmodule FlokiTest do
     assert hrefs_after == ["https://google.com", "https://elixir-lang.org", "https://java.com"]
   end
 
+  describe "find_and_update/3" do
+    test "transform attributes from selected nodes" do
+      transformation = fn
+        {"a", [{"href", href} | attrs]} ->
+          {"a", [{"href", String.replace(href, "http://", "https://")} | attrs]}
+
+        other ->
+          other
+      end
+
+      result = Floki.find_and_update(document!(@html), ".content", transformation)
+
+      hrefs_after =
+        result
+        |> Floki.find("a")
+        |> Floki.attribute("href")
+
+      assert hrefs_after == ["https://google.com", "https://elixir-lang.org", "https://java.com"]
+    end
+
+    test "change the type of a given tag" do
+      html =
+        ~s(<div><span class="strong">Hello</span><span>world</span></div>)
+        |> html_body()
+        |> Floki.parse_document!()
+
+      assert Floki.find_and_update(html, "span.strong", fn
+               {"span", attrs} -> {"strong", attrs}
+               other -> other
+             end) == [{"strong", [{"class", "strong"}], ["Hello"]}]
+    end
+
+    test "remove a node from results" do
+      html =
+        ~s(<div><span class="remove-me">Hello</span><span>world</span></div>)
+        |> html_body()
+        |> Floki.parse_document!()
+
+      assert Floki.find_and_update(html, "span", fn
+               {"span", [{"class", "remove-me"}]} -> nil
+               other -> other
+             end) == [{"span", [], ["world"]}]
+    end
+  end
+
   test "finding leaf nodes" do
     html = """
     <html>
