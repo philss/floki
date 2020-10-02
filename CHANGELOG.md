@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased][unreleased]
 
+## [0.29.0] - 2020-10-02
+
+### Added
+
+- Add `Floki.find_and_update/3` that updates nodes inside a tree, like traverse and update
+but without allowing changes in the children nodes. There for the tree cannot grow in size,
+but can have nodes removed.
+
+### Changed
+
+- Deprecate `Floki.map/2` because we have now `Floki.find_and_update/3` and `Floki.traverse_and_update/2` that
+are powerful APIs. `Floki.map/2` can be replaced by `Enum.map/2` as well - thanks [@josevalim](https://github.com/josevalim) for the idea!
+- Update optional dependency `fast_html` to `v2.0.4`
+
+### Fixed
+
+- Fix a bug when parsing a HTML with a XML inside using Mochiweb's parser
+
+### Improvements
+
+- Add more typespecs
+
 ## [0.28.0] - 2020-08-26
 
 ### Added
@@ -527,7 +549,8 @@ of the parent element inside HTML.
 
 - Elixir version requirement from "~> 1.0.0" to ">= 1.0.0".
 
-[unreleased]: https://github.com/philss/floki/compare/v0.28.0...HEAD
+[unreleased]: https://github.com/philss/floki/compare/v0.29.0...HEAD
+[0.29.0]: https://github.com/philss/floki/compare/v0.28.0...v0.29.0
 [0.28.0]: https://github.com/philss/floki/compare/v0.27.0...v0.28.0
 [0.27.0]: https://github.com/philss/floki/compare/v0.26.0...v0.27.0
 [0.26.0]: https://github.com/philss/floki/compare/v0.25.0...v0.26.0
