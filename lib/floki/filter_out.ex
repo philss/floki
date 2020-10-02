@@ -1,52 +1,29 @@
 defmodule Floki.FilterOut do
   @moduledoc false
 
-  alias Floki.{HTMLTree, Finder}
-
   # Helper functions for filtering out a specific element from the tree.
 
-  @type html_tree :: tuple | list
-  @type selector :: :comment | :text | Finder.selector()
-
-  @spec filter_out(html_tree, selector) :: tuple | list
+  @type selector :: :comment | :text | Floki.css_selector()
 
   def filter_out(html_tree_or_node, type) when type in [:text, :comment] do
     mapper(html_tree_or_node, type)
   end
 
-  def filter_out(html_tree, selector) do
-    case Finder.find(html_tree, selector) do
-      {:empty_tree, _} ->
-        html_tree
-
-      {tree, results} ->
-        new_tree =
-          Enum.reduce(results, tree, fn html_node, tree ->
-            HTMLTree.delete_node(tree, html_node)
-          end)
-
-        # TODO: use "HTMLTree.to_tuple/1" directly
-        html_as_tuples =
-          new_tree.root_nodes_ids
-          |> Enum.reverse()
-          |> Enum.map(fn node_id ->
-            root = Map.get(new_tree.nodes, node_id)
-
-            HTMLTree.to_tuple(new_tree, root)
-          end)
-
-        case html_tree do
-          tree when is_tuple(tree) ->
-            first_tuple(html_as_tuples)
-
-          trees when is_list(trees) ->
-            html_as_tuples
-        end
-    end
+  def filter_out(html_tree, selector) when is_list(html_tree) do
+    Floki.find_and_update(html_tree, selector, fn
+      {_tag, _attrs} -> :delete
+      other -> other
+    end)
   end
 
-  defp first_tuple([]), do: []
-  defp first_tuple([head | _rest]), do: head
+  def filter_out(html_node, selector) do
+    [html_node]
+    |> Floki.find_and_update(selector, fn
+      {_tag, _attrs} -> :delete
+      other -> other
+    end)
+    |> List.first() || []
+  end
 
   defp filter({nodetext, _, _}, selector) when nodetext === selector, do: false
   defp filter({nodetext, _}, selector) when nodetext === selector, do: false
