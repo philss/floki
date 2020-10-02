@@ -228,7 +228,7 @@ defmodule Floki do
 
   @doc """
   Changes the attribute values of the elements matched by `selector`
-  with the function `mutation` and returns the whole element tree
+  with the function `mutation` and returns the whole element tree.
 
   ## Examples
 
@@ -256,54 +256,27 @@ defmodule Floki do
   end
 
   def attr(html_tree_list, selector, attribute_name, mutation) when is_list(html_tree_list) do
-    {tree, results} = Finder.find(html_tree_list, selector)
-    mutate_attrs(html_tree_list, tree, results, attribute_name, mutation)
-  end
-
-  defp add_nodes_to_tree(tree, [html_node]) do
-    nodes = Map.put(tree.nodes, html_node.node_id, html_node)
-    Map.put(tree, :nodes, nodes)
-  end
-
-  defp add_nodes_to_tree(tree, [html_node | tail]) do
-    nodes = Map.put(tree.nodes, html_node.node_id, html_node)
-
-    tree
-    |> Map.put(:nodes, nodes)
-    |> add_nodes_to_tree(tail)
-  end
-
-  defp mutate_attrs(html_tree_list, _, [], _, _), do: html_tree_list
-
-  defp mutate_attrs(_, tree, results, attribute_name, mutation_fn) do
-    mutated_nodes =
-      Enum.map(
-        results,
-        fn result ->
-          mutated_attributes =
-            if Enum.any?(result.attributes, &match?({^attribute_name, _}, &1)) do
-              Enum.map(
-                result.attributes,
-                fn attribute ->
-                  with {^attribute_name, attribute_value} <- attribute do
-                    {attribute_name, mutation_fn.(attribute_value)}
-                  end
+    find_and_update(html_tree_list, selector, fn
+      {tag, attrs} ->
+        modified_attrs =
+          if Enum.any?(attrs, &match?({^attribute_name, _}, &1)) do
+            Enum.map(
+              attrs,
+              fn attribute ->
+                with {^attribute_name, attribute_value} <- attribute do
+                  {attribute_name, mutation.(attribute_value)}
                 end
-              )
-            else
-              [{attribute_name, mutation_fn.(nil)} | result.attributes]
-            end
+              end
+            )
+          else
+            [{attribute_name, mutation.(nil)} | attrs]
+          end
 
-          Map.put(result, :attributes, mutated_attributes)
-        end
-      )
+        {tag, modified_attrs}
 
-    tree = add_nodes_to_tree(tree, mutated_nodes)
-
-    tree.root_nodes_ids
-    |> Enum.reverse()
-    |> Enum.map(fn id -> Map.get(tree.nodes, id) end)
-    |> Enum.map(fn html_node -> HTMLTree.to_tuple(tree, html_node) end)
+      other ->
+        other
+    end)
   end
 
   @deprecated """
