@@ -304,23 +304,8 @@ defmodule Floki do
     |> Enum.map(fn html_node -> HTMLTree.to_tuple(tree, html_node) end)
   end
 
-  @doc """
-  It receives a HTML tree structure as tuple and maps
-  through all nodes with a given function that receives
-  a tuple with {name, attributes}.
-
-  It returns that structure transformed by the function.
-
-  ## Examples
-
-      iex> html = {"div", [{"class", "foo"}], ["text"]}
-      iex> Floki.map(html, fn({name, attrs}) -> {name, [{"data-name", "bar"} | attrs]} end)
-      {"div", [{"data-name", "bar"}, {"class", "foo"}], ["text"]}
-
-  """
-
   @deprecated """
-  Use `find_and_update/3` or `traverse_and_update/2` instead.:
+  Use `find_and_update/3` or `Enum.map/2` instead.
   """
   def map(_html_tree_or_list, _fun)
 
@@ -333,10 +318,23 @@ defmodule Floki do
   @doc """
   Searchs for elements inside the HTML tree and update those that matches the selector.
 
-  This function works in a way similar to `traverse_and_update`, but instead of updating
-  the children nodes, it will only update the `tag` and `attributes` of the resultant nodes.
+  It will return the updated HTML tree.
 
-  If `fun` returns `nil`, the HTML node will be removed from the results.
+  This function works in a way similar to `traverse_and_update`, but instead of updating
+  the children nodes, it will only updates the `tag` and `attributes` of the matching nodes.
+
+  If `fun` returns `nil`, the HTML node will be removed from the tree.
+
+  ## Examples
+
+      iex> Floki.find_and_update([{"a", [{"href", "http://elixir-lang.com"}], ["Elixir"]}], "a", fn
+      iex>   {"a", [{"href", href}]} ->
+      iex>     {"a", [{"href", String.replace(href, "http://", "https://")}]}
+      iex>   other ->
+      iex>     other
+      iex> end)
+      iex> # => [{"a", [{"href", "https://elixir-lang.com"}], ["Elixir"]}]
+
   """
 
   @spec find_and_update(
@@ -347,24 +345,27 @@ defmodule Floki do
   def find_and_update(html_tree, selector, fun) do
     {tree, results} = Finder.find(html_tree, selector)
 
-    results
-    |> Enum.map(fn html_node -> HTMLTree.to_tuple(tree, html_node) end)
-    |> traverse_and_update(fn
-      html_node = {tag, attrs, children} ->
-        case fun.({tag, attrs}) do
-          {updated_tag, updated_attrs} ->
-            {updated_tag, updated_attrs, children}
+    operations_with_nodes =
+      Enum.map(results, fn
+        html_node = %Floki.HTMLTree.HTMLNode{} ->
+          case fun.({html_node.type, html_node.attributes}) do
+            {updated_tag, updated_attrs} ->
+              {:update, %{html_node | type: updated_tag, attributes: updated_attrs}}
 
-          nil ->
-            nil
+            nil ->
+              {:delete, html_node}
 
-          _ ->
-            html_node
-        end
+            _ ->
+              {:no_op, html_node}
+          end
 
-      other ->
-        other
-    end)
+        other ->
+          {:no_op, other}
+      end)
+
+    tree
+    |> HTMLTree.patch_nodes(operations_with_nodes)
+    |> HTMLTree.to_tuple()
   end
 
   @doc """

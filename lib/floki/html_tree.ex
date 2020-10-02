@@ -102,6 +102,16 @@ defmodule Floki.HTMLTree do
     do_delete(tree, [html_node], [])
   end
 
+  def to_tuple(html_tree) do
+    html_tree.root_nodes_ids
+    |> Enum.reverse()
+    |> Enum.map(fn node_id ->
+      root = Map.get(html_tree.nodes, node_id)
+
+      HTMLTree.to_tuple(html_tree, root)
+    end)
+  end
+
   def to_tuple(_tree, %Text{content: text}), do: text
   def to_tuple(_tree, %Comment{content: comment}), do: {:comment, comment}
 
@@ -222,6 +232,22 @@ defmodule Floki.HTMLTree do
     nodes
     |> Map.put(new_node.node_id, new_node)
     |> Map.put(new_node.parent_node_id, updated_parent)
+  end
+
+  # This is useful when you want to update the HTML node in the tree.
+  def patch_nodes(html_tree, nodes_with_operations) do
+    Enum.reduce(nodes_with_operations, html_tree, fn node_with_op, tree ->
+      case node_with_op do
+        {:update, node} ->
+          put_in(tree.nodes[node.node_id], node)
+
+        {:delete, node} ->
+          delete_node(tree, node)
+
+        {:no_op, _node} ->
+          tree
+      end
+    end)
   end
 
   # Enables using functions from `Enum` and `Stream` modules

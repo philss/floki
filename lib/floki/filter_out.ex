@@ -25,6 +25,7 @@ defmodule Floki.FilterOut do
             HTMLTree.delete_node(tree, html_node)
           end)
 
+        # TODO: use "HTMLTree.to_tuple/1" directly
         html_as_tuples =
           new_tree.root_nodes_ids
           |> Enum.reverse()
