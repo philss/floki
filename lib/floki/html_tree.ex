@@ -234,9 +234,8 @@ defmodule Floki.HTMLTree do
     |> Map.put(new_node.parent_node_id, updated_parent)
   end
 
-  # This is useful when you want to update the HTML node in the tree.
-  def patch_nodes(html_tree, nodes_with_operations) do
-    Enum.reduce(nodes_with_operations, html_tree, fn node_with_op, tree ->
+  def patch_nodes(html_tree, operation_with_nodes) do
+    Enum.reduce(operation_with_nodes, html_tree, fn node_with_op, tree ->
       case node_with_op do
         {:update, node} ->
           put_in(tree.nodes[node.node_id], node)
