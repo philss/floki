@@ -6,10 +6,16 @@ defmodule Floki.HTMLTree do
   # It is useful because keeps references for each node, and the possibility to
   # update the tree.
 
-  defstruct nodes: %{}, root_nodes_ids: [], node_ids: []
-
   alias Floki.HTMLTree
   alias Floki.HTMLTree.{HTMLNode, Text, Comment, IDSeeder}
+
+  defstruct nodes: %{}, root_nodes_ids: [], node_ids: []
+
+  @type t :: %__MODULE__{
+          nodes: %{optional(pos_integer()) => HTMLNode.t() | Text.t() | Comment.t()},
+          root_nodes_ids: [pos_integer()],
+          node_ids: [pos_integer()]
+        }
 
   def build({:comment, comment}) do
     %HTMLTree{
@@ -100,6 +106,16 @@ defmodule Floki.HTMLTree do
 
   def delete_node(tree, html_node) do
     do_delete(tree, [html_node], [])
+  end
+
+  def to_tuple_list(html_tree) do
+    html_tree.root_nodes_ids
+    |> Enum.reverse()
+    |> Enum.map(fn node_id ->
+      root = Map.get(html_tree.nodes, node_id)
+
+      HTMLTree.to_tuple(html_tree, root)
+    end)
   end
 
   def to_tuple(_tree, %Text{content: text}), do: text
@@ -222,6 +238,21 @@ defmodule Floki.HTMLTree do
     nodes
     |> Map.put(new_node.node_id, new_node)
     |> Map.put(new_node.parent_node_id, updated_parent)
+  end
+
+  def patch_nodes(html_tree, operation_with_nodes) do
+    Enum.reduce(operation_with_nodes, html_tree, fn node_with_op, tree ->
+      case node_with_op do
+        {:update, node} ->
+          put_in(tree.nodes[node.node_id], node)
+
+        {:delete, node} ->
+          delete_node(tree, node)
+
+        {:no_op, _node} ->
+          tree
+      end
+    end)
   end
 
   # Enables using functions from `Enum` and `Stream` modules

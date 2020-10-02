@@ -1112,6 +1112,86 @@ defmodule FlokiTest do
     assert hrefs_after == ["https://google.com", "https://elixir-lang.org", "https://java.com"]
   end
 
+  describe "find_and_update/3" do
+    test "transforms attributes from selected nodes" do
+      transformation = fn
+        {"a", [{"href", href} | attrs]} ->
+          {"a", [{"href", String.replace(href, "http://", "https://")} | attrs]}
+
+        other ->
+          other
+      end
+
+      html_tree =
+        ~s(<div class="content"><a href="http://elixir-lang.org">Elixir</a><a href="http://github.com">GitHub</a></div>)
+        |> html_body()
+        |> document!()
+
+      result = Floki.find_and_update(html_tree, ".content a", transformation)
+
+      assert result == [
+               {"html", [],
+                [
+                  {"head", [], []},
+                  {"body", [],
+                   [
+                     {"div", [{"class", "content"}],
+                      [
+                        {"a", [{"href", "https://elixir-lang.org"}], ["Elixir"]},
+                        {"a", [{"href", "https://github.com"}], ["GitHub"]}
+                      ]}
+                   ]}
+                ]}
+             ]
+    end
+
+    test "changes the type of a given tag" do
+      html =
+        ~s(<div><span class="strong">Hello</span><span>world</span></div>)
+        |> html_body()
+        |> document!()
+
+      assert Floki.find_and_update(html, "span.strong", fn
+               {"span", attrs} -> {"strong", attrs}
+               other -> other
+             end) == [
+               {
+                 "html",
+                 [],
+                 [
+                   {"head", [], []},
+                   {"body", [],
+                    [
+                      {"div", [],
+                       [{"strong", [{"class", "strong"}], ["Hello"]}, {"span", [], ["world"]}]}
+                    ]}
+                 ]
+               }
+             ]
+    end
+
+    test "removes a node from HTML tree" do
+      html =
+        ~s(<div><span class="remove-me">Hello</span><span>world</span></div>)
+        |> html_body()
+        |> document!()
+
+      assert Floki.find_and_update(html, "span", fn
+               {"span", [{"class", "remove-me"}]} -> :delete
+               other -> other
+             end) == [
+               {
+                 "html",
+                 [],
+                 [
+                   {"head", [], []},
+                   {"body", [], [{"div", [], [{"span", [], ["world"]}]}]}
+                 ]
+               }
+             ]
+    end
+  end
+
   test "finding leaf nodes" do
     html = """
     <html>

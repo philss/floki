@@ -15,6 +15,16 @@ defmodule Floki.Selector do
             pseudo_classes: [],
             combinator: nil
 
+  @type t :: %__MODULE__{
+          id: String.t() | nil,
+          type: String.t() | nil,
+          classes: [String.t()],
+          attributes: [AttributeSelector.t()],
+          namespace: String.t() | nil,
+          pseudo_classes: [PseudoClass.t()],
+          combinator: Selector.Combinator.t() | nil
+        }
+
   defimpl String.Chars do
     def to_string(selector) do
       Enum.join([

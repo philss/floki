@@ -69,6 +69,8 @@ defmodule Floki do
   @type html_node :: html_comment() | html_doctype() | html_tag() | html_declaration()
   @type html_tree :: [html_node()]
 
+  @type css_selector :: String.t() | Floki.Selector.t() | [Floki.Selector.t()]
+
   @doc """
   Parses a HTML Document from a String.
 
@@ -204,7 +206,7 @@ defmodule Floki do
 
   """
 
-  @spec find(binary | html_tree, binary) :: html_tree
+  @spec find(binary() | html_tree(), css_selector()) :: html_tree
 
   def find(html, selector) when is_binary(html) do
     IO.warn(
@@ -226,7 +228,7 @@ defmodule Floki do
 
   @doc """
   Changes the attribute values of the elements matched by `selector`
-  with the function `mutation` and returns the whole element tree
+  with the function `mutation` and returns the whole element tree.
 
   ## Examples
 
@@ -237,7 +239,7 @@ defmodule Floki do
       [{"div", [{"id", "b"}, {"class", "name"}], []}]
 
   """
-  @spec attr(binary | html_tree, binary, binary, (binary -> binary)) :: html_tree
+  @spec attr(binary | html_tree, css_selector(), binary, (binary -> binary)) :: html_tree
 
   def attr(html_elem_tuple, selector, attribute_name, mutation) when is_tuple(html_elem_tuple) do
     attr([html_elem_tuple], selector, attribute_name, mutation)
@@ -254,75 +256,88 @@ defmodule Floki do
   end
 
   def attr(html_tree_list, selector, attribute_name, mutation) when is_list(html_tree_list) do
-    {tree, results} = Finder.find(html_tree_list, selector)
-    mutate_attrs(html_tree_list, tree, results, attribute_name, mutation)
-  end
-
-  defp add_nodes_to_tree(tree, [html_node]) do
-    nodes = Map.put(tree.nodes, html_node.node_id, html_node)
-    Map.put(tree, :nodes, nodes)
-  end
-
-  defp add_nodes_to_tree(tree, [html_node | tail]) do
-    nodes = Map.put(tree.nodes, html_node.node_id, html_node)
-
-    tree
-    |> Map.put(:nodes, nodes)
-    |> add_nodes_to_tree(tail)
-  end
-
-  defp mutate_attrs(html_tree_list, _, [], _, _), do: html_tree_list
-
-  defp mutate_attrs(_, tree, results, attribute_name, mutation_fn) do
-    mutated_nodes =
-      Enum.map(
-        results,
-        fn result ->
-          mutated_attributes =
-            if Enum.any?(result.attributes, &match?({^attribute_name, _}, &1)) do
-              Enum.map(
-                result.attributes,
-                fn attribute ->
-                  with {^attribute_name, attribute_value} <- attribute do
-                    {attribute_name, mutation_fn.(attribute_value)}
-                  end
+    find_and_update(html_tree_list, selector, fn
+      {tag, attrs} ->
+        modified_attrs =
+          if Enum.any?(attrs, &match?({^attribute_name, _}, &1)) do
+            Enum.map(
+              attrs,
+              fn attribute ->
+                with {^attribute_name, attribute_value} <- attribute do
+                  {attribute_name, mutation.(attribute_value)}
                 end
-              )
-            else
-              [{attribute_name, mutation_fn.(nil)} | result.attributes]
-            end
+              end
+            )
+          else
+            [{attribute_name, mutation.(nil)} | attrs]
+          end
 
-          Map.put(result, :attributes, mutated_attributes)
-        end
-      )
+        {tag, modified_attrs}
 
-    tree = add_nodes_to_tree(tree, mutated_nodes)
-
-    tree.root_nodes_ids
-    |> Enum.reverse()
-    |> Enum.map(fn id -> Map.get(tree.nodes, id) end)
-    |> Enum.map(fn html_node -> HTMLTree.to_tuple(tree, html_node) end)
+      other ->
+        other
+    end)
   end
 
-  @doc """
-  It receives a HTML tree structure as tuple and maps
-  through all nodes with a given function that receives
-  a tuple with {name, attributes}.
-
-  It returns that structure transformed by the function.
-
-  ## Examples
-
-      iex> html = {"div", [{"class", "foo"}], ["text"]}
-      iex> Floki.map(html, fn({name, attrs}) -> {name, [{"data-name", "bar"} | attrs]} end)
-      {"div", [{"data-name", "bar"}, {"class", "foo"}], ["text"]}
-
+  @deprecated """
+  Use `find_and_update/3` or `Enum.map/2` instead.
   """
+  def map(_html_tree_or_list, _fun)
+
   def map(html_tree_list, fun) when is_list(html_tree_list) do
     Enum.map(html_tree_list, &Finder.map(&1, fun))
   end
 
   def map(html_tree, fun), do: Finder.map(html_tree, fun)
+
+  @doc """
+  Searchs for elements inside the HTML tree and update those that matches the selector.
+
+  It will return the updated HTML tree.
+
+  This function works in a way similar to `traverse_and_update`, but instead of updating
+  the children nodes, it will only updates the `tag` and `attributes` of the matching nodes.
+
+  If `fun` returns `:delete`, the HTML node will be removed from the tree.
+
+  ## Examples
+
+      iex> Floki.find_and_update([{"a", [{"href", "http://elixir-lang.com"}], ["Elixir"]}], "a", fn
+      iex>   {"a", [{"href", href}]} ->
+      iex>     {"a", [{"href", String.replace(href, "http://", "https://")}]}
+      iex>   other ->
+      iex>     other
+      iex> end)
+      [{"a", [{"href", "https://elixir-lang.com"}], ["Elixir"]}]
+  """
+
+  @spec find_and_update(
+          html_tree(),
+          css_selector(),
+          ({String.t(), [html_attribute()]} -> {String.t(), [html_attribute()]} | :delete)
+        ) :: html_tree()
+  def find_and_update(html_tree, selector, fun) do
+    {tree, results} = Finder.find(html_tree, selector)
+
+    operations_with_nodes =
+      Enum.map(results, fn
+        html_node = %Floki.HTMLTree.HTMLNode{} ->
+          case fun.({html_node.type, html_node.attributes}) do
+            {updated_tag, updated_attrs} ->
+              {:update, %{html_node | type: updated_tag, attributes: updated_attrs}}
+
+            :delete ->
+              {:delete, html_node}
+          end
+
+        other ->
+          {:no_op, other}
+      end)
+
+    tree
+    |> HTMLTree.patch_nodes(operations_with_nodes)
+    |> HTMLTree.to_tuple_list()
+  end
 
   @doc """
   Traverses and updates a HTML tree structure.
@@ -626,8 +641,8 @@ defmodule Floki do
 
   """
 
-  @spec filter_out(binary() | html_tree() | html_tag(), FilterOut.selector()) ::
-          html_tree() | html_tag()
+  @spec filter_out(html_node() | html_tree() | binary(), FilterOut.selector()) ::
+          html_node() | html_tree()
 
   def filter_out(html, selector) when is_binary(html) do
     IO.warn(

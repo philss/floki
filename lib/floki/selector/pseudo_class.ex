@@ -9,6 +9,11 @@ defmodule Floki.Selector.PseudoClass do
   alias Floki.HTMLTree.{HTMLNode, Text}
   alias Floki.Selector.Functional
 
+  @type t :: %__MODULE__{
+          name: String.t(),
+          value: String.t() | [Floki.Selector.t()]
+        }
+
   defimpl String.Chars do
     def to_string(%{name: name, value: nil}) do
       ":#{name}"

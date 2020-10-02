@@ -16,6 +16,11 @@ defmodule Floki.Selector.Combinator do
 
   defstruct match_type: nil, selector: nil
 
+  @type t :: %__MODULE__{
+          match_type: :atom,
+          selector: Floki.Selector.t()
+        }
+
   defimpl String.Chars do
     def to_string(combinator) do
       match_type =
