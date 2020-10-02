@@ -9,16 +9,13 @@ defmodule Floki.Finder do
   alias Floki.{HTMLTree, Selector}
   alias HTMLTree.HTMLNode
 
-  @type html_tree :: tuple | list
-  @type selector :: binary() | %Selector{} | [%Selector{}]
-
   # Find elements inside a HTML tree.
   # Second argument can be either a selector string, a selector struct or a list of selector structs.
 
-  @spec find(html_tree, selector) :: html_tree
+  @spec find(Floki.html_tree(), Floki.css_selector()) :: {HTMLTree.t(), [HTMLTree.HTMLNode.t()]}
 
-  def find([], _), do: {:empty_tree, []}
-  def find(html_as_string, _) when is_binary(html_as_string), do: {:empty_tree, []}
+  def find([], _), do: {%HTMLTree{}, []}
+  def find(html_as_string, _) when is_binary(html_as_string), do: {%HTMLTree{}, []}
 
   def find(html_tree, selector_as_string) when is_binary(selector_as_string) do
     selectors = get_selectors(selector_as_string)
@@ -33,7 +30,8 @@ defmodule Floki.Finder do
     find_selectors(html_tree, [selector])
   end
 
-  @spec map(html_tree, function) :: html_tree
+  @spec map(Floki.html_tree() | Floki.html_node(), function()) ::
+          Floki.html_tree() | Floki.html_node()
 
   def map({name, attrs, rest}, fun) do
     {new_name, new_attrs} = fun.({name, attrs})

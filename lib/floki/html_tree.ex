@@ -6,10 +6,16 @@ defmodule Floki.HTMLTree do
   # It is useful because keeps references for each node, and the possibility to
   # update the tree.
 
-  defstruct nodes: %{}, root_nodes_ids: [], node_ids: []
-
   alias Floki.HTMLTree
   alias Floki.HTMLTree.{HTMLNode, Text, Comment, IDSeeder}
+
+  defstruct nodes: %{}, root_nodes_ids: [], node_ids: []
+
+  @type t :: %__MODULE__{
+          nodes: %{optional(pos_integer()) => HTMLNode.t() | Text.t() | Comment.t()},
+          root_nodes_ids: [pos_integer()],
+          node_ids: [pos_integer()]
+        }
 
   def build({:comment, comment}) do
     %HTMLTree{
@@ -102,7 +108,7 @@ defmodule Floki.HTMLTree do
     do_delete(tree, [html_node], [])
   end
 
-  def to_tuple(html_tree) do
+  def to_tuple_list(html_tree) do
     html_tree.root_nodes_ids
     |> Enum.reverse()
     |> Enum.map(fn node_id ->

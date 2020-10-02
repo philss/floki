@@ -8,6 +8,12 @@ defmodule Floki.Selector.AttributeSelector do
 
   defstruct match_type: nil, attribute: nil, value: nil
 
+  @type t :: %__MODULE__{
+          match_type: :atom | nil,
+          attribute: String.t(),
+          value: String.t() | nil
+        }
+
   defimpl String.Chars do
     def to_string(selector) do
       "[#{selector.attribute}#{type(selector.match_type)}'#{selector.value}']"

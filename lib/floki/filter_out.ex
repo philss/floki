@@ -10,8 +10,8 @@ defmodule Floki.FilterOut do
 
   @spec filter_out(html_tree, selector) :: tuple | list
 
-  def filter_out(html_tree, type) when type in [:text, :comment] do
-    mapper(html_tree, type)
+  def filter_out(html_tree_or_node, type) when type in [:text, :comment] do
+    mapper(html_tree_or_node, type)
   end
 
   def filter_out(html_tree, selector) do

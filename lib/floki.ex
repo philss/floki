@@ -69,6 +69,8 @@ defmodule Floki do
   @type html_node :: html_comment() | html_doctype() | html_tag() | html_declaration()
   @type html_tree :: [html_node()]
 
+  @type css_selector :: String.t() | Floki.Selector.t() | [Floki.Selector.t()]
+
   @doc """
   Parses a HTML Document from a String.
 
@@ -204,7 +206,7 @@ defmodule Floki do
 
   """
 
-  @spec find(binary | html_tree, binary) :: html_tree
+  @spec find(binary() | html_tree(), css_selector()) :: html_tree
 
   def find(html, selector) when is_binary(html) do
     IO.warn(
@@ -237,7 +239,7 @@ defmodule Floki do
       [{"div", [{"id", "b"}, {"class", "name"}], []}]
 
   """
-  @spec attr(binary | html_tree, binary, binary, (binary -> binary)) :: html_tree
+  @spec attr(binary | html_tree, css_selector(), binary, (binary -> binary)) :: html_tree
 
   def attr(html_elem_tuple, selector, attribute_name, mutation) when is_tuple(html_elem_tuple) do
     attr([html_elem_tuple], selector, attribute_name, mutation)
@@ -338,7 +340,7 @@ defmodule Floki do
 
   @spec find_and_update(
           html_tree(),
-          Finder.selector(),
+          css_selector(),
           ({String.t(), [html_attribute()]} -> {String.t(), [html_attribute()]} | :delete)
         ) :: html_tree()
   def find_and_update(html_tree, selector, fun) do
@@ -361,7 +363,7 @@ defmodule Floki do
 
     tree
     |> HTMLTree.patch_nodes(operations_with_nodes)
-    |> HTMLTree.to_tuple()
+    |> HTMLTree.to_tuple_list()
   end
 
   @doc """
@@ -666,8 +668,8 @@ defmodule Floki do
 
   """
 
-  @spec filter_out(binary() | html_tree() | html_tag(), FilterOut.selector()) ::
-          html_tree() | html_tag()
+  @spec filter_out(html_node() | html_tree() | binary(), FilterOut.selector()) ::
+          html_node() | html_tree()
 
   def filter_out(html, selector) when is_binary(html) do
     IO.warn(
