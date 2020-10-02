@@ -1177,7 +1177,7 @@ defmodule FlokiTest do
         |> document!()
 
       assert Floki.find_and_update(html, "span", fn
-               {"span", [{"class", "remove-me"}]} -> nil
+               {"span", [{"class", "remove-me"}]} -> :delete
                other -> other
              end) == [
                {

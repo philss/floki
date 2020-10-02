@@ -323,7 +323,7 @@ defmodule Floki do
   This function works in a way similar to `traverse_and_update`, but instead of updating
   the children nodes, it will only updates the `tag` and `attributes` of the matching nodes.
 
-  If `fun` returns `nil`, the HTML node will be removed from the tree.
+  If `fun` returns `:delete`, the HTML node will be removed from the tree.
 
   ## Examples
 
@@ -339,7 +339,7 @@ defmodule Floki do
   @spec find_and_update(
           html_tree(),
           Finder.selector(),
-          ({String.t(), [html_attribute()]} -> {String.t(), [html_attribute()]} | nil)
+          ({String.t(), [html_attribute()]} -> {String.t(), [html_attribute()]} | :delete)
         ) :: html_tree()
   def find_and_update(html_tree, selector, fun) do
     {tree, results} = Finder.find(html_tree, selector)
@@ -351,11 +351,8 @@ defmodule Floki do
             {updated_tag, updated_attrs} ->
               {:update, %{html_node | type: updated_tag, attributes: updated_attrs}}
 
-            nil ->
+            :delete ->
               {:delete, html_node}
-
-            _ ->
-              {:no_op, html_node}
           end
 
         other ->
