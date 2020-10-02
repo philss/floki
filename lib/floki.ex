@@ -333,7 +333,7 @@ defmodule Floki do
       iex>   other ->
       iex>     other
       iex> end)
-      iex> # => [{"a", [{"href", "https://elixir-lang.com"}], ["Elixir"]}]
+      [{"a", [{"href", "https://elixir-lang.com"}], ["Elixir"]}]
   """
 
   @spec find_and_update(
