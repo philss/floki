@@ -986,6 +986,48 @@ defmodule FlokiTest do
            ] = Floki.find(doc, ":checked")
   end
 
+  test "disabled pseudo-class" do
+    doc =
+      document!(
+        html_body(~s"""
+        <button disabled="disabled">button 1</button>
+        <button disabled>button 2</button>
+        <button>button 3</button>
+
+        <input type="text" name="text 1" disabled="disabled">
+        <input type="text" name="text 2" disabled>
+        <input type="text" name="text 3">
+
+        <select name="select 1" disabled="disabled"><option value="option 1">Option 1</option></select>
+        <select name="select 2" disabled><option value="option 2">Option 2</option></select>
+        <select name="select 3"><option value="option 3">Option 3</option></select>
+
+        <select name="select 4"><option value="option 4" disabled="disabled">Option 4</option></select>
+        <select name="select 5"><option value="option 5" disabled>Option 5</option></select>
+        <select name="select 6"><option value="option 6">Option 6</option></select>
+
+        <textarea name="text area 1" disabled="disabled">Text Area 1</textarea>
+        <textarea name="text area 2" disabled>Text Area 2</textarea>
+        <textarea name="text area 3">Text Area 3</textarea>
+        """)
+      )
+
+    assert [
+             {"button", [{"disabled", _}], ["button 1"]},
+             {"button", [{"disabled", _}], ["button 2"]},
+             {"input", [{"type", "text"}, {"name", "text 1"}, {"disabled", _}], []},
+             {"input", [{"type", "text"}, {"name", "text 2"}, {"disabled", _}], []},
+             {"select", [{"name", "select 1"}, {"disabled", _}],
+              [{"option", [{"value", "option 1"}], ["Option 1"]}]},
+             {"select", [{"name", "select 2"}, {"disabled", _}],
+              [{"option", [{"value", "option 2"}], ["Option 2"]}]},
+             {"option", [{"value", "option 4"}, {"disabled", _}], ["Option 4"]},
+             {"option", [{"value", "option 5"}, {"disabled", _}], ["Option 5"]},
+             {"textarea", [{"name", "text area 1"}, {"disabled", _}], ["Text Area 1"]},
+             {"textarea", [{"name", "text area 2"}, {"disabled", _}], ["Text Area 2"]}
+           ] = Floki.find(doc, ":disabled")
+  end
+
   # Floki.find/2 - XML and invalid HTML
 
   test "get elements inside a XML structure" do

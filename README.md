@@ -241,6 +241,7 @@ Here you find all the [CSS selectors](https://www.w3.org/TR/selectors/#selectors
 | E:first-of-type   | an E element, first child of its type among its siblings |
 | E:last-of-type   | an E element, last child of its type among its siblings |
 | E:checked       | An E element (checkbox, radio, or option) that is checked |
+| E:disabled      | An E element (button, input, select, textarea, or option) that is disabled |
 | E.warning       | an E element whose class is "warning" |
 | E#myid          | an E element with ID equal to "myid" |
 | E:not(s)        | an E element that does not match simple selector s |

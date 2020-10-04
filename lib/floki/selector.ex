@@ -201,6 +201,10 @@ defmodule Floki.Selector do
     PseudoClass.match_checked?(html_node)
   end
 
+  defp pseudo_class_match?(html_node, %{name: "disabled"}, _tree) do
+    PseudoClass.match_disabled?(html_node)
+  end
+
   defp pseudo_class_match?(html_node, pseudo_class = %{name: "fl-contains"}, tree) do
     PseudoClass.match_contains?(tree, html_node, pseudo_class)
   end
