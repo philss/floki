@@ -131,6 +131,19 @@ defmodule Floki.Selector.PseudoClass do
     false
   end
 
+  @disableable_html_nodes ~w[button input select option textarea]
+
+  def match_disabled?(%{type: type} = html_node) when type in @disableable_html_nodes do
+    case List.keyfind(html_node.attributes, "disabled", 0) do
+      {"disabled", _} -> true
+      _ -> false
+    end
+  end
+
+  def match_disabled?(_html_node) do
+    false
+  end
+
   defp node_position(ids, %HTMLNode{node_id: node_id}) do
     {_node_id, position} = Enum.find(ids, fn {id, _} -> id == node_id end)
 
