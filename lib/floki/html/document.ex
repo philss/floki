@@ -63,6 +63,7 @@ defmodule Floki.HTML.Document do
   @doc """
   Returns a node based on its ID.
   """
+  # TODO: maybe return nil directly instead of Either
   def get_node(document = %Document{tree: tree}, node_id) do
     node = Map.get(tree, node_id)
 
@@ -71,6 +72,13 @@ defmodule Floki.HTML.Document do
     else
       {:error, :node_not_found}
     end
+  end
+
+  # TODO: implement me
+  def get_node_before(_, _), do: nil
+
+  def patch_node(document = %Document{}, html_node) do
+    put_in(document.tree[html_node.node_id], html_node)
   end
 
   defp id([]), do: 1

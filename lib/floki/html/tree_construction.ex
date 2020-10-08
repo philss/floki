@@ -28,6 +28,8 @@ defmodule Floki.HTML.TreeConstruction do
               override_target_id: nil,
               last_template: nil,
               last_table: nil,
+              # This will be the original mode, and will be updated in case it consumes the token.
+              return_to_mode: false,
               adjusted_current_node: nil
   end
 
@@ -98,7 +100,8 @@ defmodule Floki.HTML.TreeConstruction do
        )
        when data in @space_chars do
     # TODO: since we are collapsing the char tokens, we can't check if this is
-    # a space token. Maybe breaking the char token into multiples is a solution.
+    # a space token alone. Let's read/execute the tests to ensure it's matching
+    # the specs.
     before_html(state, %{tstate | tokens: tokens})
   end
 
@@ -113,7 +116,7 @@ defmodule Floki.HTML.TreeConstruction do
       %{
         state
         | mode: :before_head,
-          open_elements: [new_node.node_id | state.open_elements]
+          open_elements: [new_node | state.open_elements]
       },
       %{tstate | tokens: tokens}
     )
@@ -131,7 +134,7 @@ defmodule Floki.HTML.TreeConstruction do
       %{
         state
         | mode: :before_head,
-          open_elements: [new_node.node_id | state.open_elements]
+          open_elements: [new_node | state.open_elements]
       },
       tstate
     )
@@ -163,7 +166,7 @@ defmodule Floki.HTML.TreeConstruction do
       %{
         state
         | mode: :before_head,
-          open_elements: [new_node.node_id | state.open_elements]
+          open_elements: [new_node | state.open_elements]
       },
       tstate
     )
@@ -204,7 +207,7 @@ defmodule Floki.HTML.TreeConstruction do
       %{
         state
         | mode: :in_head,
-          open_elements: [new_node.node_id | state.open_elements],
+          open_elements: [new_node | state.open_elements],
           head_pointer: new_node.node_id
       },
       %{tstate | tokens: tokens}
@@ -222,7 +225,7 @@ defmodule Floki.HTML.TreeConstruction do
       %{
         state
         | mode: :in_head,
-          open_elements: [new_node.node_id | state.open_elements],
+          open_elements: [new_node | state.open_elements],
           head_pointer: new_node.node_id
       },
       tstate
@@ -247,7 +250,7 @@ defmodule Floki.HTML.TreeConstruction do
       %{
         state
         | mode: :in_head,
-          open_elements: [new_node.node_id | state.open_elements],
+          open_elements: [new_node | state.open_elements],
           head_pointer: new_node.node_id
       },
       tstate
@@ -256,56 +259,124 @@ defmodule Floki.HTML.TreeConstruction do
 
   # the-in-head-insertion-mode
 
+  # Special case in order to return to mode
+  defp in_head(
+         state = %State{mode: insertion_mode, return_to_mode: true},
+         tstate
+       )
+       when insertion_mode != :in_head do
+    return_to_mode(state, tstate)
+  end
+
   defp in_head(
          state = %State{},
-         tstate = %TState{tokens: [%Tokenizer.Char{data: char} | _tokens]}
+         tstate = %TState{tokens: [%Tokenizer.Char{data: char_data} | tokens]}
        )
-       when char in @space_chars do
-    # TODO: we need to fix the tokenizer to not collapse the space chars
-    #
+       when char_data in @space_chars do
+    {:ok, state} = add_char(state, char_data)
+
+    in_head(state, %{tstate | tokens: tokens})
+  end
+
+  defp in_head(
+         state = %State{},
+         tstate = %TState{tokens: [comment = %Tokenizer.Comment{} | tokens]}
+       ) do
+    {:ok, state, _new_node} = add_node(state, %HTree.Comment{content: comment.content})
+
+    in_head(state, %{tstate | tokens: tokens})
+  end
+
+  defp in_head(
+         state = %State{},
+         tstate = %TState{tokens: [%Tokenizer.Doctype{} | tokens]}
+       ) do
+    # TODO: set parse error
+    in_head(state, %{tstate | tokens: tokens})
   end
 
   defp in_head(state = %State{}, %TState{}) do
     {:ok, state.document}
   end
 
+  # TODO: handle the problem of mode x defer from
   defp in_body(state = %State{}, %TState{}) do
     {:ok, state.document}
   end
 
-  defp add_node(state = %State{document: doc, open_elements: open_elements}, element) do
+  defp return_to_mode(state, tstate) do
+    state = %{state | return_to_mode: false}
+
+    case state.mode do
+      :in_head ->
+        in_head(state, tstate)
+
+      :in_body ->
+        in_body(state, tstate)
+    end
+  end
+
+  # NOTE: you need to manually change the open elements when adding nodes.
+  defp add_node(state = %State{document: doc}, element) do
     result =
-      case open_elements do
-        [] ->
+      case appropriate_place(state) do
+        :document_root ->
           Document.add_node(doc, element)
 
-        [current_node_id | _] ->
-          Document.add_node(doc, element, current_node_id)
+        parent = %HTree.HTMLNode{} ->
+          Document.add_node(doc, element, parent.node_id)
+
+        {:add_node_before, _parent, _before_node} ->
+          raise "cannot add before node yet"
       end
 
     with {:ok, doc, new_node} <- result do
-      {:ok, %{state | document: doc}, new_node}
+      case new_node do
+        %HTree.HTMLNode{} ->
+          {:ok, %{state | document: doc, adjusted_current_node: new_node}, new_node}
+
+        _ ->
+          {:ok, %{state | document: doc}, new_node}
+      end
     end
   end
 
   defp add_char(state, char_data) do
-    # {:ok, doc, char_node} = Document.add_char(doc, char_data)
+    case appropriate_place(state) do
+      :document_root ->
+        # Let it untouched
+        {:ok, state}
 
-    with {:ok, place} <- appropriate_place(state) do
-      case place do
-        :document_root ->
-          # Let it untouched
-          {:ok, state}
+      html_node = %HTree.HTMLNode{} ->
+        before_element = Document.get_node_before(state.document, html_node)
 
-        _ ->
-          # By default, let it untouched
-          {:ok, state}
-      end
+        case before_element do
+          text_node = %HTree.Text{} ->
+            # here we just add to the text node and update doc.
+            updated_node = %{text_node | content: [text_node.content | char_data]}
+            {:ok, %{state | document: Document.patch_node(state.document, updated_node)}}
+
+          _ ->
+            {:ok,
+             %{
+               state
+               | document:
+                   Document.add_node(
+                     state.document,
+                     %HTree.Text{content: [char_data]},
+                     html_node.node_id
+                   )
+             }}
+        end
+
+      _ ->
+        # By default, let it untouched
+        {:ok, state}
     end
   end
 
   defp appropriate_place(%State{override_target_id: nil, open_elements: []}) do
-    {:ok, :document_root}
+    :document_root
   end
 
   defp appropriate_place(
@@ -329,19 +400,42 @@ defmodule Floki.HTML.TreeConstruction do
         current_node
       end
 
-    adjusted_insertion =
-      cond do
-        foster_parenting && target.type in ~w(table tbody tfoot thead tr) ->
-          last_template = last_element_with_index(state.open_elements, "template")
-          last_table = last_element_with_index(state.open_elements, "table")
+    # TODO: consider ignoring the foster parenting because
+    # we won't handle DOM mutations by scripts.
+    if foster_parenting && target.type in ~w(table tbody tfoot thead tr) do
+      last_template = last_element_with_index(state.open_elements, "template")
+      last_table = last_element_with_index(state.open_elements, "table")
 
-          # TODO: step 2.3 of appropriate_place
+      cond do
+        last_template && (!last_table || position_is_lower?(last_template, last_table)) ->
+          {el, _idx} = last_template
+          el
+
+        !last_table ->
+          state.open_elements
+          |> Enum.reverse()
+          |> List.first()
+
+        last_table && last_table.parent_node_id ->
+          {:ok, parent_node} = Document.get_node(doc, last_table.parent_node_id)
+          # NOTE: we need to treat this clause
+          {:add_node_before, parent_node, last_table}
+
+        true ->
+          [^current_node, previous_element | _] = state.open_elements
+          previous_element
       end
+    else
+      target
+    end
   end
 
+  defp position_is_lower?({_element_a, pos_a}, {_element_b, pos_b}), do: pos_a < pos_b
+
+  # Elements are HTML nodes
   defp last_element_with_index(elements, type) do
     elements
     |> Enum.with_index()
-    |> Enum.find(fn {el, idx} -> el.type == type end)
+    |> Enum.find(fn {el, _idx} -> el.type == type end)
   end
 end

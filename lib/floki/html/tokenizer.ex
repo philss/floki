@@ -95,10 +95,10 @@ defmodule Floki.HTML.Tokenizer do
   @hyphen_minus "\u002D"
   @replacement_char "\uFFFD"
 
+  # TODO: consider removing the need for a JSON parser
   @entities Floki.Entities.load_entities("priv/entities.json")
 
-  # TODO:
-  # Use `s.emit.(token)` before append it to list of tokens
+  # TODO: use `s.emit.(token)` before append it to list of tokens
 
   def tokenize(html) do
     html
@@ -2815,6 +2815,7 @@ defmodule Floki.HTML.Tokenizer do
     ]
   end
 
+  # TODO: we can use IO Data instead of concat here
   defp append_char_token(state, char) do
     case state.tokens do
       [existing = %Char{} | rest] ->
@@ -2835,6 +2836,7 @@ defmodule Floki.HTML.Tokenizer do
     end
   end
 
+  # TODO: we can use IO Data instead of concat here
   defp tokens_for_inappropriate_end_tag(state) do
     buffer_chars =
       state.buffer
