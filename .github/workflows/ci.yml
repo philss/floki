@@ -52,6 +52,7 @@ jobs:
           mix test.$PARSER
 
       - name: Run inch.report
+        if: matrix.elixir >= 1.7
         run: |-
           mix deps.get --only docs
           MIX_ENV=docs mix inch.report
