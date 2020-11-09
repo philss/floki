@@ -31,8 +31,9 @@ jobs:
       - name: Install dependencies
         run: |-
           apt-get update
+          apt-get -y install git
           if [ "$PARSER" = "fast_html" ]; then apt-get -y install build-essential cmake; fi
-          if [ "$PARSER" = "html5ever" ]; then apt-get -y install build-essential git curl; fi
+          if [ "$PARSER" = "html5ever" ]; then apt-get -y install build-essential curl; fi
           mix local.rebar --force
           mix local.hex --force
           mix deps.get
@@ -45,7 +46,6 @@ jobs:
         if: matrix.parser == 'html5ever'
 
       - name: Check format
-        if: (!startsWith(matrix.elixir, '1.6') && !startsWith(matrix.elixir, '1.7'))
         run: mix format --check-formatted
 
       - name: Run tests
@@ -53,7 +53,6 @@ jobs:
           mix test.$PARSER
 
       - name: Run inch.report
-        if: matrix.elixir >= 1.7
         run: |-
           mix deps.get --only docs
           MIX_ENV=docs mix inch.report
