@@ -13,7 +13,6 @@ defmodule Floki.Mixfile do
       elixir: "~> 1.8",
       package: package(),
       erlc_paths: ["src", "gen"],
-      compilers: [:gleam | Mix.compilers()],
       deps: deps(),
       aliases: aliases(),
       dialyzer: [
@@ -45,7 +44,6 @@ defmodule Floki.Mixfile do
 
     [
       {:html_entities, "~> 0.5.0"},
-      {:mix_gleam, "~> 0.1.0"},
       {:earmark, "~> 1.2", only: :dev},
       {:ex_doc, "~> 0.23.0", only: :dev},
       {:credo, ">= 0.0.0", only: [:dev, :test]},
