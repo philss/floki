@@ -12,6 +12,7 @@ defmodule Floki.Mixfile do
       description: @description,
       elixir: "~> 1.8",
       package: package(),
+      erlc_paths: ["src", "gen"],
       deps: deps(),
       aliases: aliases(),
       dialyzer: [
