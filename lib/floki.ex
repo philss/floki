@@ -162,11 +162,16 @@ defmodule Floki do
   Note that the resultant HTML may be different from the original one.
   Spaces after tags and doctypes are ignored.
 
-  Floki.raw_html/2 accepts a keyword list of options. Currently, the
-  only supported option is `:encode`, which can be set to `true` or `false`.
+  ## Options
 
+  - `:encode`: accepts `true` or `false`. Will encode html special characters
+  to html entities.
   You can also control the encoding behaviour at the application level via
   `config :floki, :encode_raw_html, true | false`
+
+  - `:pretty`: accepts `true` or `false`. Will format the output, ignoring
+  breaklines and spaces from the input and putting new ones in order to pretty format
+  the html.
 
   ## Examples
 
@@ -178,6 +183,15 @@ defmodule Floki do
 
       iex> Floki.raw_html({"div", [{"class", "wrapper"}], ["10 > 5"]}, encode: false)
       ~s(<div class="wrapper">10 > 5</div>)
+
+      iex> Floki.raw_html({"div", [], ["\\n   ", {"span", [], "Fully indented"}, "    \\n"]}, pretty: true)
+      \"\"\"
+      <div>
+        <span>
+          Fully indented
+        </span>
+      </div>
+      \"\"\"
   """
 
   @spec raw_html(html_tree | binary, keyword) :: binary

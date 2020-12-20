@@ -298,6 +298,64 @@ defmodule FlokiTest do
     assert Floki.raw_html(tree, encode: false) == input
   end
 
+  test "raw_html pretty with doctype" do
+    html = """
+      <!doctype html>
+      <html>
+      <head>
+      <title>Test</title>
+      </head>
+      <body>
+        <div class="content">
+          <span>
+            <div>
+
+      <span>
+                <small>
+
+      very deep content
+
+                </small>
+              </span>
+    </div>
+
+            <img src="file.jpg" />
+                    </span>
+        </div>
+      </body>
+      </html>
+    """
+
+    pretty_html =
+      html
+      |> document!()
+      |> Floki.raw_html(pretty: true)
+
+    assert pretty_html == """
+                          <html>
+                            <head>
+                              <title>
+                                Test
+                              </title>
+                            </head>
+                            <body>
+                              <div class="content">
+                                <span>
+                                  <div>
+                                    <span>
+                                      <small>
+                                        very deep content
+                                      </small>
+                                    </span>
+                                  </div>
+                                  <img src="file.jpg"/>
+                                </span>
+                              </div>
+                            </body>
+                          </html>
+                          """
+  end
+
   # Floki.find/2 - Classes
 
   test "find elements with a given class" do
