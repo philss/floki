@@ -1,6 +1,7 @@
 defmodule Floki.Selector do
   require Logger
   @moduledoc false
+
   # Represents a CSS selector. It also have functions to match nodes with a given selector.
 
   alias Floki.{Selector, HTMLTree}

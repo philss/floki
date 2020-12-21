@@ -1,5 +1,6 @@
 defmodule Floki.Selector.Functional do
   @moduledoc false
+
   # Represents a functional notation for a selector
 
   defstruct [:stream, :a, :b]

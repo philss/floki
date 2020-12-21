@@ -56,7 +56,12 @@ defmodule Floki.RawHTML do
     do: build_raw_html(tail, [html, leftpad(padding), "<!--", comment, "-->"], encoder, padding)
 
   defp build_raw_html([{:pi, tag, attrs} | tail], html, encoder, padding) do
-    build_raw_html(tail, [html, leftpad(padding), "<?", tag, " ", tag_attrs(attrs), "?>"], encoder, padding)
+    build_raw_html(
+      tail,
+      [html, leftpad(padding), "<?", tag, " ", tag_attrs(attrs), "?>"],
+      encoder,
+      padding
+    )
   end
 
   defp build_raw_html([{:doctype, type, public, system} | tail], html, encoder, padding) do
@@ -67,11 +72,21 @@ defmodule Floki.RawHTML do
         {public, system} -> [" PUBLIC \"", public, "\" \"", system | "\""]
       end
 
-    build_raw_html(tail, [html, leftpad(padding), "<!DOCTYPE ", type, attr | ">"], encoder, padding)
+    build_raw_html(
+      tail,
+      [html, leftpad(padding), "<!DOCTYPE ", type, attr | ">"],
+      encoder,
+      padding
+    )
   end
 
   defp build_raw_html([{type, attrs, children} | tail], html, encoder, padding) do
-    build_raw_html(tail, [html | tag_for(type, attrs, children, encoder, padding)], encoder, padding)
+    build_raw_html(
+      tail,
+      [html | tag_for(type, attrs, children, encoder, padding)],
+      encoder,
+      padding
+    )
   end
 
   defp tag_attrs(attr_list) do
@@ -88,7 +103,9 @@ defmodule Floki.RawHTML do
   defp close_open_tag(_type, _), do: ">"
 
   defp close_end_tag(type, [], _padding) when type in @self_closing_tags, do: ""
-  defp close_end_tag(type, _, padding), do: [leftpad(padding), "</", type, ">", line_ending(padding)]
+
+  defp close_end_tag(type, _, padding),
+    do: [leftpad(padding), "</", type, ">", line_ending(padding)]
 
   defp build_attrs({attr, value}), do: [attr, "=\"", html_escape(value) | "\""]
   defp build_attrs(attr), do: attr
@@ -102,7 +119,8 @@ defmodule Floki.RawHTML do
       end
 
     [
-      tag_with_attrs(type, attrs, children, padding), line_ending(padding),
+      tag_with_attrs(type, attrs, children, padding),
+      line_ending(padding),
       build_raw_html(children, "", encoder, pad_increase(padding)),
       close_end_tag(type, children, padding)
     ]
@@ -176,11 +194,11 @@ defmodule Floki.RawHTML do
   defp map_intersperse([head | rest], separator, mapper),
     do: [mapper.(head), separator | map_intersperse(rest, separator, mapper)]
 
-
   defp leftpad(:noop), do: ""
   defp leftpad(%{pad: pad, depth: depth}), do: String.duplicate(pad, depth)
 
   defp leftpad_content(:noop, string), do: string
+
   defp leftpad_content(padding, string) do
     trimmed = String.trim(string)
 

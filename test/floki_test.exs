@@ -332,28 +332,28 @@ defmodule FlokiTest do
       |> Floki.raw_html(pretty: true)
 
     assert pretty_html == """
-                          <html>
-                            <head>
-                              <title>
-                                Test
-                              </title>
-                            </head>
-                            <body>
-                              <div class="content">
-                                <span>
-                                  <div>
-                                    <span>
-                                      <small>
-                                        very deep content
-                                      </small>
-                                    </span>
-                                  </div>
-                                  <img src="file.jpg"/>
-                                </span>
-                              </div>
-                            </body>
-                          </html>
-                          """
+           <html>
+             <head>
+               <title>
+                 Test
+               </title>
+             </head>
+             <body>
+               <div class="content">
+                 <span>
+                   <div>
+                     <span>
+                       <small>
+                         very deep content
+                       </small>
+                     </span>
+                   </div>
+                   <img src="file.jpg"/>
+                 </span>
+               </div>
+             </body>
+           </html>
+           """
   end
 
   # Floki.find/2 - Classes

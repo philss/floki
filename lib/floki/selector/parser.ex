@@ -2,6 +2,7 @@ defmodule Floki.Selector.Parser do
   require Logger
 
   @moduledoc false
+
   # Parses a list of tokens returned from `Tokenizer` and transfor into a `Selector`.
 
   alias Floki.Selector
