@@ -253,7 +253,8 @@ defmodule Floki do
       [{"div", [{"id", "b"}, {"class", "name"}], []}]
 
   """
-  @spec attr(binary | html_tree | html_node, css_selector(), binary, (binary -> binary)) :: html_tree
+  @spec attr(binary | html_tree | html_node, css_selector(), binary, (binary -> binary)) ::
+          html_tree
 
   def attr(html_elem_tuple, selector, attribute_name, mutation) when is_tuple(html_elem_tuple) do
     attr([html_elem_tuple], selector, attribute_name, mutation)
