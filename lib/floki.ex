@@ -220,7 +220,7 @@ defmodule Floki do
 
   """
 
-  @spec find(binary() | html_tree(), css_selector()) :: html_tree
+  @spec find(binary() | html_tree() | html_node(), css_selector()) :: html_tree
 
   def find(html, selector) when is_binary(html) do
     IO.warn(
@@ -253,7 +253,7 @@ defmodule Floki do
       [{"div", [{"id", "b"}, {"class", "name"}], []}]
 
   """
-  @spec attr(binary | html_tree, css_selector(), binary, (binary -> binary)) :: html_tree
+  @spec attr(binary | html_tree | html_node, css_selector(), binary, (binary -> binary)) :: html_tree
 
   def attr(html_elem_tuple, selector, attribute_name, mutation) when is_tuple(html_elem_tuple) do
     attr([html_elem_tuple], selector, attribute_name, mutation)
@@ -550,7 +550,7 @@ defmodule Floki do
 
   """
 
-  @spec attribute(binary | html_tree, binary, binary) :: list
+  @spec attribute(binary | html_tree | html_node, binary, binary) :: list
 
   def attribute(html, selector, attribute_name) do
     html
@@ -568,7 +568,7 @@ defmodule Floki do
 
   """
 
-  @spec attribute(binary | html_tree, binary) :: list
+  @spec attribute(binary | html_tree | html_node, binary) :: list
   def attribute(html, attribute_name) when is_binary(html) do
     IO.warn(
       "deprecation: parse the HTML with parse_document or parse_fragment before using attribute/2"
