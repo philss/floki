@@ -104,6 +104,13 @@ Floki supports the following alternative parsers:
 [benchmarks](https://hexdocs.pm/fast_html/readme.html#benchmarks) conducted by
 its developers.
 
+You can perform a benchmark by running the following:
+
+    $ sh benchs/extract.sh
+    $ mix run benchs/parse_document.exs
+
+Extracting the files is needed only once.
+
 #### Using `html5ever` as the HTML parser
 
 Rust needs to be installed on the system in order to compile html5ever. To do that, please
