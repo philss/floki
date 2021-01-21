@@ -9,3 +9,4 @@ erl_crash.dump
 /src/*_lexer.erl
 /priv/plts/*.plt
 /priv/plts/*.plt.hash
+/benchs/*.html
