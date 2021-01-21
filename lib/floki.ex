@@ -94,19 +94,23 @@ defmodule Floki do
   @doc """
   Parses a HTML Document from a string.
 
-  It will use the available parser.
+  It will use the available parser from application env or the one from the
+  `:html_parser` option.
   Check https://github.com/philss/floki#alternative-html-parsers for more details.
 
-  ## Example
+  ## Examples
 
       iex> Floki.parse_document("<html><head></head><body>hello</body></html>")
       {:ok, [{"html", [], [{"head", [], []}, {"body", [], ["hello"]}]}]}
 
+      iex> Floki.parse_document("<html><head></head><body>hello</body></html>", html_parser: Floki.HTMLParser.Mochiweb)
+      {:ok, [{"html", [], [{"head", [], []}, {"body", [], ["hello"]}]}]}
+
   """
 
-  @spec parse_document(binary()) :: {:ok, html_tree()} | {:error, String.t()}
+  @spec parse_document(binary(), Keyword.t()) :: {:ok, html_tree()} | {:error, String.t()}
 
-  defdelegate parse_document(document), to: Floki.HTMLParser
+  defdelegate parse_document(document, opts \\ []), to: Floki.HTMLParser
 
   @doc """
   Parses a HTML Document from a string.
@@ -121,10 +125,10 @@ defmodule Floki do
 
   """
 
-  @spec parse_document!(binary()) :: html_tree()
+  @spec parse_document!(binary(), Keyword.t()) :: html_tree()
 
-  def parse_document!(document) do
-    case parse_document(document) do
+  def parse_document!(document, opts \\ []) do
+    case parse_document(document, opts) do
       {:ok, parsed_document} -> parsed_document
       {:error, message} -> raise Floki.ParseError, message: message
     end
@@ -133,13 +137,15 @@ defmodule Floki do
   @doc """
   Parses a HTML fragment from a string.
 
-  It will use the available parser.
+  It will use the available parser from application env or the one from the
+  `:html_parser` option.
+
   Check https://github.com/philss/floki#alternative-html-parsers for more details.
   """
 
-  @spec parse_fragment(binary()) :: {:ok, html_tree()} | {:error, String.t()}
+  @spec parse_fragment(binary(), Keyword.t()) :: {:ok, html_tree()} | {:error, String.t()}
 
-  defdelegate parse_fragment(fragment), to: Floki.HTMLParser
+  defdelegate parse_fragment(fragment, opts \\ []), to: Floki.HTMLParser
 
   @doc """
   Parses a HTML fragment from a string.
@@ -148,10 +154,10 @@ defmodule Floki do
   error parsing the fragment.
   """
 
-  @spec parse_fragment!(binary()) :: html_tree()
+  @spec parse_fragment!(binary(), Keyword.t()) :: html_tree()
 
-  def parse_fragment!(fragment) do
-    case parse_fragment(fragment) do
+  def parse_fragment!(fragment, opts \\ []) do
+    case parse_fragment(fragment, opts) do
       {:ok, parsed_fragment} -> parsed_fragment
       {:error, message} -> raise Floki.ParseError, message: message
     end

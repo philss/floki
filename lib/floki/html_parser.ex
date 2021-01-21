@@ -4,7 +4,11 @@ defmodule Floki.HTMLParser do
   the configured HTML parser.
 
   The configuration can be done with the "html_parser"
-  option for the "floki" application:
+  option when calling the functions, or for the "floki" application:
+
+      Floki.parse_document(document, html_parser: Floki.HTMLParser.FastHtml)
+
+  Or:
 
       use Mix.Config
       config :floki, :html_parser, Floki.HTMLParser.Mochiweb
@@ -20,15 +24,15 @@ defmodule Floki.HTMLParser do
   @callback parse_document(binary()) :: {:ok, Floki.html_tree()} | {:error, String.t()}
   @callback parse_fragment(binary()) :: {:ok, Floki.html_tree()} | {:error, String.t()}
 
-  def parse_document(html) do
-    parser().parse_document(html)
+  def parse_document(html, opts \\ []) do
+    parser(opts).parse_document(html)
   end
 
-  def parse_fragment(html) do
-    parser().parse_fragment(html)
+  def parse_fragment(html, opts \\ []) do
+    parser(opts).parse_fragment(html)
   end
 
-  defp parser do
-    Application.get_env(:floki, :html_parser, @default_parser)
+  defp parser(opts) do
+    Keyword.get(opts, :html_parser) || Application.get_env(:floki, :html_parser, @default_parser)
   end
 end
