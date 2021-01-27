@@ -125,7 +125,7 @@ defmodule TokenizerTestLoader do
   defp transform_token(char = %Tokenizer.Char{}) do
     [
       "Character",
-      char.data
+      IO.iodata_to_binary(char.data)
     ]
   end
 
