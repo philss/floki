@@ -81,6 +81,12 @@ defmodule Floki.HTML.Tokenizer do
   @ascii_digits ?0..?9
   @space_chars [?\t, ?\n, ?\f, ?\s]
 
+  defguard is_lower_letter(c) when c in @lower_ASCII_letters
+  defguard is_upper_letter(c) when c in @upper_ASCII_letters
+  defguard is_digit(c) when c in @ascii_digits
+  defguard is_letter(c) when c in @upper_ASCII_letters or c in @lower_ASCII_letters
+  defguard is_space(c) when c in @space_chars
+
   @less_than_sign ?<
   @greater_than_sign ?>
   @exclamation_mark ?!
@@ -222,7 +228,7 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defp tag_open(html = <<c, _rest::binary>>, s)
-       when c in @upper_ASCII_letters or c in @lower_ASCII_letters do
+       when is_letter(c) do
     token = %StartTag{name: "", position: s.position}
 
     tag_name(html, %{s | token: token})
@@ -245,7 +251,7 @@ defmodule Floki.HTML.Tokenizer do
   # § tokenizer-end-tag-open-state
 
   defp end_tag_open(html = <<c, _rest::binary>>, s)
-       when c in @upper_ASCII_letters or c in @lower_ASCII_letters do
+       when is_letter(c) do
     token = %EndTag{name: "", position: s.position}
 
     tag_name(html, %{s | token: token})
@@ -292,7 +298,7 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defp tag_name(<<c, html::binary>>, s)
-       when c in @upper_ASCII_letters do
+       when is_upper_letter(c) do
     new_token = %{s.token | name: [s.token.name | c + 32]}
 
     tag_name(html, %{s | token: new_token, position: pos(c, s.position)})
@@ -342,7 +348,7 @@ defmodule Floki.HTML.Tokenizer do
          html = <<c, _rest::binary>>,
          s
        )
-       when c in @upper_ASCII_letters or c in @lower_ASCII_letters do
+       when is_letter(c) do
     token = %EndTag{name: "", position: s.position}
     rcdata_end_tag_name(html, %{s | token: token})
   end
@@ -396,7 +402,7 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defp rcdata_end_tag_name(<<c, html::binary>>, s)
-       when c in @upper_ASCII_letters do
+       when is_upper_letter(c) do
     col = s.col + 1
     c_downcased = c + 32
     new_token = %{s.token | name: [s.name | c_downcased], position: pos_c(s.position)}
@@ -405,7 +411,7 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defp rcdata_end_tag_name(<<c, html::binary>>, s)
-       when c in @lower_ASCII_letters do
+       when is_lower_letter(c) do
     col = s.col + 1
     new_token = %{s.token | name: [s.name | [c]], position: pos_c(s.position)}
 
@@ -465,7 +471,7 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defp rawtext_end_tag_name(<<c, html::binary>>, s)
-       when c in @upper_ASCII_letters do
+       when is_upper_letter(c) do
     col = s.col + 1
     new_token = %{s.token | name: [s.name | c + 32], position: pos_c(s.position)}
 
@@ -473,7 +479,7 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defp rawtext_end_tag_name(<<c, html::binary>>, s)
-       when c in @lower_ASCII_letters do
+       when is_lower_letter(c) do
     col = s.col + 1
     new_token = %{s.token | name: [s.name | [c]], position: pos_c(s.position)}
 
@@ -533,7 +539,7 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defp script_data_end_tag_name(<<c, html::binary>>, s)
-       when c in @upper_ASCII_letters do
+       when is_upper_letter(c) do
     col = s.col + 1
     new_token = %{s.token | name: [s.name | c + 32], position: pos_c(s.position)}
 
@@ -541,7 +547,7 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defp script_data_end_tag_name(<<c, html::binary>>, s)
-       when c in @lower_ASCII_letters do
+       when is_lower_letter(c) do
     col = s.col + 1
     new_token = %{s.token | name: [s.name | [c]], position: pos_c(s.position)}
 
@@ -601,7 +607,7 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defp script_data_escaped_end_tag_name(<<c, html::binary>>, s)
-       when c in @upper_ASCII_letters do
+       when is_upper_letter(c) do
     col = s.col + 1
     new_token = %{s.token | name: [s.name | c + 32], position: pos_c(s.position)}
 
@@ -609,7 +615,7 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defp script_data_escaped_end_tag_name(<<c, html::binary>>, s)
-       when c in @lower_ASCII_letters do
+       when is_lower_letter(c) do
     col = s.col + 1
     new_token = %{s.token | name: [s.name | [c]], position: pos_c(s.position)}
 
@@ -645,7 +651,7 @@ defmodule Floki.HTML.Tokenizer do
          html = <<c, _rest::binary>>,
          s
        )
-       when c in @upper_ASCII_letters or c in @lower_ASCII_letters do
+       when is_letter(c) do
     token = %EndTag{name: "", position: s.position}
     rawtext_end_tag_name(html, %{s | token: token})
   end
@@ -677,7 +683,7 @@ defmodule Floki.HTML.Tokenizer do
          html = <<c, _rest::binary>>,
          s
        )
-       when c in @upper_ASCII_letters or c in @lower_ASCII_letters do
+       when is_letter(c) do
     end_tag = %EndTag{name: "", position: pos_c(s.position)}
     script_data_end_tag_name(html, %{s | token: end_tag, position: pos_c(s.position)})
   end
@@ -834,7 +840,7 @@ defmodule Floki.HTML.Tokenizer do
          html = <<c, _rest::binary>>,
          s
        )
-       when c in @lower_ASCII_letters or c in @upper_ASCII_letters do
+       when is_lower_letter(c) or is_upper_letter(c) do
     # TODO: revert this after implement the script_data_double_scape_start state
     # script_data_double_escape_start(
     data(
@@ -860,7 +866,7 @@ defmodule Floki.HTML.Tokenizer do
          html = <<c, _rest::binary>>,
          s
        )
-       when c in @lower_ASCII_letters or c in @upper_ASCII_letters do
+       when is_lower_letter(c) or is_upper_letter(c) do
     script_data_escaped_end_tag_name(
       html,
       %{
@@ -899,7 +905,7 @@ defmodule Floki.HTML.Tokenizer do
          <<c, html::binary>>,
          s
        )
-       when c in @upper_ASCII_letters do
+       when is_upper_letter(c) do
     script_data_escaped_end_tag_open(html, %{
       s
       | buffer: [s.buffer, c + 32],
@@ -911,7 +917,7 @@ defmodule Floki.HTML.Tokenizer do
          <<c, html::binary>>,
          s
        )
-       when c in @lower_ASCII_letters do
+       when is_lower_letter(c) do
     script_data_escaped_end_tag_open(html, %{
       s
       | buffer: [s.buffer | [c]],
@@ -1067,7 +1073,7 @@ defmodule Floki.HTML.Tokenizer do
          <<c, html::binary>>,
          s
        )
-       when c in @upper_ASCII_letters do
+       when is_upper_letter(c) do
     script_data_double_escape_end(html, %{
       s
       | buffer: [s.buffer | c + 32],
@@ -1079,7 +1085,7 @@ defmodule Floki.HTML.Tokenizer do
          <<c, html::binary>>,
          s
        )
-       when c in @lower_ASCII_letters do
+       when is_lower_letter(c) do
     script_data_double_escape_end(html, %{
       s
       | buffer: [s.buffer | [c]],
@@ -1156,7 +1162,7 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defp attribute_name(<<c, html::binary>>, s)
-       when c in @upper_ASCII_letters do
+       when is_upper_letter(c) do
     [attr | attrs] = s.token.attributes
     new_attr = %Attribute{attr | name: [attr.name | c + 32]}
     new_token = %StartTag{s.token | attributes: [new_attr | attrs]}
@@ -1753,7 +1759,7 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defp before_doctype_name(<<c, html::binary>>, s)
-       when c in @upper_ASCII_letters do
+       when is_upper_letter(c) do
     token = %Doctype{name: [c + 32], position: s.position}
 
     doctype_name(html, %{s | token: token, position: pos_c(s.position)})
@@ -1832,7 +1838,7 @@ defmodule Floki.HTML.Tokenizer do
     })
   end
 
-  defp doctype_name(<<c, html::binary>>, s) when c in @upper_ASCII_letters do
+  defp doctype_name(<<c, html::binary>>, s) when is_upper_letter(c) do
     new_token = %Doctype{
       s.token
       | name: [s.token.name | c + 32],
@@ -2549,8 +2555,8 @@ defmodule Floki.HTML.Tokenizer do
          <<c, html::binary>>,
          s = %State{charref_state: %CharrefState{done: false}}
        )
-       when c == ?; or c in @upper_ASCII_letters or c in @lower_ASCII_letters or
-              c in @ascii_digits do
+       when c == ?; or is_letter(c) or
+              is_digit(c) do
     buffer = IO.chardata_to_string([s.buffer | [c]])
     candidate = Map.get(@entities, buffer)
 
@@ -2596,8 +2602,8 @@ defmodule Floki.HTML.Tokenizer do
 
     with true <- last_char != ";",
          <<c, _html::binary>>
-         when c == ?= or c in @upper_ASCII_letters or c in @lower_ASCII_letters or
-                c in @ascii_digits <- html do
+         when c == ?= or is_letter(c) or
+                is_digit(c) <- html do
       character_reference_end(html, s)
     else
       _ ->
@@ -2696,7 +2702,7 @@ defmodule Floki.HTML.Tokenizer do
   # § tokenizer-hexadecimal-character-reference-start-state
 
   defp hexadecimal_character_reference_start(html = <<c, _rest::binary>>, s)
-       when c in @upper_ASCII_letters or c in @lower_ASCII_letters or c in @ascii_digits do
+       when is_letter(c) or is_digit(c) do
     hexadecimal_character_reference(html, s)
   end
 
@@ -2709,7 +2715,7 @@ defmodule Floki.HTML.Tokenizer do
   # § tokenizer-decimal-character-reference-start-state
 
   defp decimal_character_reference_start(html = <<c, _rest::binary>>, s)
-       when c in @ascii_digits do
+       when is_digit(c) do
     decimal_character_reference(html, s)
   end
 
@@ -2809,13 +2815,13 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defp append_char_token(state, char) do
-   #case state.tokens do
-   #  [existing = %Char{} | rest] ->
-   #    [%Char{existing | data: [existing.data | [char]]} | rest]
+    # case state.tokens do
+    #  [existing = %Char{} | rest] ->
+    #    [%Char{existing | data: [existing.data | [char]]} | rest]
 
-   #  other_tokens ->
-   #    [%Char{data: char} | other_tokens]
-   #end
+    #  other_tokens ->
+    #    [%Char{data: char} | other_tokens]
+    # end
 
     case state.tokens do
       [{:char, data} | rest] ->
@@ -2839,9 +2845,9 @@ defmodule Floki.HTML.Tokenizer do
   # TODO: we can use IO Data instead of concat here
   defp tokens_for_inappropriate_end_tag(state) do
     [
-      #%Char{data: state.buffer},
-      #%Char{data: @solidus},
-      #%Char{data: @less_than_sign} | state.tokens
+      # %Char{data: state.buffer},
+      # %Char{data: @solidus},
+      # %Char{data: @less_than_sign} | state.tokens
       {:char, state.buffer},
       {:char, @solidus},
       {:char, @less_than_sign} | state.tokens
