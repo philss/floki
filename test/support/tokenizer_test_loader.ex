@@ -85,9 +85,9 @@ defmodule TokenizerTestLoader do
   defp transform_token(doctype = %Tokenizer.Doctype{}) do
     [
       "DOCTYPE",
-      doctype.name,
-      doctype.public_id,
-      doctype.system_id,
+      doctype.name && IO.chardata_to_string(doctype.name),
+      doctype.public_id && IO.chardata_to_string(doctype.public_id),
+      doctype.system_id && IO.chardata_to_string(doctype.system_id),
       doctype.force_quirks == :off
     ]
   end
@@ -95,16 +95,16 @@ defmodule TokenizerTestLoader do
   defp transform_token(comment = %Tokenizer.Comment{}) do
     [
       "Comment",
-      comment.data
+      IO.chardata_to_string(comment.data)
     ]
   end
 
   defp transform_token(tag = %Tokenizer.StartTag{}) do
     list_tag = [
       "StartTag",
-      tag.name,
+      IO.chardata_to_string(tag.name),
       Enum.reduce(tag.attributes, %{}, fn attr, attributes ->
-        Map.put(attributes, attr.name, attr.value)
+        Map.put(attributes, IO.chardata_to_string(attr.name), IO.chardata_to_string(attr.value))
       end)
     ]
 
@@ -118,14 +118,14 @@ defmodule TokenizerTestLoader do
   defp transform_token(tag = %Tokenizer.EndTag{}) do
     [
       "EndTag",
-      tag.name
+      IO.chardata_to_string(tag.name)
     ]
   end
 
-  defp transform_token(char = %Tokenizer.Char{}) do
+  defp transform_token({:char, chars}) do
     [
       "Character",
-      IO.iodata_to_binary(char.data)
+      IO.chardata_to_string(chars)
     ]
   end
 
