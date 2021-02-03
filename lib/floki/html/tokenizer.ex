@@ -97,8 +97,10 @@ defmodule Floki.HTML.Tokenizer do
   # TODO: use `s.emit.(token)` before append it to list of tokens
 
   def tokenize(html) do
+    pattern = :binary.compile_pattern(["\r\n", "\r"])
+
     html
-    |> String.replace(~r/(\r\n|\r)/, "\n")
+    |> String.replace(pattern, "\n")
     |> data(%State{emit: fn token -> token end})
   end
 
