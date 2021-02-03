@@ -60,10 +60,6 @@ defmodule Floki.HTML.Tokenizer do
     defstruct candidate: nil, done: false, length: 0
   end
 
-  defmodule ParseError do
-    defstruct id: nil
-  end
-
   @lower_ASCII_letters ?a..?z
   @upper_ASCII_letters ?A..?Z
   @ascii_digits ?0..?9
@@ -249,7 +245,7 @@ defmodule Floki.HTML.Tokenizer do
       s
       | token: nil,
         tokens: append_char_token(s, [@less_than_sign, @solidus]),
-        errors: [%ParseError{} | s.errors]
+        errors: [{:parse_error, nil} | s.errors]
     })
   end
 
@@ -291,7 +287,7 @@ defmodule Floki.HTML.Tokenizer do
       s
       | token: %{s.token | name: [s.token.name | [@replacement_char]]},
         errors: [
-          %ParseError{id: "unexpected-null-character"}
+          {:parse_error, "unexpected-null-character"}
           | s.errors
         ]
     })
@@ -300,7 +296,7 @@ defmodule Floki.HTML.Tokenizer do
   defp tag_name("", s) do
     eof(:tag_name, %{
       s
-      | errors: [%ParseError{id: "eof-in-tag"} | s.errors]
+      | errors: [{:parse_error, "eof-in-tag"} | s.errors]
     })
   end
 
@@ -1102,7 +1098,7 @@ defmodule Floki.HTML.Tokenizer do
 
     attribute_name(html, %{
       s
-      | errors: [%ParseError{} | s.errors],
+      | errors: [{:parse_error, nil} | s.errors],
         token: new_token
     })
   end
@@ -1165,7 +1161,7 @@ defmodule Floki.HTML.Tokenizer do
 
     attribute_name(html, %{
       s
-      | errors: [%ParseError{} | s.errors],
+      | errors: [{:parse_error, nil} | s.errors],
         token: new_token
     })
   end
@@ -1206,7 +1202,7 @@ defmodule Floki.HTML.Tokenizer do
   defp after_attribute_name("", s) do
     eof(:data, %{
       s
-      | errors: [%ParseError{} | s.errors]
+      | errors: [{:parse_error, nil} | s.errors]
     })
   end
 
@@ -1235,7 +1231,7 @@ defmodule Floki.HTML.Tokenizer do
   defp before_attribute_value(html = <<?>, _rest::binary>>, s) do
     attribute_value_unquoted(html, %{
       s
-      | errors: [%ParseError{} | s.errors]
+      | errors: [{:parse_error, nil} | s.errors]
     })
   end
 
@@ -1259,7 +1255,7 @@ defmodule Floki.HTML.Tokenizer do
 
     attribute_value_double_quoted(html, %{
       s
-      | errors: [%ParseError{} | s.errors],
+      | errors: [{:parse_error, nil} | s.errors],
         token: %StartTag{s.token | attributes: [new_attr | attrs]}
     })
   end
@@ -1267,7 +1263,7 @@ defmodule Floki.HTML.Tokenizer do
   defp attribute_value_double_quoted("", s) do
     eof(:attribute_value_double_quoted, %{
       s
-      | errors: [%ParseError{} | s.errors]
+      | errors: [{:parse_error, nil} | s.errors]
     })
   end
 
@@ -1297,7 +1293,7 @@ defmodule Floki.HTML.Tokenizer do
 
     attribute_value_single_quoted(html, %{
       s
-      | errors: [%ParseError{} | s.errors],
+      | errors: [{:parse_error, nil} | s.errors],
         token: %StartTag{s.token | attributes: [new_attr | attrs]}
     })
   end
@@ -1305,7 +1301,7 @@ defmodule Floki.HTML.Tokenizer do
   defp attribute_value_single_quoted("", s) do
     eof(:attribute_value_single_quoted, %{
       s
-      | errors: [%ParseError{} | s.errors]
+      | errors: [{:parse_error, nil} | s.errors]
     })
   end
 
@@ -1340,7 +1336,7 @@ defmodule Floki.HTML.Tokenizer do
 
     attribute_value_unquoted(html, %{
       s
-      | errors: [%ParseError{} | s.errors],
+      | errors: [{:parse_error, nil} | s.errors],
         token: %{s.token | attributes: [new_attr | attrs]}
     })
   end
@@ -1352,7 +1348,7 @@ defmodule Floki.HTML.Tokenizer do
 
     attribute_value_unquoted(html, %{
       s
-      | errors: [%ParseError{} | s.errors],
+      | errors: [{:parse_error, nil} | s.errors],
         token: %{s.token | attributes: [new_attr | attrs]}
     })
   end
@@ -1360,7 +1356,7 @@ defmodule Floki.HTML.Tokenizer do
   defp attribute_value_unquoted("", s) do
     eof(:attribute_value_unquoted, %{
       s
-      | errors: [%ParseError{} | s.errors]
+      | errors: [{:parse_error, nil} | s.errors]
     })
   end
 
@@ -1392,7 +1388,7 @@ defmodule Floki.HTML.Tokenizer do
   defp after_attribute_value_quoted("", s) do
     eof(:after_attribute_value_quoted, %{
       s
-      | errors: [%ParseError{} | s.errors]
+      | errors: [{:parse_error, nil} | s.errors]
     })
   end
 
@@ -1410,14 +1406,14 @@ defmodule Floki.HTML.Tokenizer do
   defp self_closing_start_tag("", s) do
     eof(:self_closing_start_tag, %{
       s
-      | errors: [%ParseError{} | s.errors]
+      | errors: [{:parse_error, nil} | s.errors]
     })
   end
 
   defp self_closing_start_tag(html, s) do
     before_attribute_name(html, %{
       s
-      | errors: [%ParseError{} | s.errors]
+      | errors: [{:parse_error, nil} | s.errors]
     })
   end
 
@@ -1474,7 +1470,7 @@ defmodule Floki.HTML.Tokenizer do
     bogus_comment(html, %{
       s
       | token: %Comment{},
-        errors: [%ParseError{} | s.errors]
+        errors: [{:parse_error, nil} | s.errors]
     })
   end
 
@@ -1489,7 +1485,7 @@ defmodule Floki.HTML.Tokenizer do
       s
       | tokens: [s.token | s.tokens],
         token: nil,
-        errors: [%ParseError{} | s.errors]
+        errors: [{:parse_error, nil} | s.errors]
     })
   end
 
@@ -1508,14 +1504,14 @@ defmodule Floki.HTML.Tokenizer do
       s
       | tokens: [s.token | s.tokens],
         token: nil,
-        errors: [%ParseError{} | s.errors]
+        errors: [{:parse_error, nil} | s.errors]
     })
   end
 
   defp comment_start_dash("", s) do
     eof(:comment_start_dash, %{
       s
-      | errors: [%ParseError{} | s.errors],
+      | errors: [{:parse_error, nil} | s.errors],
         tokens: [s.token | s.tokens],
         token: nil
     })
@@ -1545,14 +1541,14 @@ defmodule Floki.HTML.Tokenizer do
     comment(html, %{
       s
       | token: new_comment,
-        errors: [%ParseError{} | s.errors]
+        errors: [{:parse_error, nil} | s.errors]
     })
   end
 
   defp comment("", s) do
     eof(:comment, %{
       s
-      | errors: [%ParseError{} | s.errors],
+      | errors: [{:parse_error, nil} | s.errors],
         tokens: [s.token | s.tokens],
         token: nil
     })
@@ -1616,7 +1612,7 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defp comment_less_than_sign_bang_dash_dash(html, s) do
-    comment_end(html, %{s | errors: [%ParseError{} | s.errors]})
+    comment_end(html, %{s | errors: [{:parse_error, nil} | s.errors]})
   end
 
   # § tokenizer-comment-end-dash-state
@@ -1630,7 +1626,7 @@ defmodule Floki.HTML.Tokenizer do
       s
       | tokens: [s.token | s.tokens],
         token: nil,
-        errors: [%ParseError{} | s.errors]
+        errors: [{:parse_error, nil} | s.errors]
     })
   end
 
@@ -1664,7 +1660,7 @@ defmodule Floki.HTML.Tokenizer do
       s
       | tokens: [s.token | s.tokens],
         token: nil,
-        errors: [%ParseError{} | s.errors]
+        errors: [{:parse_error, nil} | s.errors]
     })
   end
 
@@ -1687,7 +1683,7 @@ defmodule Floki.HTML.Tokenizer do
       s
       | tokens: [s.token | s.tokens],
         token: nil,
-        errors: [%ParseError{} | s.errors]
+        errors: [{:parse_error, nil} | s.errors]
     })
   end
 
@@ -1696,7 +1692,7 @@ defmodule Floki.HTML.Tokenizer do
       s
       | tokens: [s.token | s.tokens],
         token: nil,
-        errors: [%ParseError{} | s.errors]
+        errors: [{:parse_error, nil} | s.errors]
     })
   end
 
@@ -1721,7 +1717,7 @@ defmodule Floki.HTML.Tokenizer do
   defp doctype(html, s) do
     before_doctype_name(html, %{
       s
-      | errors: [%ParseError{} | s.errors]
+      | errors: [{:parse_error, nil} | s.errors]
     })
   end
 
@@ -1757,7 +1753,7 @@ defmodule Floki.HTML.Tokenizer do
       s
       | tokens: [token | s.tokens],
         token: nil,
-        errors: [%ParseError{} | s.errors]
+        errors: [{:parse_error, nil} | s.errors]
     })
   end
 
@@ -1770,7 +1766,7 @@ defmodule Floki.HTML.Tokenizer do
       s
       | tokens: [token | s.tokens],
         token: nil,
-        errors: [%ParseError{} | s.errors]
+        errors: [{:parse_error, nil} | s.errors]
     })
   end
 
@@ -1812,7 +1808,7 @@ defmodule Floki.HTML.Tokenizer do
     doctype_name(html, %{
       s
       | token: new_token,
-        errors: [%ParseError{} | s.errors]
+        errors: [{:parse_error, nil} | s.errors]
     })
   end
 
@@ -1823,7 +1819,7 @@ defmodule Floki.HTML.Tokenizer do
       s
       | tokens: [new_token | s.tokens],
         token: nil,
-        errors: [%ParseError{id: "eof-in-doctype"} | s.errors]
+        errors: [{:parse_error, "eof-in-doctype"} | s.errors]
     })
   end
 
@@ -1855,7 +1851,7 @@ defmodule Floki.HTML.Tokenizer do
       s
       | tokens: [token | s.tokens],
         token: nil,
-        errors: [%ParseError{id: "eof-in-doctype"} | s.errors]
+        errors: [{:parse_error, "eof-in-doctype"} | s.errors]
     })
   end
 
@@ -1885,7 +1881,7 @@ defmodule Floki.HTML.Tokenizer do
     bogus_doctype(html, %{
       s
       | token: token,
-        errors: [%ParseError{} | s.errors]
+        errors: [{:parse_error, nil} | s.errors]
     })
   end
 
@@ -1902,7 +1898,7 @@ defmodule Floki.HTML.Tokenizer do
     doctype_public_identifier_double_quoted(html, %{
       s
       | token: doctype,
-        errors: [%ParseError{} | s.errors]
+        errors: [{:parse_error, nil} | s.errors]
     })
   end
 
@@ -1912,7 +1908,7 @@ defmodule Floki.HTML.Tokenizer do
     doctype_public_identifier_single_quoted(html, %{
       s
       | token: doctype,
-        errors: [%ParseError{} | s.errors]
+        errors: [{:parse_error, nil} | s.errors]
     })
   end
 
@@ -1923,7 +1919,7 @@ defmodule Floki.HTML.Tokenizer do
       s
       | token: nil,
         tokens: [doctype | s.tokens],
-        errors: [%ParseError{} | s.errors]
+        errors: [{:parse_error, nil} | s.errors]
     })
   end
 
@@ -1934,7 +1930,7 @@ defmodule Floki.HTML.Tokenizer do
       s
       | token: nil,
         tokens: [doctype | s.tokens],
-        errors: [%ParseError{} | s.errors]
+        errors: [{:parse_error, nil} | s.errors]
     })
   end
 
@@ -1944,7 +1940,7 @@ defmodule Floki.HTML.Tokenizer do
     bogus_doctype(html, %{
       s
       | token: doctype,
-        errors: [%ParseError{} | s.errors]
+        errors: [{:parse_error, nil} | s.errors]
     })
   end
 
@@ -1961,7 +1957,7 @@ defmodule Floki.HTML.Tokenizer do
     doctype_public_identifier_double_quoted(html, %{
       s
       | token: doctype,
-        errors: [%ParseError{} | s.errors]
+        errors: [{:parse_error, nil} | s.errors]
     })
   end
 
@@ -1971,7 +1967,7 @@ defmodule Floki.HTML.Tokenizer do
     doctype_public_identifier_single_quoted(html, %{
       s
       | token: doctype,
-        errors: [%ParseError{} | s.errors]
+        errors: [{:parse_error, nil} | s.errors]
     })
   end
 
@@ -1982,7 +1978,7 @@ defmodule Floki.HTML.Tokenizer do
       s
       | token: nil,
         tokens: [doctype | s.tokens],
-        errors: [%ParseError{} | s.errors]
+        errors: [{:parse_error, nil} | s.errors]
     })
   end
 
@@ -1993,7 +1989,7 @@ defmodule Floki.HTML.Tokenizer do
       s
       | token: nil,
         tokens: [doctype | s.tokens],
-        errors: [%ParseError{} | s.errors]
+        errors: [{:parse_error, nil} | s.errors]
     })
   end
 
@@ -2004,7 +2000,7 @@ defmodule Floki.HTML.Tokenizer do
       s
       | token: nil,
         tokens: [doctype | s.tokens],
-        errors: [%ParseError{} | s.errors]
+        errors: [{:parse_error, nil} | s.errors]
     })
   end
 
@@ -2020,7 +2016,7 @@ defmodule Floki.HTML.Tokenizer do
     doctype_public_identifier_double_quoted(html, %{
       s
       | token: doctype,
-        errors: [%ParseError{} | s.errors]
+        errors: [{:parse_error, nil} | s.errors]
     })
   end
 
@@ -2031,7 +2027,7 @@ defmodule Floki.HTML.Tokenizer do
       s
       | token: nil,
         tokens: [doctype | s.tokens],
-        errors: [%ParseError{} | s.errors]
+        errors: [{:parse_error, nil} | s.errors]
     })
   end
 
@@ -2042,7 +2038,7 @@ defmodule Floki.HTML.Tokenizer do
       s
       | token: nil,
         tokens: [doctype | s.tokens],
-        errors: [%ParseError{} | s.errors]
+        errors: [{:parse_error, nil} | s.errors]
     })
   end
 
@@ -2064,7 +2060,7 @@ defmodule Floki.HTML.Tokenizer do
     doctype_public_identifier_single_quoted(html, %{
       s
       | token: doctype,
-        errors: [%ParseError{} | s.errors]
+        errors: [{:parse_error, nil} | s.errors]
     })
   end
 
@@ -2075,7 +2071,7 @@ defmodule Floki.HTML.Tokenizer do
       s
       | token: nil,
         tokens: [doctype | s.tokens],
-        errors: [%ParseError{} | s.errors]
+        errors: [{:parse_error, nil} | s.errors]
     })
   end
 
@@ -2086,7 +2082,7 @@ defmodule Floki.HTML.Tokenizer do
       s
       | token: nil,
         tokens: [doctype | s.tokens],
-        errors: [%ParseError{} | s.errors]
+        errors: [{:parse_error, nil} | s.errors]
     })
   end
 
@@ -2113,7 +2109,7 @@ defmodule Floki.HTML.Tokenizer do
     doctype_system_identifier_double_quoted(html, %{
       s
       | token: doctype,
-        errors: [%ParseError{} | s.errors]
+        errors: [{:parse_error, nil} | s.errors]
     })
   end
 
@@ -2123,7 +2119,7 @@ defmodule Floki.HTML.Tokenizer do
     doctype_system_identifier_single_quoted(html, %{
       s
       | token: doctype,
-        errors: [%ParseError{} | s.errors]
+        errors: [{:parse_error, nil} | s.errors]
     })
   end
 
@@ -2134,7 +2130,7 @@ defmodule Floki.HTML.Tokenizer do
       s
       | token: nil,
         tokens: [doctype | s.tokens],
-        errors: [%ParseError{} | s.errors]
+        errors: [{:parse_error, nil} | s.errors]
     })
   end
 
@@ -2144,7 +2140,7 @@ defmodule Floki.HTML.Tokenizer do
     bogus_doctype(html, %{
       s
       | token: doctype,
-        errors: [%ParseError{} | s.errors]
+        errors: [{:parse_error, nil} | s.errors]
     })
   end
 
@@ -2178,7 +2174,7 @@ defmodule Floki.HTML.Tokenizer do
       s
       | token: nil,
         tokens: [doctype | s.tokens],
-        errors: [%ParseError{} | s.errors]
+        errors: [{:parse_error, nil} | s.errors]
     })
   end
 
@@ -2188,7 +2184,7 @@ defmodule Floki.HTML.Tokenizer do
     bogus_doctype(html, %{
       s
       | token: doctype,
-        errors: [%ParseError{} | s.errors]
+        errors: [{:parse_error, nil} | s.errors]
     })
   end
 
@@ -2205,7 +2201,7 @@ defmodule Floki.HTML.Tokenizer do
     doctype_system_identifier_double_quoted(html, %{
       s
       | token: doctype,
-        errors: [%ParseError{} | s.errors]
+        errors: [{:parse_error, nil} | s.errors]
     })
   end
 
@@ -2215,7 +2211,7 @@ defmodule Floki.HTML.Tokenizer do
     doctype_system_identifier_single_quoted(html, %{
       s
       | token: doctype,
-        errors: [%ParseError{} | s.errors]
+        errors: [{:parse_error, nil} | s.errors]
     })
   end
 
@@ -2226,7 +2222,7 @@ defmodule Floki.HTML.Tokenizer do
       s
       | token: nil,
         tokens: [doctype | s.tokens],
-        errors: [%ParseError{} | s.errors]
+        errors: [{:parse_error, nil} | s.errors]
     })
   end
 
@@ -2237,7 +2233,7 @@ defmodule Floki.HTML.Tokenizer do
       s
       | token: nil,
         tokens: [doctype | s.tokens],
-        errors: [%ParseError{} | s.errors]
+        errors: [{:parse_error, nil} | s.errors]
     })
   end
 
@@ -2247,7 +2243,7 @@ defmodule Floki.HTML.Tokenizer do
     bogus_doctype(html, %{
       s
       | token: doctype,
-        errors: [%ParseError{} | s.errors]
+        errors: [{:parse_error, nil} | s.errors]
     })
   end
 
@@ -2264,7 +2260,7 @@ defmodule Floki.HTML.Tokenizer do
     doctype_system_identifier_double_quoted(html, %{
       s
       | token: doctype,
-        errors: [%ParseError{} | s.errors]
+        errors: [{:parse_error, nil} | s.errors]
     })
   end
 
@@ -2274,7 +2270,7 @@ defmodule Floki.HTML.Tokenizer do
     doctype_system_identifier_single_quoted(html, %{
       s
       | token: doctype,
-        errors: [%ParseError{} | s.errors]
+        errors: [{:parse_error, nil} | s.errors]
     })
   end
 
@@ -2285,7 +2281,7 @@ defmodule Floki.HTML.Tokenizer do
       s
       | token: nil,
         tokens: [doctype | s.tokens],
-        errors: [%ParseError{} | s.errors]
+        errors: [{:parse_error, nil} | s.errors]
     })
   end
 
@@ -2296,7 +2292,7 @@ defmodule Floki.HTML.Tokenizer do
       s
       | token: nil,
         tokens: [doctype | s.tokens],
-        errors: [%ParseError{} | s.errors]
+        errors: [{:parse_error, nil} | s.errors]
     })
   end
 
@@ -2307,7 +2303,7 @@ defmodule Floki.HTML.Tokenizer do
       s
       | token: nil,
         tokens: [doctype | s.tokens],
-        errors: [%ParseError{} | s.errors]
+        errors: [{:parse_error, nil} | s.errors]
     })
   end
 
@@ -2323,7 +2319,7 @@ defmodule Floki.HTML.Tokenizer do
     doctype_system_identifier_double_quoted(html, %{
       s
       | token: doctype,
-        errors: [%ParseError{} | s.errors]
+        errors: [{:parse_error, nil} | s.errors]
     })
   end
 
@@ -2334,7 +2330,7 @@ defmodule Floki.HTML.Tokenizer do
       s
       | token: nil,
         tokens: [doctype | s.tokens],
-        errors: [%ParseError{} | s.errors]
+        errors: [{:parse_error, nil} | s.errors]
     })
   end
 
@@ -2345,7 +2341,7 @@ defmodule Floki.HTML.Tokenizer do
       s
       | token: nil,
         tokens: [doctype | s.tokens],
-        errors: [%ParseError{} | s.errors]
+        errors: [{:parse_error, nil} | s.errors]
     })
   end
 
@@ -2367,7 +2363,7 @@ defmodule Floki.HTML.Tokenizer do
     doctype_system_identifier_single_quoted(html, %{
       s
       | token: doctype,
-        errors: [%ParseError{} | s.errors]
+        errors: [{:parse_error, nil} | s.errors]
     })
   end
 
@@ -2378,7 +2374,7 @@ defmodule Floki.HTML.Tokenizer do
       s
       | token: nil,
         tokens: [doctype | s.tokens],
-        errors: [%ParseError{} | s.errors]
+        errors: [{:parse_error, nil} | s.errors]
     })
   end
 
@@ -2389,7 +2385,7 @@ defmodule Floki.HTML.Tokenizer do
       s
       | token: nil,
         tokens: [doctype | s.tokens],
-        errors: [%ParseError{} | s.errors]
+        errors: [{:parse_error, nil} | s.errors]
     })
   end
 
@@ -2417,7 +2413,7 @@ defmodule Floki.HTML.Tokenizer do
       s
       | token: nil,
         tokens: [doctype | s.tokens],
-        errors: [%ParseError{} | s.errors]
+        errors: [{:parse_error, nil} | s.errors]
     })
   end
 
@@ -2426,7 +2422,7 @@ defmodule Floki.HTML.Tokenizer do
       s
       | token: nil,
         tokens: [s.token | s.tokens],
-        errors: [%ParseError{} | s.errors]
+        errors: [{:parse_error, nil} | s.errors]
     })
   end
 
@@ -2456,7 +2452,7 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defp cdata_section("", s) do
-    eof(:cdata_section, %{s | errors: [%ParseError{} | s.errors]})
+    eof(:cdata_section, %{s | errors: [{:parse_error, nil} | s.errors]})
   end
 
   defp cdata_section(<<c::utf8, html::binary>>, s) do
@@ -2582,14 +2578,15 @@ defmodule Floki.HTML.Tokenizer do
     state =
       cond do
         parse_error_on_unmatch? ->
-          %{s | errors: [%ParseError{} | s.errors]}
+          %{s | errors: [{:parse_error, nil} | s.errors]}
 
         parse_error_on_non_semicolon_ending? ->
           %{
             s
             | errors: [
-                %ParseError{
-                  id: "missing-semicolon-after-character-reference"
+                {
+                  :parse_error,
+                  "missing-semicolon-after-character-reference"
                 }
                 | s.errors
               ]

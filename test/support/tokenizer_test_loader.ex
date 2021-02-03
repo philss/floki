@@ -70,9 +70,9 @@ defmodule TokenizerTestLoader do
 
     output_errors =
       state.errors
-      |> Enum.map(fn error ->
+      |> Enum.map(fn {:parse_error, id} ->
         %{
-          "code" => error.id
+          "code" => id
         }
       end)
       |> Enum.reverse()
