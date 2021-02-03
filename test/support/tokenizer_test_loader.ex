@@ -72,9 +72,7 @@ defmodule TokenizerTestLoader do
       state.errors
       |> Enum.map(fn error ->
         %{
-          "code" => error.id,
-          "col" => error.position.col,
-          "line" => error.position.line
+          "code" => error.id
         }
       end)
       |> Enum.reverse()
@@ -129,7 +127,7 @@ defmodule TokenizerTestLoader do
     ]
   end
 
-  defp transform_token(%Tokenizer.EOF{}), do: nil
+  defp transform_token(:eof), do: nil
 
   defp transform_token(other), do: other
 end
