@@ -3,7 +3,7 @@ defmodule Floki.Selector.Parser do
 
   @moduledoc false
 
-  # Parses a list of tokens returned from `Tokenizer` and transfor into a `Selector`.
+  # Parses a list of tokens returned from `Tokenizer` and transform into a `Selector`.
 
   alias Floki.Selector
   alias Selector.{Functional, Tokenizer, PseudoClass, AttributeSelector, Combinator}

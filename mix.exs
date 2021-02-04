@@ -2,6 +2,7 @@ defmodule Floki.Mixfile do
   use Mix.Project
 
   @description "Floki is a simple HTML parser that enables search for nodes using CSS selectors."
+  @source_url "https://github.com/philss/floki"
   @version "0.29.0"
 
   def project do
@@ -15,16 +16,27 @@ defmodule Floki.Mixfile do
       erlc_paths: ["src", "gen"],
       deps: deps(),
       aliases: aliases(),
+      docs: docs(),
       dialyzer: [
         plt_file: {:no_warn, "priv/plts/dialyzer.plt"}
-      ],
-      source_url: "https://github.com/philss/floki",
-      docs: [extras: ["README.md"], main: "Floki", assets: "assets"]
+      ]
     ]
   end
 
   def application do
     [extra_applications: [:logger]]
+  end
+
+  defp docs do
+    [
+      extras: ["CHANGELOG.md", {:"README.md", [title: "Overview"]}],
+      main: "readme",
+      assets: "assets",
+      logo: "assets/images/floki-logo.svg",
+      source_url: @source_url,
+      source_ref: "v#{@version}",
+      skip_undefined_reference_warnings_on: ["CHANGELOG.md"]
+    ]
   end
 
   defp deps do
@@ -45,7 +57,7 @@ defmodule Floki.Mixfile do
     [
       {:html_entities, "~> 0.5.0"},
       {:earmark, "~> 1.2", only: :dev},
-      {:ex_doc, "~> 0.23.0", only: :dev},
+      {:ex_doc, "~> 0.23.0", only: :dev, runtime: false},
       {:benchee, "~> 1.0.1", only: :dev},
       {:credo, ">= 0.0.0", only: [:dev, :test]},
       {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
@@ -99,10 +111,12 @@ defmodule Floki.Mixfile do
         "README.md",
         "LICENSE",
         "CODE_OF_CONDUCT.md",
-        "CONTRIBUTING.md"
+        "CONTRIBUTING.md",
+        "CHANGELOG.md"
       ],
       links: %{
-        "GitHub" => "https://github.com/philss/floki"
+        "Changelog" => "https://hexdocs.pm/floki/changelog.html",
+        "GitHub" => @source_url
       }
     }
   end

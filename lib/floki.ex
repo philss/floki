@@ -80,7 +80,7 @@ defmodule Floki do
 
   @spec parse(binary()) :: html_tag() | html_tree() | String.t()
 
-  @deprecated "Please use parse_document/1 or parse_fragment/1"
+  @deprecated "Use `parse_document/1` or `parse_fragment/1` instead."
   def parse(html) do
     with {:ok, document} <- Floki.HTMLParser.parse_document(html) do
       if length(document) == 1 do
@@ -312,7 +312,7 @@ defmodule Floki do
   def map(html_tree, fun), do: Finder.map(html_tree, fun)
 
   @doc """
-  Searchs for elements inside the HTML tree and update those that matches the selector.
+  Searches for elements inside the HTML tree and update those that matches the selector.
 
   It will return the updated HTML tree.
 
