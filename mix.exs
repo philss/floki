@@ -94,7 +94,8 @@ defmodule Floki.Mixfile do
       maintainers: ["Philip Sampaio Silva"],
       licenses: ["MIT"],
       files: [
-        "lib",
+        "lib/floki",
+        "lib/floki.ex",
         "src/*.xrl",
         "src/floki_mochi_html.erl",
         "src/floki.gleam",

@@ -5,48 +5,6 @@ defmodule TokenizerTestLoader do
   It helps with tests from the tokenizer
   """
 
-  defmacro __using__(_opts) do
-    quote do
-      ExUnit.Case.register_attribute(__MODULE__, :params, accumulate: true)
-      import TokenizerTestLoader, only: [load_tests_from_file: 1]
-    end
-  end
-
-  @doc """
-  Loads tests from a file in the format of HTML5lib-tests.
-  It executes the tokenization and match with the expected output.
-  """
-  defmacro load_tests_from_file(file_name) do
-    quote bind_quoted: [file_name: file_name] do
-      {:ok, content} = File.read(file_name)
-      {:ok, json} = Jason.decode(content)
-      tests = Map.get(json, "tests")
-
-      Enum.reduce(tests, MapSet.new(), fn definition, map_set ->
-        description = Map.get(definition, "description")
-
-        if !match?("", description) && !MapSet.member?(map_set, description) do
-          @params {:input, Map.get(definition, "input")}
-          @params {:output, Map.get(definition, "output")}
-          @params {:description, description}
-          @tag timeout: 200
-          test "tokenize/1 #{description}", context do
-            result =
-              Keyword.get(context.registered.params, :input)
-              |> Floki.HTML.Tokenizer.tokenize()
-              |> TokenizerTestLoader.tokenization_result()
-
-            output = Keyword.get(context.registered.params, :output)
-
-            assert result.tokens == output
-          end
-        end
-
-        MapSet.put(map_set, description)
-      end)
-    end
-  end
-
   defmodule HTMLTestResult do
     defstruct errors: [], tokens: []
   end
