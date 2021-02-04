@@ -1,4 +1,4 @@
-# Change log
+# Changelog
 
 All notable changes to this project will be documented in this file.
 
@@ -33,7 +33,7 @@ are powerful APIs. `Floki.map/2` can be replaced by `Enum.map/2` as well - thank
 
 ### Added
 
-- Add suport for `:checked` pseudo-class selector - thanks [@wojtekmach](https://github.com/wojtekmach)
+- Add support for `:checked` pseudo-class selector - thanks [@wojtekmach](https://github.com/wojtekmach)
 
 ### Changed
 
@@ -49,7 +49,7 @@ are powerful APIs. `Floki.map/2` can be replaced by `Enum.map/2` as well - thank
 ### Added
 
 - `Floki.filter_out/2` now can filter text nodes - thanks [@ckruse](https://github.com/ckruse)
-- Support more enconding entities in `Floki.raw_html/1` - thanks [@ntenczar](https://github.com/ntenczar)
+- Support more encoding entities in `Floki.raw_html/1` - thanks [@ntenczar](https://github.com/ntenczar)
 
 ### Fixed
 
@@ -99,7 +99,7 @@ Lexborisov's [myhtml](https://github.com/lexborisov/myhtml) - thanks [@rinpatch]
 - Add setup to run our test suite against all parsers on CI - thanks [@rinpatch](https://github.com/rinpatch)
 - Add `Floki.parse_document/1` and `Floki.parse_fragment/1` in order to correct parse documents
 and fragments of documents - it also prevents the confusion and inconsistency of `parse/1`.
-- Configure `dialyxir` in order to run Dializer easily.
+- Configure `dialyxir` in order to run Dialyzer easily.
 
 ### Changed
 
@@ -119,7 +119,7 @@ already parsed document or fragment.
 
 ### Changed
 
-- Remove mochiweb as a hex dependency. It brings the code from the original project
+- Remove Mochiweb as a hex dependency. It brings the code from the original project
 to Floki's codebase - thanks [@josevalim](https://github.com/josevalim)
 
 ## [0.22.0] - 2019-08-21
@@ -348,8 +348,8 @@ the tree yet, but works good with results from `Floki.find/2` - thanks [@bobjflo
 
 ### Changed
 
-- Using Logger to notify unkwon tokens in selector parser - thanks [@teamon](https://github.com/teamon) and [@geonnave](https://github.com/geonnave)
-- Replace `mochiweb_html` with `mochiweb` package. This is needed to fix conflics with other
+- Using Logger to notify unknown tokens in selector parser - thanks [@teamon](https://github.com/teamon) and [@geonnave](https://github.com/geonnave)
+- Replace `mochiweb_html` with `mochiweb` package. This is needed to fix conflict with other
 packages that are using `mochiweb`. - thanks [@aphillipo](https://github.com/aphillipo)
 
 ## [0.10.1] - 2016-08-28
@@ -393,7 +393,7 @@ packages that are using `mochiweb`. - thanks [@aphillipo](https://github.com/aph
 
 ### Changed
 
-- Using a smaller package with only the mochiweb HTML parser.
+- Using a smaller package with only the Mochiweb HTML parser.
 
 ## [0.7.2] - 2016-02-23
 
@@ -418,7 +418,7 @@ the flag `js: true` - thanks [@vikeri](https://github.com/vikeri)!
 
 ### Fixed
 
-- Fix find for sibling nodes when the precendent selector match an element
+- Fix find for sibling nodes when the precedent selector match an element
 at the end of sibling list - fix [issue #39](https://github.com/philss/floki/issues/39)
 
 ## [0.6.1] - 2015-10-11
@@ -462,7 +462,7 @@ Here is a list with examples of what is possible now:
   - `Floki.find(html, ".foo.bar")`
   - `Floki.find(html, "a.foo[href$='.org']")`
 Thanks to [@licyeus](https://github.com/licyeus) to point out the [issue](https://github.com/philss/floki/issues/18)!
-- Include mochiweb in the applications list at mix.exs - thanks [@EricDykstra](https://github.com/EricDykstra)
+- Include `mochiweb` in the applications list at mix.exs - thanks [@EricDykstra](https://github.com/EricDykstra)
 
 ### Changed
 
@@ -500,7 +500,7 @@ It closes the [issue #17](https://github.com/philss/floki/issues/17)
 
 - Add attribute equals selector. This feature enables the user to search using
 HTML attributes other than "class" or "id".
-E.g: Floki.find(html, "[data-model=user]") - [@nelsonr](https://github.com/nelsonr)
+E.g: `Floki.find(html, "[data-model=user]")` - [@nelsonr](https://github.com/nelsonr)
 
 ## [0.2.1] - 2015-06-04
 
@@ -512,12 +512,12 @@ E.g: Floki.find(html, "[data-model=user]") - [@nelsonr](https://github.com/nelso
 
 ### Added
 
-- Support HTML string when searching for attributes with Floki.attribute/2.
-- Option for Floki.text/2 to disable deep search and use flat search instead.
+- Support HTML string when searching for attributes with `Floki.attribute/2`.
+- Option for `Floki.text/2` to disable deep search and use flat search instead.
 
 ### Changed
 
-- Change Floki.text/1 to perform a deep search of text nodes.
+- Change `Floki.text/1` to perform a deep search of text nodes.
 - Consider doctests in the test suite.
 
 ## [0.1.1] - 2015-03-25
@@ -535,14 +535,14 @@ It closes the [issue #5](https://github.com/philss/floki/issues/5)
 
 ### Added
 
-- Descendent selectors, like ".class tag" to Floki.find/2.
+- Descendant selectors, like ".class tag" to Floki.find/2.
 - Multiple selection, like ".class1, .class2" to Floki.find/2.
 
 ## [0.0.5] - 2014-12-21
 
 ### Added
 
-- Floki.text/1, which returns all text in the same level
+- `Floki.text/1`, which returns all text in the same level
 of the parent element inside HTML.
 
 ### Changed

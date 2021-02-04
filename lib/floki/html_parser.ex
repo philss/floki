@@ -1,6 +1,6 @@
 defmodule Floki.HTMLParser do
   @moduledoc """
-  A entrypoint to dynamic dispatch functions to
+  A entry point to dynamic dispatch functions to
   the configured HTML parser.
 
   The configuration can be done with the "html_parser"
