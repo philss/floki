@@ -1,6 +1,8 @@
 defmodule Floki do
   alias Floki.{Finder, FilterOut, HTMLTree}
 
+  require Logger
+
   @moduledoc """
   Floki is a simple HTML parser that enables search for nodes using CSS selectors.
 
@@ -229,7 +231,7 @@ defmodule Floki do
   @spec find(binary() | html_tree() | html_node(), css_selector()) :: html_tree
 
   def find(html, selector) when is_binary(html) do
-    IO.warn(
+    Logger.info(
       "deprecation: parse the HTML with parse_document or parse_fragment before using find/2"
     )
 
@@ -267,7 +269,7 @@ defmodule Floki do
   end
 
   def attr(html, selector, attribute_name, mutation) when is_binary(html) do
-    IO.warn(
+    Logger.info(
       "deprecation: parse the HTML with parse_document or parse_fragment before using attr/4"
     )
 
@@ -577,7 +579,7 @@ defmodule Floki do
 
   @spec attribute(binary | html_tree | html_node, binary) :: list
   def attribute(html, attribute_name) when is_binary(html) do
-    IO.warn(
+    Logger.info(
       "deprecation: parse the HTML with parse_document or parse_fragment before using attribute/2"
     )
 
@@ -627,7 +629,7 @@ defmodule Floki do
   end
 
   defp parse_it(html) when is_binary(html) do
-    IO.warn(
+    Logger.info(
       "deprecation: parse the HTML with parse_document or parse_fragment before using text/2"
     )
 
@@ -666,7 +668,7 @@ defmodule Floki do
           html_node() | html_tree()
 
   def filter_out(html, selector) when is_binary(html) do
-    IO.warn(
+    Logger.info(
       "deprecation: parse the HTML with parse_document or parse_fragment before using filter_out/2"
     )
 

@@ -1191,27 +1191,6 @@ defmodule FlokiTest do
     assert Floki.attribute(elements, "title") == []
   end
 
-  test "Floki.map/2 transforms nodes" do
-    elements = Floki.find(document!(@html), ".content")
-
-    transformation = fn
-      {"a", [{"href", x} | xs]} ->
-        {"a", [{"href", String.replace(x, "http://", "https://")} | xs]}
-
-      x ->
-        x
-    end
-
-    result = Floki.map(elements, transformation)
-
-    hrefs_after =
-      result
-      |> Floki.find("a")
-      |> Floki.attribute("href")
-
-    assert hrefs_after == ["https://google.com", "https://elixir-lang.org", "https://java.com"]
-  end
-
   describe "find_and_update/3" do
     test "transforms attributes from selected nodes" do
       transformation = fn
