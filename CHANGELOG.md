@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased][unreleased]
 
+## [0.30.0] - 2021-02-06
+
+### Added
+
+- Add ":disabled" pseudo selector - thanks [@vnegrisolo](https://github.com/vnegrisolo)
+- Add [Gleam](https://github.com/gleam-lang/gleam) adapter - thanks [@CrowdHailer](https://github.com/CrowdHailer)
+- Add pretty option to `Floki.raw_html/2` - thanks [@evaldobratti](https://github.com/evaldobratti)
+- Add `html_parser` option to `parse_` functions. This enables a more dynamic and functional
+configuration of the HTML parser in use.
+
+### Changed
+
+- Remove support for Elixir 1.7 - thanks [@carlosfrodrigues](https://github.com/carlosfrodrigues)
+- Replace `IO.warn` by `Logger.info` for deprecation warnings - thanks [@juulSme](https://github.com/juulSme)
+
+### Fixed
+
+- Fix typespecs for `find`, `attr` and `attribute` functions - thanks [@mtarnovan](https://github.com/mtarnovan)
+- Documentation Improvements - thanks [@kianmeng](https://github.com/kianmeng)
+
 ## [0.29.0] - 2020-10-02
 
 ### Added
@@ -549,7 +569,8 @@ of the parent element inside HTML.
 
 - Elixir version requirement from "~> 1.0.0" to ">= 1.0.0".
 
-[unreleased]: https://github.com/philss/floki/compare/v0.29.0...HEAD
+[unreleased]: https://github.com/philss/floki/compare/v0.30.0...HEAD
+[0.30.0]: https://github.com/philss/floki/compare/v0.29.0...v0.30.0
 [0.29.0]: https://github.com/philss/floki/compare/v0.28.0...v0.29.0
 [0.28.0]: https://github.com/philss/floki/compare/v0.27.0...v0.28.0
 [0.27.0]: https://github.com/philss/floki/compare/v0.26.0...v0.27.0
