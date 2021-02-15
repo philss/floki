@@ -282,7 +282,7 @@ defmodule Floki.HTML.TreeConstruction do
          state = %State{},
          tstate = %TState{tokens: [comment = %Tokenizer.Comment{} | tokens]}
        ) do
-    {:ok, state, _new_node} = add_node(state, %HTree.Comment{content: comment.content})
+    {:ok, state, _new_node} = add_node(state, %HTree.Comment{content: comment.data})
 
     in_head(state, %{tstate | tokens: tokens})
   end

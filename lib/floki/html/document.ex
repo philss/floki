@@ -64,7 +64,7 @@ defmodule Floki.HTML.Document do
   Returns a node based on its ID.
   """
   # TODO: maybe return nil directly instead of Either
-  def get_node(document = %Document{tree: tree}, node_id) do
+  def get_node(%Document{tree: tree}, node_id) do
     node = Map.get(tree, node_id)
 
     if node do
