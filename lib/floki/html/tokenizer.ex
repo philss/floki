@@ -91,7 +91,6 @@ defmodule Floki.HTML.Tokenizer do
               tokens: [],
               buffer: "",
               last_start_tag: nil,
-              open_tags: [],
               errors: [],
               emit: nil,
               charref_state: nil,
@@ -100,8 +99,20 @@ defmodule Floki.HTML.Tokenizer do
     @type token :: Doctype.t() | Comment.t() | StartTag.t() | EndTag.t() | {:char, iodata()}
 
     @type t :: %__MODULE__{
+            return_state:
+              :data
+              | :rcdata
+              | :attribute_value_double_quoted
+              | :attribute_value_single_quoted
+              | :attribute_value_unquoted,
+            eof_last_state: atom(),
             buffer: iodata(),
+            token: token() | nil,
             tokens: list(token()),
+            errors: [{:parse_error, binary() | nil}],
+            last_start_tag: StartTag.t(),
+            charref_state: CharrefState.t(),
+            charref_code: integer(),
             emit: (token() -> token())
           }
   end
