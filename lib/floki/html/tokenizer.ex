@@ -135,8 +135,6 @@ defmodule Floki.HTML.Tokenizer do
   @hyphen_minus ?-
   @replacement_char 0xFFFD
 
-  # TODO: use `s.emit.(token)` before append it to list of tokens
-
   @spec tokenize(binary()) :: State.t()
   def tokenize(html) do
     pattern = :binary.compile_pattern(["\r\n", "\r"])
@@ -599,6 +597,7 @@ defmodule Floki.HTML.Tokenizer do
 
   # § tokenizer-script-data-escaped-end-tag-name-state: re-entrant
 
+  @spec script_data_escaped_end_tag_name(binary(), State.t()) :: State.t()
   def script_data_escaped_end_tag_name(html = <<c, rest::binary>>, s)
       when c in @space_chars do
     if appropriate_tag?(s) do
@@ -728,6 +727,7 @@ defmodule Floki.HTML.Tokenizer do
 
   # § tokenizer-script-data-escape-start-state: re-entrant
 
+  @spec script_data_escape_start(binary(), State.t()) :: State.t()
   def script_data_escape_start(<<?-, html::binary>>, s) do
     script_data_escape_start_dash(
       html,
@@ -916,6 +916,7 @@ defmodule Floki.HTML.Tokenizer do
 
   # § tokenizer-script-data-double-escape-start-state: re-entrant
 
+  @spec script_data_double_escaped_end_tag_open(binary(), State.t()) :: State.t()
   def script_data_double_escaped_end_tag_open(
         <<c, html::binary>>,
         s
@@ -960,6 +961,7 @@ defmodule Floki.HTML.Tokenizer do
 
   # § tokenizer-script-data-double-escaped-state: re-entrant
 
+  @spec script_data_double_escaped(binary(), State.t()) :: State.t()
   def script_data_double_escaped(<<?-, html::binary>>, s) do
     script_data_double_escaped_dash(html, %{
       s
