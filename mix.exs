@@ -28,6 +28,18 @@ defmodule Floki.Mixfile do
     [extra_applications: [:logger]]
   end
 
+  defp docs do
+    [
+      extras: ["CHANGELOG.md", {:"README.md", [title: "Overview"]}],
+      main: "readme",
+      assets: "assets",
+      logo: "assets/images/floki-logo.svg",
+      source_url: @source_url,
+      source_ref: "v#{@version}",
+      skip_undefined_reference_warnings_on: ["CHANGELOG.md"]
+    ]
+  end
+
   defp deps do
     # Needed to avoid installing unnecessary deps on the CI
     parsers_deps = [
