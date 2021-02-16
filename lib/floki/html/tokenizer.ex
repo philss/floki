@@ -648,7 +648,7 @@ defmodule Floki.HTML.Tokenizer do
 
   def script_data_escaped_end_tag_name(<<c, html::binary>>, s)
       when is_lower_letter(c) do
-    new_token = %{s.token | name: [s.name | [c]]}
+    new_token = %{s.token | name: [s.token.name | [c]]}
 
     script_data_escaped_end_tag_name(html, %{
       s
