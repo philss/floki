@@ -16,16 +16,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        elixir: ["1.11.0", "1.10.4", "1.9.4", "1.8.2"]
-        erlang: ["21.3", "22.3", "23.0"]
+        elixir: ["1.11.0", "1.8.2"]
+        erlang: ["21.3", "23.0"]
         ubuntu: ["bionic-20200219"]
         parser: [fast_html, html5ever, mochiweb]
         exclude:
-          - elixir: "1.9.4"
-            erlang: "23.0"
           - elixir: "1.8.2"
             erlang: "23.0"
-
     steps:
       - uses: actions/checkout@v1.0.0
       - name: Install dependencies
