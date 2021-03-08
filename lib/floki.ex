@@ -67,8 +67,10 @@ defmodule Floki do
   @type html_comment :: {:comment, String.t()}
   @type html_doctype :: {:doctype, String.t(), String.t(), String.t()}
   @type html_attribute :: {String.t(), String.t()}
-  @type html_tag :: {String.t(), [html_attribute()], [html_tag() | String.t() | html_comment()]}
-  @type html_node :: html_comment() | html_doctype() | html_tag() | html_declaration()
+  @type html_text :: String.t()
+  @type html_tag :: {String.t(), [html_attribute()], [html_node()]}
+  @type html_node ::
+          html_tag() | html_comment() | html_doctype() | html_declaration() | html_text()
   @type html_tree :: [html_node()]
 
   @type css_selector :: String.t() | Floki.Selector.t() | [Floki.Selector.t()]
@@ -366,8 +368,9 @@ defmodule Floki do
   Traverses and updates a HTML tree structure.
 
   This function returns a new tree structure that is the result of applying the
-  given `fun` on all nodes. The tree is traversed in a post-walk fashion, where
-  the children are traversed before the parent.
+  given `fun` on all nodes except text nodes.
+  The tree is traversed in a post-walk fashion, where the children are traversed
+  before the parent.
 
   When the function `fun` encounters HTML tag, it receives a tuple with
   `{name, attributes, children}`, and should either return a similar tuple or
@@ -377,6 +380,9 @@ defmodule Floki do
   will receive, and should return, different tuple for these types. See the
   documentation for `t:html_comment/0`, `t:html_doctype/0` and
   `t:html_declaration/0` for details.
+
+  **Note**: this won't update text nodes, but you can transform them when working
+  with children nodes.
 
   ## Examples
 
@@ -396,7 +402,10 @@ defmodule Floki do
       [{"div", [], [{"span", [], "I am comment"}]}]
   """
 
-  @spec traverse_and_update(html_tree(), (html_node() -> html_node() | nil)) :: html_tree()
+  @spec traverse_and_update(
+          html_tree(),
+          (html_tag() | html_comment() | html_doctype() | html_declaration() -> html_node() | nil)
+        ) :: html_tree()
 
   defdelegate traverse_and_update(html_tree, fun), to: Floki.Traversal
 
@@ -404,9 +413,9 @@ defmodule Floki do
   Traverses and updates a HTML tree structure with an accumulator.
 
   This function returns a new tree structure and the final value of accumulator
-  which are the result of applying the given `fun` on all nodes. The tree is
-  traversed in a post-walk fashion, where the children are traversed before
-  the parent.
+  which are the result of applying the given `fun` on all nodes except text nodes.
+  The tree is traversed in a post-walk fashion, where the children are traversed
+  before the parent.
 
   When the function `fun` encounters HTML tag, it receives a tuple with
   `{name, attributes, children}` and an accumulator. It and should return a
@@ -418,6 +427,9 @@ defmodule Floki do
   will receive, and should return, different tuple for these types. See the
   documentation for `t:html_comment/0`, `t:html_doctype/0` and
   `t:html_declaration/0` for details.
+
+  **Note**: this won't update text nodes, but you can transform them when working
+  with children nodes.
 
   ## Examples
 
@@ -445,14 +457,15 @@ defmodule Floki do
   @spec traverse_and_update(
           html_tree(),
           traverse_acc,
-          (html_node(), traverse_acc -> {html_node() | nil, traverse_acc})
+          (html_tag() | html_comment() | html_doctype() | html_declaration(), traverse_acc ->
+             {html_node() | nil, traverse_acc})
         ) :: {html_node(), traverse_acc}
         when traverse_acc: any()
-
   defdelegate traverse_and_update(html_tree, acc, fun), to: Floki.Traversal
 
   @doc """
   Returns the text nodes from a HTML tree.
+
   By default, it will perform a deep search through the HTML tree.
   You can disable deep search with the option `deep` assigned to false.
   You can include content of script tags with the option `js` assigned to true.

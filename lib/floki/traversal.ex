@@ -10,9 +10,9 @@ defmodule Floki.Traversal do
   def traverse_and_update(html_node, acc, fun)
   def traverse_and_update([], acc, _fun), do: {[], acc}
   def traverse_and_update(text, acc, _fun) when is_binary(text), do: {text, acc}
-  def traverse_and_update(xml_tag = {:pi, _, _}, acc, fun), do: fun.(xml_tag, acc)
-  def traverse_and_update({:comment, children}, acc, fun), do: fun.({:comment, children}, acc)
-  def traverse_and_update(doctype = {:doctype, _, _, _}, acc, fun), do: fun.(doctype, acc)
+  def traverse_and_update({:pi, _, _} = xml_tag, acc, fun), do: fun.(xml_tag, acc)
+  def traverse_and_update({:comment, _children} = comment, acc, fun), do: fun.(comment, acc)
+  def traverse_and_update({:doctype, _, _, _} = doctype, acc, fun), do: fun.(doctype, acc)
 
   def traverse_and_update([head | tail], acc, fun) do
     case traverse_and_update(head, acc, fun) do
