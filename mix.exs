@@ -117,6 +117,7 @@ defmodule Floki.Mixfile do
       ],
       links: %{
         "Changelog" => "https://hexdocs.pm/floki/changelog.html",
+        "Sponsor" => "https://www.paypal.com/donate?business=EMDBKWVHVEB7Q&currency_code=USD",
         "GitHub" => @source_url
       }
     }
