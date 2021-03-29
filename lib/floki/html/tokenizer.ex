@@ -1,12 +1,11 @@
 defmodule Floki.HTML.Tokenizer do
   @moduledoc false
 
-  # It parses a HTML file according to the specs of W3C:
-  # https://w3c.github.io/html/syntax.html
+  # It parses a HTML file according to the specs of WHATWG/W3C:
+  # https://html.spec.whatwg.org/multipage/#toc-syntax
   #
   # In order to find the docs of a given state, add it as an anchor to the link above.
-  # Example: https://w3c.github.io/html/syntax.html#tokenizer-data-state
-  # TODO: add tests: https://github.com/html5lib/html5lib-tests
+  # Example: https://html.spec.whatwg.org/multipage/parsing.html#data-state
 
   defmodule Doctype do
     defstruct name: nil,

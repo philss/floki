@@ -1144,7 +1144,7 @@ defmodule FlokiTest do
     assert Floki.find(xml, "x | bar") == [{"x:bar", [], ["42"]}]
   end
 
-  @tag timeout: 50
+  @tag timeout: 100
   test "find an inexistent element inside a invalid HTML" do
     {:ok, doc} = Floki.parse_fragment("foobar<a")
 
