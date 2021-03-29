@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased][unreleased]
 
+## [0.30.1] - 2021-03-29
+
+### Fixed
+
+- Fix typespecs of `Floki.traverse_and_update/2` to make clear that it does not accept text nodes directly.
+
 ## [0.30.0] - 2021-02-06
 
 ### Added
@@ -569,7 +575,8 @@ of the parent element inside HTML.
 
 - Elixir version requirement from "~> 1.0.0" to ">= 1.0.0".
 
-[unreleased]: https://github.com/philss/floki/compare/v0.30.0...HEAD
+[unreleased]: https://github.com/philss/floki/compare/v0.30.1...HEAD
+[0.30.1]: https://github.com/philss/floki/compare/v0.30.0...v0.30.1
 [0.30.0]: https://github.com/philss/floki/compare/v0.29.0...v0.30.0
 [0.29.0]: https://github.com/philss/floki/compare/v0.28.0...v0.29.0
 [0.28.0]: https://github.com/philss/floki/compare/v0.27.0...v0.28.0
