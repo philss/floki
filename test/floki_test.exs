@@ -148,28 +148,33 @@ defmodule FlokiTest do
     end
 
     test "parse a HTML with tags that are plain text" do
-      validate_html = fn (tag) ->
-        {:ok, parsed} = tag
-        |> html_with_tag_that_should_not_have_children()
-        |> Floki.parse_document()
+      validate_html = fn tag ->
+        {:ok, parsed} =
+          tag
+          |> html_with_tag_that_should_not_have_children()
+          |> Floki.parse_document()
 
         current_parser = Application.get_env(:floki, :html_parser)
 
         case current_parser do
-          Mochiweb -> assert parsed ==
-              [
-                {"html", [],
-                [
-                  {"head", [], []},
-                  {"body", [],
-                    [
-                      {tag, [],
-                      ["this is not a <tag>\nthis is also </not> a tag\n and this is also not <a></a> tag"]}
-                    ]}
-                ]}
-              ]
+          Mochiweb ->
+            assert parsed ==
+                     [
+                       {"html", [],
+                        [
+                          {"head", [], []},
+                          {"body", [],
+                           [
+                             {tag, [],
+                              [
+                                "this is not a <tag>\nthis is also </not> a tag\n and this is also not <a></a> tag"
+                              ]}
+                           ]}
+                        ]}
+                     ]
 
-          _ -> {}
+          _ ->
+            {}
         end
       end
 
@@ -1511,6 +1516,10 @@ defmodule FlokiTest do
   end
 
   defp html_with_tag_that_should_not_have_children(tag) do
-    html_body("<#{tag}>this is not a <tag>\nthis is also </not> a tag\n and this is also not <a></a> tag</#{tag}>")
+    html_body(
+      "<#{tag}>this is not a <tag>\nthis is also </not> a tag\n and this is also not <a></a> tag</#{
+        tag
+      }>"
+    )
   end
 end
