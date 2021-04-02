@@ -308,6 +308,9 @@ tokens(B, S=#decoder{offset=O}, Acc) ->
                 script ->
                     {Tag2, S2} = tokenize_script(B, S1),
                     tokens(B, S2, [Tag2, Tag | Acc]);
+                style ->
+                    {Tag2, S2} = tokenize_style(B, S1),
+                    tokens(B, S2, [Tag2, Tag | Acc]);
                 textarea ->
                     {Tag2, S2} = tokenize_textarea(B, S1),
                     tokens(B, S2, [Tag2, Tag | Acc]);
@@ -320,6 +323,8 @@ parse_flag({start_tag, B, _, false}) ->
     case string:to_lower(binary_to_list(B)) of
         "script" ->
             script;
+        "style" ->
+            style;
         "textarea" ->
             textarea;
         _ ->
@@ -798,6 +803,28 @@ tokenize_script(Bin, S=#decoder{offset=O}, Start) ->
             {{data, Raw, false}, S};
         <<_:O/binary, C, _/binary>> ->
             tokenize_script(Bin, ?INC_CHAR(S, C), Start);
+        <<_:Start/binary, Raw/binary>> ->
+            {{data, Raw, false}, S}
+    end.
+
+tokenize_style(Bin, S=#decoder{offset=O}) ->
+    tokenize_style(Bin, S, O).
+
+tokenize_style(Bin, S=#decoder{offset=O}, Start) ->
+    case Bin of
+        %% Just a look-ahead, we want the end_tag separately
+        <<_:O/binary, $<, $/, SS, TT, YY, LL, EE, ZZ, _/binary>>
+        when (SS =:= $s orelse SS =:= $S) andalso
+             (TT=:= $t orelse TT =:= $T) andalso
+             (YY=:= $y orelse YY =:= $Y) andalso
+             (LL=:= $l orelse LL =:= $L) andalso
+             (EE=:= $e orelse EE =:= $E) andalso
+             ?PROBABLE_CLOSE(ZZ) ->
+            Len = O - Start,
+            <<_:Start/binary, Raw:Len/binary, _/binary>> = Bin,
+            {{data, Raw, false}, S};
+        <<_:O/binary, C, _/binary>> ->
+            tokenize_style(Bin, ?INC_CHAR(S, C), Start);
         <<_:Start/binary, Raw/binary>> ->
             {{data, Raw, false}, S}
     end.
