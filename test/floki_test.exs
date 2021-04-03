@@ -7,7 +7,9 @@ defmodule FlokiTest do
 
   @plain_text_tags [
     "script",
-    "style"
+    "style",
+    "title",
+    "textarea"
   ]
 
   @html """
