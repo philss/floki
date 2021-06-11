@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased][unreleased]
 
+## [0.31.0] - 2021-06-11
+
+### Changed
+
+- Treat `style` and `title` tags as plaintext in Mochiweb - thanks [@SweetMNM](https://github.com/SweetMNM)
+
 ## [0.30.1] - 2021-03-29
 
 ### Fixed
@@ -575,7 +581,8 @@ of the parent element inside HTML.
 
 - Elixir version requirement from "~> 1.0.0" to ">= 1.0.0".
 
-[unreleased]: https://github.com/philss/floki/compare/v0.30.1...HEAD
+[unreleased]: https://github.com/philss/floki/compare/v0.31.0...HEAD
+[0.31.0]: https://github.com/philss/floki/compare/v0.30.1...v0.31.0
 [0.30.1]: https://github.com/philss/floki/compare/v0.30.0...v0.30.1
 [0.30.0]: https://github.com/philss/floki/compare/v0.29.0...v0.30.0
 [0.29.0]: https://github.com/philss/floki/compare/v0.28.0...v0.29.0
