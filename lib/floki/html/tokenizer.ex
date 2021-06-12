@@ -1,11 +1,26 @@
 defmodule Floki.HTML.Tokenizer do
   @moduledoc false
 
-  # It parses a HTML file according to the specs of WHATWG/W3C:
+  # HTML tokenizer built according to the specs of WHATWG/W3C.
   # https://html.spec.whatwg.org/multipage/#toc-syntax
   #
   # In order to find the docs of a given state, add it as an anchor to the link above.
   # Example: https://html.spec.whatwg.org/multipage/parsing.html#data-state
+  #
+  # The tests for this module can be found in test/floki/html/generated/tokenizer.
+  # They were generated based on test files from https://github.com/html5lib/html5lib-tests
+  # In order to update those test files you first need to run the task:
+  #
+  #     mix generate_tokenizer_tests filename.tests
+  #
+  # Where "filename.tests" is a file present in "test/html5lib-tests/tokenizer" directory.
+  #
+  # This tokenizer depends on an entities list that is generated with another mix task.
+  # That file shouldn't change much, but if needed, it can be updated with:
+  #
+  #     mix generate_entities
+  #
+  # This tokenizer does not work with streams yet.
 
   defmodule Doctype do
     defstruct name: nil,
@@ -55,15 +70,6 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defmodule Comment do
-    defstruct data: ""
-
-    @type t :: %__MODULE__{
-            data: iodata()
-          }
-  end
-
-  # TODO: remove me here and at TreeConstruction test
-  defmodule Char do
     defstruct data: ""
 
     @type t :: %__MODULE__{
@@ -121,11 +127,11 @@ defmodule Floki.HTML.Tokenizer do
   @ascii_digits ?0..?9
   @space_chars [?\t, ?\n, ?\f, ?\s]
 
-  defguard is_lower_letter(c) when c in @lower_ASCII_letters
-  defguard is_upper_letter(c) when c in @upper_ASCII_letters
-  defguard is_digit(c) when c in @ascii_digits
-  defguard is_letter(c) when c in @upper_ASCII_letters or c in @lower_ASCII_letters
-  defguard is_space(c) when c in @space_chars
+  defguardp is_lower_letter(c) when c in @lower_ASCII_letters
+  defguardp is_upper_letter(c) when c in @upper_ASCII_letters
+  defguardp is_digit(c) when c in @ascii_digits
+  defguardp is_letter(c) when c in @upper_ASCII_letters or c in @lower_ASCII_letters
+  defguardp is_space(c) when c in @space_chars
 
   @less_than_sign ?<
   @greater_than_sign ?>
@@ -143,7 +149,7 @@ defmodule Floki.HTML.Tokenizer do
     |> data(%State{emit: fn token -> token end})
   end
 
-  # It assumes that the parser stops in the end of file.
+  # It assumes that the parser stops at the end of file.
   # If we need to work with streams, this can't reverse here.
   defp eof(last_state, s) do
     %{
@@ -317,7 +323,7 @@ defmodule Floki.HTML.Tokenizer do
   # § tokenizer-tag-name-state
 
   defp tag_name(<<c, html::binary>>, s)
-       when c in @space_chars do
+       when is_space(c) do
     before_attribute_name(html, s)
   end
 
@@ -397,7 +403,7 @@ defmodule Floki.HTML.Tokenizer do
   # § tokenizer-rcdata-end-tag-name-state
 
   defp rcdata_end_tag_name(html = <<c, rest::binary>>, s)
-       when c in @space_chars do
+       when is_space(c) do
     if appropriate_tag?(s) do
       before_attribute_name(rest, s)
     else
@@ -465,7 +471,7 @@ defmodule Floki.HTML.Tokenizer do
   # § tokenizer-rawtext-end-tag-name-state
 
   defp rawtext_end_tag_name(html = <<c::utf8, rest::binary>>, s)
-       when c in @space_chars do
+       when is_space(c) do
     if appropriate_tag?(s) do
       before_attribute_name(rest, s)
     else
@@ -531,7 +537,7 @@ defmodule Floki.HTML.Tokenizer do
   # § tokenizer-script-data-end-tag-name-state
 
   defp script_data_end_tag_name(html = <<c, rest::binary>>, s)
-       when c in @space_chars do
+       when is_space(c) do
     if appropriate_tag?(s) do
       before_attribute_name(rest, s)
     else
@@ -598,7 +604,7 @@ defmodule Floki.HTML.Tokenizer do
 
   @spec script_data_escaped_end_tag_name(binary(), State.t()) :: State.t()
   def script_data_escaped_end_tag_name(html = <<c, rest::binary>>, s)
-      when c in @space_chars do
+      when is_space(c) do
     if appropriate_tag?(s) do
       before_attribute_name(rest, s)
     else
@@ -1130,7 +1136,7 @@ defmodule Floki.HTML.Tokenizer do
   # § tokenizer-before-attribute-name-state
 
   defp before_attribute_name(<<c, html::binary>>, s)
-       when c in @space_chars do
+       when is_space(c) do
     before_attribute_name(html, s)
   end
 
@@ -1234,7 +1240,7 @@ defmodule Floki.HTML.Tokenizer do
   # § tokenizer-after-attribute-name-state
 
   defp after_attribute_name(<<c, html::binary>>, s)
-       when c in @space_chars do
+       when is_space(c) do
     after_attribute_name(html, s)
   end
 
@@ -1271,7 +1277,7 @@ defmodule Floki.HTML.Tokenizer do
   # § tokenizer-before-attribute-value-state
 
   defp before_attribute_value(<<c, html::binary>>, s)
-       when c in @space_chars do
+       when is_space(c) do
     before_attribute_value(html, s)
   end
 
@@ -1373,7 +1379,7 @@ defmodule Floki.HTML.Tokenizer do
 
   # § tokenizer-attribute-value-unquoted-state
 
-  defp attribute_value_unquoted(<<c, html::binary>>, s) when c in @space_chars do
+  defp attribute_value_unquoted(<<c, html::binary>>, s) when is_space(c) do
     before_attribute_name(html, s)
   end
 
@@ -1428,7 +1434,7 @@ defmodule Floki.HTML.Tokenizer do
   # § tokenizer-after-attribute-value-quoted-state
 
   defp after_attribute_value_quoted(<<c, html::binary>>, s)
-       when c in @space_chars do
+       when is_space(c) do
     before_attribute_name(html, s)
   end
 
@@ -1760,7 +1766,7 @@ defmodule Floki.HTML.Tokenizer do
   # § tokenizer-doctype-state
 
   defp doctype(<<c, html::binary>>, s)
-       when c in @space_chars do
+       when is_space(c) do
     before_doctype_name(html, s)
   end
 
@@ -1779,7 +1785,7 @@ defmodule Floki.HTML.Tokenizer do
   # § tokenizer-before-doctype-name-state
 
   defp before_doctype_name(<<c, html::binary>>, s)
-       when c in @space_chars do
+       when is_space(c) do
     before_doctype_name(html, s)
   end
 
@@ -1836,7 +1842,7 @@ defmodule Floki.HTML.Tokenizer do
   # § tokenizer-doctype-name-state
 
   defp doctype_name(<<c, html::binary>>, s)
-       when c in @space_chars do
+       when is_space(c) do
     after_doctype_name(html, s)
   end
 
@@ -1887,7 +1893,7 @@ defmodule Floki.HTML.Tokenizer do
   # § tokenizer-after-doctype-name-state
 
   defp after_doctype_name(<<c, html::binary>>, s)
-       when c in @space_chars do
+       when is_space(c) do
     after_doctype_name(html, s)
   end
 
@@ -1943,7 +1949,7 @@ defmodule Floki.HTML.Tokenizer do
   # § tokenizer-after-doctype-public-keyword-state
 
   defp after_doctype_public_keyword(<<c, html::binary>>, s)
-       when c in @space_chars do
+       when is_space(c) do
     before_doctype_public_identifier(html, s)
   end
 
@@ -2002,7 +2008,7 @@ defmodule Floki.HTML.Tokenizer do
   # § tokenizer-before-doctype-public-identifier-state
 
   defp before_doctype_public_identifier(<<c, html::binary>>, s)
-       when c in @space_chars do
+       when is_space(c) do
     before_doctype_public_identifier(html, s)
   end
 
@@ -2149,8 +2155,7 @@ defmodule Floki.HTML.Tokenizer do
 
   # § tokenizer-after-doctype-public-identifier-state
 
-  defp after_doctype_public_identifier(<<c, html::binary>>, s)
-       when c in @space_chars do
+  defp after_doctype_public_identifier(<<c, html::binary>>, s) when is_space(c) do
     between_doctype_public_and_system_identifiers(html, s)
   end
 
@@ -2201,8 +2206,7 @@ defmodule Floki.HTML.Tokenizer do
 
   # § tokenizer-between-doctype-public-and-system-identifiers-state
 
-  defp between_doctype_public_and_system_identifiers(<<c, html::binary>>, s)
-       when c in @space_chars do
+  defp between_doctype_public_and_system_identifiers(<<c, html::binary>>, s) when is_space(c) do
     between_doctype_public_and_system_identifiers(html, s)
   end
 
@@ -2245,8 +2249,7 @@ defmodule Floki.HTML.Tokenizer do
 
   # § tokenizer-after-doctype-system-keyword-state
 
-  defp after_doctype_system_keyword(<<c, html::binary>>, s)
-       when c in @space_chars do
+  defp after_doctype_system_keyword(<<c, html::binary>>, s) when is_space(c) do
     before_doctype_system_identifier(html, s)
   end
 
@@ -2304,8 +2307,7 @@ defmodule Floki.HTML.Tokenizer do
 
   # § tokenizer-before-doctype-system-identifier-state
 
-  defp before_doctype_system_identifier(<<c, html::binary>>, s)
-       when c in @space_chars do
+  defp before_doctype_system_identifier(<<c, html::binary>>, s) when is_space(c) do
     before_doctype_system_identifier(html, s)
   end
 
@@ -2452,8 +2454,7 @@ defmodule Floki.HTML.Tokenizer do
 
   # § tokenizer-after-doctype-system-identifier-state
 
-  defp after_doctype_system_identifier(<<c, html::binary>>, s)
-       when c in @space_chars do
+  defp after_doctype_system_identifier(<<c, html::binary>>, s) when is_space(c) do
     after_doctype_system_identifier(html, s)
   end
 
@@ -2665,7 +2666,8 @@ defmodule Floki.HTML.Tokenizer do
     end
   end
 
-  ## Helper functions that modifies the string
+  ## Helper functions that modifies the HTML string.
+  # OPTIMIZE: avoid concatenation of string.
   defp charref_html_after_buffer(html, %State{
          charref_state: %CharrefState{candidate: candidate},
          buffer: buffer
@@ -2716,8 +2718,7 @@ defmodule Floki.HTML.Tokenizer do
 
   # § tokenizer-decimal-character-reference-start-state
 
-  defp decimal_character_reference_start(html = <<c, _rest::binary>>, s)
-       when is_digit(c) do
+  defp decimal_character_reference_start(html = <<c, _rest::binary>>, s) when is_digit(c) do
     decimal_character_reference(html, s)
   end
 
@@ -2728,7 +2729,7 @@ defmodule Floki.HTML.Tokenizer do
 
   # § tokenizer-hexadecimal-character-reference-state
 
-  defp hexadecimal_character_reference(<<c, html::binary>>, s) when c in ?0..?9 do
+  defp hexadecimal_character_reference(<<c, html::binary>>, s) when is_digit(c) do
     hexadecimal_character_reference(html, %{s | charref_code: s.charref_code * 16 + c - 0x30})
   end
 
@@ -2751,7 +2752,7 @@ defmodule Floki.HTML.Tokenizer do
 
   # § tokenizer-decimal-character-reference-state
 
-  defp decimal_character_reference(<<c, html::binary>>, s) when c in ?0..?9 do
+  defp decimal_character_reference(<<c, html::binary>>, s) when is_digit(c) do
     decimal_character_reference(html, %{s | charref_code: s.charref_code * 10 + c - 0x30})
   end
 
