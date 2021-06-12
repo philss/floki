@@ -1,0 +1,3 @@
+[submodule "test/html5lib-tests"]
+	path = test/html5lib-tests
+	url = https://github.com/html5lib/html5lib-tests.git

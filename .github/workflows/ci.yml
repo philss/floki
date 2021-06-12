@@ -25,6 +25,8 @@ jobs:
             erlang: "23.0"
     steps:
       - uses: actions/checkout@v1.0.0
+        with:
+          submodules: 'recursive'
       - name: Install dependencies
         run: |-
           apt-get update
@@ -47,7 +49,7 @@ jobs:
 
       - name: Run tests
         run: |-
-          mix test.$PARSER
+          MIX_ENV=test mix test.$PARSER
 
       - name: Run inch.report
         run: |-

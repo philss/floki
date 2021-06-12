@@ -19,7 +19,8 @@ defmodule Floki.Mixfile do
       docs: docs(),
       dialyzer: [
         plt_file: {:no_warn, "priv/plts/dialyzer.plt"}
-      ]
+      ],
+      elixirc_paths: elixirc_paths(Mix.env())
     ]
   end
 
@@ -56,6 +57,7 @@ defmodule Floki.Mixfile do
 
     [
       {:html_entities, "~> 0.5.0"},
+      {:jason, "~> 1.1", only: [:dev, :test, :docs]},
       {:earmark, "~> 1.2", only: :dev},
       {:ex_doc, "~> 0.24.1", only: :dev, runtime: false},
       {:benchee, "~> 1.0.1", only: :dev},
@@ -104,7 +106,9 @@ defmodule Floki.Mixfile do
       maintainers: ["Philip Sampaio Silva"],
       licenses: ["MIT"],
       files: [
-        "lib",
+        # We don't want to ship mix tasks.
+        "lib/floki",
+        "lib/floki.ex",
         "src/*.xrl",
         "src/floki_mochi_html.erl",
         "src/floki.gleam",
@@ -122,4 +126,8 @@ defmodule Floki.Mixfile do
       }
     }
   end
+
+  # Specifies which paths to compile per environment.
+  defp elixirc_paths(env) when env in [:dev, :test], do: ["test/support", "lib"]
+  defp elixirc_paths(_), do: ["lib"]
 end
