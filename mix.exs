@@ -106,6 +106,7 @@ defmodule Floki.Mixfile do
       maintainers: ["Philip Sampaio Silva"],
       licenses: ["MIT"],
       files: [
+        # We don't want to ship mix tasks.
         "lib/floki",
         "lib/floki.ex",
         "src/*.xrl",
