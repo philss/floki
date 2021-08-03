@@ -50,8 +50,3 @@ jobs:
       - name: Run tests
         run: |-
           MIX_ENV=test mix test.$PARSER
-
-      - name: Run inch.report
-        run: |-
-          mix deps.get --only docs
-          MIX_ENV=docs mix inch.report
