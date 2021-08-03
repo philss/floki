@@ -62,8 +62,7 @@ defmodule Floki.Mixfile do
       {:ex_doc, "~> 0.25.0", only: :dev, runtime: false},
       {:benchee, "~> 1.0.1", only: :dev},
       {:credo, ">= 0.0.0", only: [:dev, :test]},
-      {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
-      {:inch_ex, "~> 2.1.0-rc.1", only: :docs}
+      {:dialyxir, "~> 1.0", only: [:dev], runtime: false}
     ] ++ parsers
   end
 

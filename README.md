@@ -1,7 +1,6 @@
 [![Actions Status](https://github.com/philss/floki/workflows/CI/badge.svg?branch=master)](https://github.com/philss/floki/actions)
 [![Floki version](https://img.shields.io/hexpm/v/floki.svg)](https://hex.pm/packages/floki)
 [![Hex Docs](https://img.shields.io/badge/hex-docs-lightgreen.svg)](https://hexdocs.pm/floki/)
-[![Inline docs](https://inch-ci.org/github/philss/floki.svg?branch=master)](https://inch-ci.org/github/philss/floki)
 [![Hex.pm](https://img.shields.io/hexpm/dt/floki.svg)](https://hex.pm/packages/floki)
 [![License](https://img.shields.io/hexpm/l/floki.svg)](https://github.com/philss/floki/blob/master/LICENSE)
 [![Last Updated](https://img.shields.io/github/last-commit/philss/floki.svg)](https://github.com/philss/floki/commits/master)
