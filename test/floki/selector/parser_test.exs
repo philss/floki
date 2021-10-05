@@ -43,6 +43,14 @@ defmodule Floki.Selector.ParserTest do
     assert Parser.parse(tokens) == [%Selector{type: "img", id: "logo"}]
   end
 
+  test "id containing periods" do
+    tokens = tokenize("#my\\.example\\.com-port-filters.big.blue")
+
+    assert Parser.parse(tokens) == [
+             %Selector{id: "my.example.com-port-filters", classes: ["blue", "big"]}
+           ]
+  end
+
   test "class with attributes" do
     tokens =
       tokenize("""

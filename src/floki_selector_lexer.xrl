@@ -1,6 +1,6 @@
 Definitions.
 
-IDENTIFIER = [-A-Za-z0-9_]+
+IDENTIFIER = [-A-Za-z0-9_]+(\\\.[-A-Za-z0-9_]+)*
 QUOTED = (\"[^"]*\"|\'[^']*\')
 PARENTESIS = \([^)]*\)
 INT = [0-9]+
