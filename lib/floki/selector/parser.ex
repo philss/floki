@@ -54,7 +54,7 @@ defmodule Floki.Selector.Parser do
   end
 
   defp do_parse([{:hash, _, id} | t], selector) do
-    do_parse(t, %{selector | id: to_string(id)})
+    do_parse(t, %{selector | id: to_string(id) |> String.replace("\\.", ".")})
   end
 
   defp do_parse([{:class, _, class} | t], selector) do
