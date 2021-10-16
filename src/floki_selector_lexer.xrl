@@ -9,12 +9,14 @@ ODD = (o|O)(d|D)(d|D)
 EVEN = (e|E)(v|V)(e|E)(n|N)
 PSEUDO_PATT = (\+|-)?({INT})?(n|N)((\+|-){INT})?
 SYMBOL = [\[\]*]
+ATTRIBUTE_IDENTIFIER = \s[is]\]
 W = [\s\t\r\n\f]
 
 Rules.
 
 {IDENTIFIER}                         : {token, {identifier, TokenLine, TokenChars}}.
 {QUOTED}                             : {token, {quoted, TokenLine, remove_wrapper(TokenChars)}}.
+{ATTRIBUTE_IDENTIFIER}               : {token, {attribute_identifier, TokenLine, TokenChars}}.
 {SYMBOL}                             : {token, {TokenChars, TokenLine}}.
 #{IDENTIFIER}                        : {token, {hash, TokenLine, tail(TokenChars)}}.
 \.{IDENTIFIER}                       : {token, {class, TokenLine, tail(TokenChars)}}.

@@ -592,6 +592,70 @@ defmodule FlokiTest do
            ]
   end
 
+  test "find elements only by given case-insensitive attribute value" do
+    attribute_selector = "meta[name='robots' i]"
+    html = document!(html_body(~s(<meta name="ROBOTS" content="INDEX, FOLLOW, NOIMAGEINDEX"/>)))
+
+    assert Floki.find(html, attribute_selector) == [
+             {
+               "meta",
+               [
+                 {"name", "ROBOTS"},
+                 {"content", "INDEX, FOLLOW, NOIMAGEINDEX"}
+               ],
+               []
+             }
+           ]
+  end
+
+  test "find elements by the attribute's |= selector with case-insensitive flag" do
+    attribute_selector = "a[href|='HTTP://ELIXIR' i]"
+
+    assert Floki.find(document!(@html), attribute_selector) == [
+             {
+               "a",
+               [{"href", "http://elixir-lang.org"}, {"class", "js-elixir js-cool"}],
+               ["Elixir lang"]
+             }
+           ]
+  end
+
+  test "find elements by the attribute's ^= selector with case-insensitive flag" do
+    attribute_selector = "a[href^='HTTP://G' i]"
+
+    assert Floki.find(document!(@html), attribute_selector) == [
+             {
+               "a",
+               [{"href", "http://google.com"}, {"class", "js-google js-cool"}],
+               ["Google"]
+             }
+           ]
+  end
+
+  test "find elements by the attribute's $= selector with case-insensitive flag" do
+    attribute_selector = "a[href$='.ORG' i]"
+
+    assert Floki.find(document!(@html), attribute_selector) == [
+             {
+               "a",
+               [{"href", "http://elixir-lang.org"}, {"class", "js-elixir js-cool"}],
+               ["Elixir lang"]
+             }
+           ]
+  end
+
+  test "find elements by the attribute's *= selector with case-insensitive flag" do
+    attribute_selector = "a[class*='GOOGLE' i]"
+
+    assert Floki.find(document!(@html), attribute_selector) == [
+             {
+               "a",
+               [{"href", "http://google.com"}, {"class", "js-google js-cool"}],
+               ["Google"]
+             }
+           ]
+  end
+
   # Floki.find/2 - Selector with descendant combinator
 
   test "get elements descending the parent" do
