@@ -144,6 +144,10 @@ defmodule Floki.Selector.PseudoClass do
     false
   end
 
+  def match_root?(html_node, tree) do
+    html_node.node_id in tree.root_nodes_ids
+  end
+
   defp node_position(ids, %HTMLNode{node_id: node_id}) do
     {_node_id, position} = Enum.find(ids, fn {id, _} -> id == node_id end)
 
