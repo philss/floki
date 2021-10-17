@@ -54,13 +54,19 @@ defmodule Floki.Selector.ParserTest do
   test "class with attributes" do
     tokens =
       tokenize("""
-      .link[href='settings.html'][data-env|=test][section~=admin][page^=pass][page$=auth][title*=chan]
+      .link[href='settings.html'][data-env|=test][section~=admin][page^=pass][page$=auth][title*=chan][name='test' i]
       """)
 
     assert Parser.parse(tokens) == [
              %Selector{
                classes: ["link"],
                attributes: [
+                 %AttributeSelector{
+                   attribute: "name",
+                   flag: "i",
+                   match_type: :equal,
+                   value: "test"
+                 },
                  %AttributeSelector{
                    match_type: :substring_match,
                    attribute: "title",

@@ -168,6 +168,12 @@ defmodule Floki.Selector.Parser do
     consume_attribute(:consuming, t, new_selector)
   end
 
+  defp consume_attribute(:consuming, [{:attribute_identifier, _, value} | t], attr_selector) do
+    flag = String.at(to_string(value), -2)
+    new_selector = %{attr_selector | flag: flag}
+    consume_attribute(:done, t, new_selector)
+  end
+
   defp consume_attribute(:consuming, [{']', _} | t], attr_selector) do
     consume_attribute(:done, t, attr_selector)
   end
