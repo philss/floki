@@ -3,7 +3,7 @@ defmodule Floki.Mixfile do
 
   @description "Floki is a simple HTML parser that enables search for nodes using CSS selectors."
   @source_url "https://github.com/philss/floki"
-  @version "0.31.0"
+  @version "0.32.0"
 
   def project do
     [
@@ -127,6 +127,6 @@ defmodule Floki.Mixfile do
   end
 
   # Specifies which paths to compile per environment.
-  defp elixirc_paths(env) when env in [:test], do: ["test/support", "lib"]
+  defp elixirc_paths(:test), do: ["test/support", "lib"]
   defp elixirc_paths(_), do: ["lib"]
 end

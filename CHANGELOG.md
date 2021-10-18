@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased][unreleased]
 
+## [0.32.0] - 2021-10-18
+
+### Added
+
+- Add an HTML tokenizer written in Elixir - this still experimental and it's not stable API yet.
+- Add support for HTML IDs containing periods in the selectors - thanks [@Hugo-Hache](https://github.com/Hugo-Hache)
+- Add support for case-insensitive CSS attribute selectors - thanks [@fcapovilla](https://github.com/fcapovilla)
+- Add the `:root` pseudo-class selector - thanks [@fcapovilla](https://github.com/fcapovilla)
+
 ## [0.31.0] - 2021-06-11
 
 ### Changed
@@ -581,7 +590,8 @@ of the parent element inside HTML.
 
 - Elixir version requirement from "~> 1.0.0" to ">= 1.0.0".
 
-[unreleased]: https://github.com/philss/floki/compare/v0.31.0...HEAD
+[unreleased]: https://github.com/philss/floki/compare/v0.32.0...HEAD
+[0.32.0]: https://github.com/philss/floki/compare/v0.31.0...v0.32.0
 [0.31.0]: https://github.com/philss/floki/compare/v0.30.1...v0.31.0
 [0.30.1]: https://github.com/philss/floki/compare/v0.30.0...v0.30.1
 [0.30.0]: https://github.com/philss/floki/compare/v0.29.0...v0.30.0
