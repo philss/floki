@@ -23,6 +23,8 @@ defmodule Floki.HTML.Tokenizer do
   # This tokenizer does not work with streams yet.
 
   defmodule Doctype do
+    @moduledoc false
+
     defstruct name: nil,
               public_id: nil,
               system_id: nil,
@@ -37,6 +39,8 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defmodule Attribute do
+    @moduledoc false
+
     defstruct name: "", value: ""
 
     @type t :: %__MODULE__{
@@ -46,6 +50,8 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defmodule StartTag do
+    @moduledoc false
+
     defstruct name: "",
               self_close: nil,
               attributes: []
@@ -58,6 +64,8 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defmodule EndTag do
+    @moduledoc false
+
     defstruct name: "",
               self_close: nil,
               attributes: []
@@ -70,6 +78,8 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defmodule Comment do
+    @moduledoc false
+
     defstruct data: ""
 
     @type t :: %__MODULE__{
@@ -78,6 +88,8 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defmodule CharrefState do
+    @moduledoc false
+
     defstruct candidate: nil, done: false, length: 0
 
     @type t :: %__MODULE__{
@@ -89,6 +101,8 @@ defmodule Floki.HTML.Tokenizer do
 
   # It represents the state of tokenization.
   defmodule State do
+    @moduledoc false
+
     defstruct return_state: nil,
               eof_last_state: nil,
               adjusted_current_node: nil,

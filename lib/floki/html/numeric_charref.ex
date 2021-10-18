@@ -1,4 +1,6 @@
 defmodule Floki.HTML.NumericCharref do
+  @moduledoc false
+
   # REPLACEMENT CHARACTER
   def to_unicode_number(0x00), do: {:ok, {:table, 0xFFFD}}
   # EURO SIGN (€)

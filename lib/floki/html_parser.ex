@@ -3,8 +3,8 @@ defmodule Floki.HTMLParser do
   A entry point to dynamic dispatch functions to
   the configured HTML parser.
 
-  The configuration can be done with the "html_parser"
-  option when calling the functions, or for the "floki" application:
+  The configuration can be done with the `:html_parser`
+  option when calling the functions, or for the `:floki` application:
 
       Floki.parse_document(document, html_parser: Floki.HTMLParser.FastHtml)
 
@@ -33,6 +33,6 @@ defmodule Floki.HTMLParser do
   end
 
   defp parser(opts) do
-    Keyword.get(opts, :html_parser) || Application.get_env(:floki, :html_parser, @default_parser)
+    opts[:html_parser] || Application.get_env(:floki, :html_parser, @default_parser)
   end
 end
