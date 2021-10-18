@@ -1184,6 +1184,15 @@ defmodule FlokiTest do
            ] = Floki.find(doc, ":disabled")
   end
 
+  test "root pseudo-class" do
+    doc = document!(html_body("<div><div>a</div><div>b</div></div>"))
+
+    assert [
+             {"div", [], ["a"]},
+             {"div", [], ["b"]}
+           ] = Floki.find(doc, ":root>body>div>div")
+  end
+
   # Floki.find/2 - XML and invalid HTML
 
   test "get elements inside a XML structure" do
