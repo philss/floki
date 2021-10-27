@@ -31,6 +31,17 @@ jobs:
       - name: Install dependencies
         run: mix deps.get
 
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+        if: matrix.parser == 'html5ever'
+
+      - name: Install CMake
+        uses: lukka/get-cmake@v3.21.2
+        if: matrix.parser == 'fast_html'
+
       - name: Check format
         run: mix format --check-formatted
 
