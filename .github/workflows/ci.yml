@@ -8,45 +8,43 @@ jobs:
     env:
       PARSER: ${{ matrix.parser }}
 
-    container:
-      image: hexpm/elixir:${{ matrix.elixir }}-erlang-${{ matrix.erlang }}-ubuntu-${{ matrix.ubuntu }}
-
-    name: Elixir ${{ matrix.elixir }} / Erlang ${{ matrix.erlang }} with ${{ matrix.parser }} and Ubuntu ${{matrix.ubuntu}}
+    name: Elixir ${{ matrix.elixir }} / OTP ${{ matrix.otp }} with ${{ matrix.parser }}
 
     strategy:
       fail-fast: false
       matrix:
         elixir: ["1.11.0", "1.8.2"]
-        erlang: ["21.3", "23.0"]
-        ubuntu: ["bionic-20200219"]
+        otp: ["23.0", "21.3"]
         parser: [fast_html, html5ever, mochiweb]
         exclude:
-          - elixir: "1.8.2"
-            erlang: "23.0"
-    steps:
-      - uses: actions/checkout@v1.0.0
-        with:
-          submodules: 'recursive'
-      - name: Install dependencies
-        run: |-
-          apt-get update
-          apt-get -y install git
-          if [ "$PARSER" = "fast_html" ]; then apt-get -y install build-essential cmake; fi
-          if [ "$PARSER" = "html5ever" ]; then apt-get -y install build-essential curl; fi
-          mix local.rebar --force
-          mix local.hex --force
-          mix deps.get
+          - elixir: 1.8.2
+            otp: 21.3
 
-      - name: Install minimal stable Rust toolchain
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: erlef/setup-beam@v1.9.0
+        with:
+          otp-version: ${{matrix.otp}}
+          elixir-version: ${{matrix.elixir}}
+
+      - name: Install dependencies
+        run: mix deps.get
+
+      - name: Install Rust toolchain
         uses: actions-rs/toolchain@v1
         with:
           profile: minimal
           toolchain: stable
         if: matrix.parser == 'html5ever'
 
+      - name: Install CMake
+        uses: lukka/get-cmake@v3.21.2
+        if: matrix.parser == 'fast_html'
+
       - name: Check format
         run: mix format --check-formatted
 
-      - name: Run tests
+      - name: Run test
         run: |-
           MIX_ENV=test mix test.$PARSER
