@@ -1585,9 +1585,7 @@ defmodule FlokiTest do
 
   defp html_with_tag_that_should_not_have_children(tag) do
     html_body(
-      "<#{tag}>this is not a <tag>\nthis is also </not> a tag\n and this is also not <a></a> tag</#{
-        tag
-      }>"
+      "<#{tag}>this is not a <tag>\nthis is also </not> a tag\n and this is also not <a></a> tag</#{tag}>"
     )
   end
 end

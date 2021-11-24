@@ -13,12 +13,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        elixir: ["1.11.0", "1.8.2"]
-        otp: ["23.0", "21.3"]
+        elixir: ["1.12.3", "1.8.2"]
+        otp: ["24.1", "22.3"]
         parser: [fast_html, html5ever, mochiweb]
         exclude:
-          - elixir: 1.8.2
-            otp: 21.3
+          - elixir: "1.8.2"
+            otp: "24.1"
 
     steps:
       - uses: actions/checkout@v2
@@ -44,6 +44,7 @@ jobs:
 
       - name: Check format
         run: mix format --check-formatted
+        if: matrix.elixir == '1.12.3'
 
       - name: Run test
         run: |-
