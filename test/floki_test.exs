@@ -851,7 +851,8 @@ defmodule FlokiTest do
            ]
   end
 
-  test "get root element by nth-child and first-child pseudo-classes" do
+  @tag except_parser: Html5ever
+  test "get root elements by nth-child and first-child pseudo-classes" do
     tree = Floki.parse_fragment!("<p>A</p><p>B</p>")
 
     assert Floki.find(tree, "p:nth-child(1)") == [{"p", [], ["A"]}]
@@ -931,6 +932,7 @@ defmodule FlokiTest do
            ]
   end
 
+  @tag except_parser: Html5ever
   test "get root elements by last-child pseudo-class" do
     tree = Floki.parse_fragment!("<p>A</p><p>B</p>")
 
@@ -1003,6 +1005,7 @@ defmodule FlokiTest do
            ]
   end
 
+  @tag except_parser: Html5ever
   test "get root elements by nth-of-type, first-of-type, and last-of-type pseudo-classes" do
     tree = Floki.parse_fragment!("<p>A</p><div>B</div><p>C</p><div>D</div>")
 
@@ -1073,6 +1076,7 @@ defmodule FlokiTest do
            ]
   end
 
+  @tag except_parser: Html5ever
   test "get root elements by nth-last-of-type pseudo-classes" do
     tree = Floki.parse_fragment!("<p>A</p><div>B</div><p>C</p><div>D</div>")
 
