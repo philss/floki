@@ -33,7 +33,6 @@ defmodule Floki.Selector.PseudoClass do
       tree
       |> pseudo_nodes(html_node)
       |> Enum.reverse()
-      |> Enum.with_index(1)
       |> node_position(html_node)
 
     match_position?(value, relative_position, "nth-child")
@@ -47,7 +46,6 @@ defmodule Floki.Selector.PseudoClass do
       |> pseudo_nodes(html_node)
       |> filter_nodes_by_type(tree.nodes, html_node.type)
       |> Enum.reverse()
-      |> Enum.with_index(1)
       |> node_position(html_node)
 
     match_position?(value, relative_position, "nth-of-type")
@@ -59,7 +57,6 @@ defmodule Floki.Selector.PseudoClass do
     relative_position =
       tree
       |> pseudo_nodes(html_node)
-      |> Enum.with_index(1)
       |> node_position(html_node)
 
     match_position?(value, relative_position, "nth-last-child")
@@ -70,7 +67,6 @@ defmodule Floki.Selector.PseudoClass do
       tree
       |> pseudo_nodes(html_node)
       |> filter_nodes_by_type(tree.nodes, html_node.type)
-      |> Enum.with_index(1)
       |> node_position(html_node)
 
     match_position?(value, relative_position, "nth-last-of-type")
@@ -147,9 +143,8 @@ defmodule Floki.Selector.PseudoClass do
   end
 
   defp node_position(ids, %HTMLNode{node_id: node_id}) do
-    {_node_id, position} = Enum.find(ids, fn {id, _} -> id == node_id end)
-
-    position
+    position = Enum.find_index(ids, fn id -> id == node_id end)
+    position + 1
   end
 
   defp pseudo_nodes(tree, %HTMLNode{parent_node_id: nil}) do
