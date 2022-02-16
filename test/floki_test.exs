@@ -851,6 +851,14 @@ defmodule FlokiTest do
            ]
   end
 
+  test "get root element by nth-child and first-child pseudo-classes" do
+    tree = Floki.parse_fragment!("<p>A</p><p>B</p>")
+
+    assert Floki.find(tree, "p:nth-child(1)") == [{"p", [], ["A"]}]
+    assert Floki.find(tree, "p:nth-child(2)") == [{"p", [], ["B"]}]
+    assert Floki.find(tree, "p:first-child") == [{"p", [], ["A"]}]
+  end
+
   test "get elements by nth-last-child pseudo-class" do
     html = """
     <html>
@@ -923,6 +931,12 @@ defmodule FlokiTest do
            ]
   end
 
+  test "get root elements by last-child pseudo-class" do
+    tree = Floki.parse_fragment!("<p>A</p><p>B</p>")
+
+    assert Floki.find(tree, "p:last-child") == [{"p", [], ["B"]}]
+  end
+
   test "get elements by nth-of-type, first-of-type, and last-of-type pseudo-classes" do
     html =
       document!("""
@@ -989,6 +1003,30 @@ defmodule FlokiTest do
            ]
   end
 
+  test "get root elements by nth-of-type, first-of-type, and last-of-type pseudo-classes" do
+    tree = Floki.parse_fragment!("<p>A</p><div>B</div><p>C</p><div>D</div>")
+
+    assert Floki.find(tree, ":nth-of-type(1)") == [
+             {"p", [], ["A"]},
+             {"div", [], ["B"]}
+           ]
+
+    assert Floki.find(tree, ":first-of-type") == [
+             {"p", [], ["A"]},
+             {"div", [], ["B"]}
+           ]
+
+    assert Floki.find(tree, ":nth-of-type(2)") == [
+             {"p", [], ["C"]},
+             {"div", [], ["D"]}
+           ]
+
+    assert Floki.find(tree, ":last-of-type") == [
+             {"p", [], ["C"]},
+             {"div", [], ["D"]}
+           ]
+  end
+
   test "get elements by nth-last-of-type pseudo-classes" do
     html =
       document!("""
@@ -1032,6 +1070,20 @@ defmodule FlokiTest do
 
     assert Floki.find(html, "a:nth-last-of-type(0n+1)") == [
              {"a", [{"href", "/e"}], ["5"]}
+           ]
+  end
+
+  test "get root elements by nth-last-of-type pseudo-classes" do
+    tree = Floki.parse_fragment!("<p>A</p><div>B</div><p>C</p><div>D</div>")
+
+    assert Floki.find(tree, ":nth-last-of-type(1)") == [
+             {"p", [], ["C"]},
+             {"div", [], ["D"]}
+           ]
+
+    assert Floki.find(tree, ":nth-last-of-type(2)") == [
+             {"p", [], ["A"]},
+             {"div", [], ["B"]}
            ]
   end
 

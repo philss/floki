@@ -28,7 +28,17 @@ defmodule Floki.Selector.PseudoClass do
     end
   end
 
-  def match_nth_child?(_tree, %HTMLNode{parent_node_id: nil}, _pseudo_class), do: false
+  def match_nth_child?(tree, %HTMLNode{parent_node_id: nil} = html_node, %__MODULE__{
+        value: value
+      }) do
+    relative_position =
+      tree
+      |> root_nodes()
+      |> Enum.with_index(1)
+      |> node_position(html_node)
+
+    match_position?(value, relative_position, "nth-child")
+  end
 
   def match_nth_child?(tree, html_node, %__MODULE__{value: value}) do
     relative_position =
@@ -40,7 +50,18 @@ defmodule Floki.Selector.PseudoClass do
     match_position?(value, relative_position, "nth-child")
   end
 
-  def match_nth_of_type?(_, %HTMLNode{parent_node_id: nil}, _), do: false
+  def match_nth_of_type?(tree, %HTMLNode{parent_node_id: nil} = html_node, %__MODULE__{
+        value: value
+      }) do
+    relative_position =
+      tree
+      |> root_nodes()
+      |> filter_nodes_by_type(tree.nodes, html_node.type)
+      |> Enum.with_index(1)
+      |> node_position(html_node)
+
+    match_position?(value, relative_position, "nth-of-type")
+  end
 
   def match_nth_of_type?(tree, html_node, %__MODULE__{value: value}) do
     relative_position =
@@ -53,7 +74,17 @@ defmodule Floki.Selector.PseudoClass do
     match_position?(value, relative_position, "nth-of-type")
   end
 
-  def match_nth_last_child?(_, %HTMLNode{parent_node_id: nil}, _), do: false
+  def match_nth_last_child?(tree, %HTMLNode{parent_node_id: nil} = html_node, %__MODULE__{
+        value: value
+      }) do
+    relative_position =
+      tree
+      |> reverse_root_nodes()
+      |> Enum.with_index(1)
+      |> node_position(html_node)
+
+    match_position?(value, relative_position, "nth-last-child")
+  end
 
   def match_nth_last_child?(tree, html_node, %__MODULE__{value: value}) do
     relative_position =
@@ -65,7 +96,18 @@ defmodule Floki.Selector.PseudoClass do
     match_position?(value, relative_position, "nth-last-child")
   end
 
-  def match_nth_last_of_type?(_, %HTMLNode{parent_node_id: nil}, _), do: false
+  def match_nth_last_of_type?(tree, %HTMLNode{parent_node_id: nil} = html_node, %__MODULE__{
+        value: value
+      }) do
+    relative_position =
+      tree
+      |> reverse_root_nodes()
+      |> filter_nodes_by_type(tree.nodes, html_node.type)
+      |> Enum.with_index(1)
+      |> node_position(html_node)
+
+    match_position?(value, relative_position, "nth-last-of-type")
+  end
 
   def match_nth_last_of_type?(tree, html_node, %__MODULE__{value: value}) do
     relative_position =
@@ -152,6 +194,17 @@ defmodule Floki.Selector.PseudoClass do
     {_node_id, position} = Enum.find(ids, fn {id, _} -> id == node_id end)
 
     position
+  end
+
+  defp root_nodes(tree) do
+    tree.root_nodes_ids
+    |> Enum.reverse()
+    |> filter_only_html_nodes(tree.nodes)
+  end
+
+  defp reverse_root_nodes(tree) do
+    tree.root_nodes_ids
+    |> filter_only_html_nodes(tree.nodes)
   end
 
   defp children_nodes(tree, parent_node_id) do
