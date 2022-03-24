@@ -121,7 +121,7 @@ After Rust is set up, you need to add `html5ever` NIF to your dependency list:
 defp deps do
   [
     {:floki, "~> 0.32.0"},
-    {:html5ever, "~> 0.9.0"}
+    {:html5ever, "~> 0.12.0"}
   ]
 end
 ```
@@ -136,7 +136,7 @@ Then you need to configure your app to use `html5ever`:
 config :floki, :html_parser, Floki.HTMLParser.Html5ever
 ```
 
-For more info, check the article [Rustler - Safe Erlang and Elixir NIFs in Rust](http://hansihe.com/2017/02/05/rustler-safe-erlang-elixir-nifs-in-rust.html).
+Notice that you can pass the HTML parser as an option in `parse_document/2` and `parse_fragment/2`.
 
 #### Using `fast_html` as the HTML parser
 

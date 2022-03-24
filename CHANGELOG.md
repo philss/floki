@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased][unreleased]
 
+### Changed
+
+- Drop support for Elixir 1.8 and 1.9.
+
 ## [0.32.1] - 2022-03-24
 
 ### Fixed
