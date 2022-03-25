@@ -4,6 +4,48 @@ defmodule Floki.Entities do
   @moduledoc false
 
   @doc """
+  Decode charrefs and numeric charrefs
+
+  This is useful if you want to decode any charref. The tokenizer will
+  use a more complex algorithm for detection, so this function is most
+  likely not needed
+  """
+  def decode(charref) when is_binary(charref) do
+    case charref do
+      <<"&#", numeric::binary()>> ->
+        case extract_byte_from_num_charref(numeric) do
+          {:ok, number} ->
+            {:ok, {_, unicode_number}} = Floki.HTML.NumericCharref.to_unicode_number(number)
+            {:ok, IO.iodata_to_binary([unicode_number])}
+
+          :error ->
+            {:error, :not_found}
+        end
+
+      <<"&", _::binary()>> = binary ->
+        case get(binary) do
+          [] ->
+            {:error, :not_found}
+
+          codepoints ->
+            {:ok, IO.chardata_to_string(codepoints)}
+        end
+    end
+  end
+
+  defp extract_byte_from_num_charref(<<maybe_x, rest::binary>>) when maybe_x in [?x, ?X] do
+    with {number, _} <- Integer.parse(rest, 16) do
+      {:ok, number}
+    end
+  end
+
+  defp extract_byte_from_num_charref(binary) when is_binary(binary) do
+    with {number, _} <- Integer.parse(binary, 10) do
+      {:ok, number}
+    end
+  end
+
+  @doc """
   Returns unicode codepoints for a given HTML entity.
   """
   @spec get(binary()) :: list(integer)
