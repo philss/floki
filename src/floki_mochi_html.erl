@@ -169,11 +169,6 @@ to_html([], Acc) ->
     lists:reverse(Acc);
 to_html([{'=', Content} | Rest], Acc) ->
     to_html(Rest, [Content | Acc]);
-to_html([{pi, Bin} | Rest], Acc) ->
-    Open = [<<"<?">>,
-            Bin,
-            <<"?>">>],
-    to_html(Rest, [Open | Acc]);
 to_html([{pi, Tag, Attrs} | Rest], Acc) ->
     Open = [<<"<?">>,
             Tag,
@@ -258,9 +253,6 @@ to_tokens([{Tag0, [T0={'=', _C0} | R1]} | Rest], Acc) ->
     to_tokens([{Tag0, R1} | Rest], [T0 | Acc]);
 to_tokens([{Tag0, [T0={comment, _C0} | R1]} | Rest], Acc) ->
     %% Allow {comment, iolist()}
-    to_tokens([{Tag0, R1} | Rest], [T0 | Acc]);
-to_tokens([{Tag0, [T0={pi, _S0} | R1]} | Rest], Acc) ->
-    %% Allow {pi, binary()}
     to_tokens([{Tag0, R1} | Rest], [T0 | Acc]);
 to_tokens([{Tag0, [T0={pi, _S0, _A0} | R1]} | Rest], Acc) ->
     %% Allow {pi, binary(), list()}
@@ -350,7 +342,7 @@ tokenize(B, S=#decoder{offset=O}) ->
             tokenize_cdata(B, ?ADV_COL(S, 9));
         <<_:O/binary, "<?php", _/binary>> ->
             {Body, S1} = raw_qgt(B, ?ADV_COL(S, 2)),
-            {{pi, Body}, S1};
+            {{pi, Body, []}, S1};
         <<_:O/binary, "<?", _/binary>> ->
             {Tag, S1} = tokenize_literal(B, ?ADV_COL(S, 2)),
             {Attrs, S2} = tokenize_attributes(B, S1),
@@ -395,8 +387,6 @@ tree([{start_tag, Tag, Attrs, true} | Rest], S) ->
     tree(Rest, append_stack_child(norm({Tag, Attrs}), S));
 tree([{start_tag, Tag, Attrs, false} | Rest], S) ->
     tree(Rest, stack(norm({Tag, Attrs}), S));
-tree([T={pi, _Raw} | Rest], S) ->
-    tree(Rest, append_stack_child(T, S));
 tree([T={pi, _Tag, _Attrs} | Rest], S) ->
     tree(Rest, append_stack_child(T, S));
 tree([T={comment, _Comment} | Rest], S) ->
