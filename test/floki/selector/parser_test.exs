@@ -72,7 +72,7 @@ defmodule Floki.Selector.ParserTest do
                    attribute: "title",
                    value: "chan"
                  },
-                 %AttributeSelector{match_type: :sufix_match, attribute: "page", value: "auth"},
+                 %AttributeSelector{match_type: :suffix_match, attribute: "page", value: "auth"},
                  %AttributeSelector{match_type: :prefix_match, attribute: "page", value: "pass"},
                  %AttributeSelector{match_type: :includes, attribute: "section", value: "admin"},
                  %AttributeSelector{

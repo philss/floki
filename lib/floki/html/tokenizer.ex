@@ -746,20 +746,21 @@ defmodule Floki.HTML.Tokenizer do
 
   # § tokenizer-script-data-escape-start-state: re-entrant
 
-  @spec script_data_escape_start(binary(), State.t()) :: State.t()
-  def script_data_escape_start(<<?-, html::binary>>, s) do
-    script_data_escape_start_dash(
-      html,
-      %{
-        s
-        | tokens: append_char_token(s, @hyphen_minus)
-      }
-    )
-  end
+  ## Unused
+  # @spec script_data_escape_start(binary(), State.t()) :: State.t()
+  # def script_data_escape_start(<<?-, html::binary>>, s) do
+  #   script_data_escape_start_dash(
+  #     html,
+  #     %{
+  #       s
+  #       | tokens: append_char_token(s, @hyphen_minus)
+  #     }
+  #   )
+  # end
 
-  def script_data_escape_start(html, s) do
-    script_data(html, s)
-  end
+  # def script_data_escape_start(html, s) do
+  #   script_data(html, s)
+  # end
 
   # § tokenizer-script-data-escape-start-dash-state
 

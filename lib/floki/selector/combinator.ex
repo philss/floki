@@ -16,6 +16,12 @@ defmodule Floki.Selector.Combinator do
 
   defstruct match_type: nil, selector: nil
 
+  @type match_type :: nil
+  | :descendant
+  | :child
+  | :adjacent_sibling
+  | :general_sibling
+
   @type t :: %__MODULE__{
           match_type: :atom,
           selector: Floki.Selector.t()

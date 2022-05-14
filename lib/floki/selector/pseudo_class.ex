@@ -149,8 +149,8 @@ defmodule Floki.Selector.PseudoClass do
 
   defp filter_only_html_nodes(ids, nodes) do
     Enum.filter(ids, fn id ->
-      case Map.get(nodes, id) do
-        %HTMLNode{} -> true
+      case nodes do
+        %{^id => %HTMLNode{}} -> true
         _ -> false
       end
     end)
@@ -158,8 +158,8 @@ defmodule Floki.Selector.PseudoClass do
 
   defp filter_nodes_by_type(ids, nodes, type) do
     Enum.filter(ids, fn id ->
-      case Map.get(nodes, id) do
-        %HTMLNode{type: ^type} -> true
+      case nodes do
+        %{^id => %HTMLNode{type: ^type}} -> true
         _ -> false
       end
     end)

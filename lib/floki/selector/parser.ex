@@ -13,7 +13,7 @@ defmodule Floki.Selector.Parser do
     :dash_match,
     :includes,
     :prefix_match,
-    :sufix_match,
+    :suffix_match,
     :substring_match
   ]
 

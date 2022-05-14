@@ -8,8 +8,16 @@ defmodule Floki.Selector.AttributeSelector do
 
   defstruct match_type: nil, attribute: nil, value: nil, flag: nil
 
+  @type match_type :: nil
+  | :equal
+  | :includes
+  | :dash_match
+  | :prefix_match
+  | :suffix_match
+  | :substring_match
+
   @type t :: %__MODULE__{
-          match_type: :atom | nil,
+          match_type: match_type(),
           attribute: String.t(),
           value: String.t() | nil,
           flag: String.t() | nil
@@ -26,7 +34,7 @@ defmodule Floki.Selector.AttributeSelector do
         :includes -> "~="
         :dash_match -> "|="
         :prefix_match -> "^="
-        :sufix_match -> "$="
+        :suffix_match -> "$="
         :substring_match -> "*="
         _ -> ""
       end
@@ -70,7 +78,7 @@ defmodule Floki.Selector.AttributeSelector do
     |> String.starts_with?(String.downcase(s.value))
   end
 
-  def match?(attributes, s = %AttributeSelector{match_type: :sufix_match, flag: "i"}) do
+  def match?(attributes, s = %AttributeSelector{match_type: :suffix_match, flag: "i"}) do
     s.attribute
     |> get_value(attributes)
     |> String.downcase()
@@ -108,7 +116,7 @@ defmodule Floki.Selector.AttributeSelector do
     s.attribute |> get_value(attributes) |> String.starts_with?(s.value)
   end
 
-  def match?(attributes, s = %AttributeSelector{match_type: :sufix_match}) do
+  def match?(attributes, s = %AttributeSelector{match_type: :suffix_match}) do
     s.attribute |> get_value(attributes) |> String.ends_with?(s.value)
   end
 
@@ -117,15 +125,16 @@ defmodule Floki.Selector.AttributeSelector do
   end
 
   defp get_value(attr_name, attributes) do
-    {_attr_name, value} =
-      Enum.find(attributes, {attr_name, ""}, fn {k, _v} ->
-        k == attr_name
-      end)
-
-    value
+    Enum.find_value(attributes, "", fn
+      {^attr_name, value} -> value
+      _ -> false
+    end)
   end
 
   defp attribute_present?(name, attributes) do
-    Enum.any?(attributes, fn {k, _v} -> k == name end)
+    Enum.any?(attributes, fn
+      {^name, _v} -> true
+      _ -> false
+    end)
   end
 end
