@@ -141,7 +141,7 @@ defmodule Floki.Selector.PseudoClass do
   end
 
   defp pseudo_nodes(tree, %HTMLNode{parent_node_id: parent_node_id}) do
-    parent_node = Map.get(tree.nodes, parent_node_id)
+    parent_node = Map.fetch!(tree.nodes, parent_node_id)
 
     parent_node.children_nodes_ids
     |> filter_only_html_nodes(tree.nodes)
