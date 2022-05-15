@@ -132,11 +132,10 @@ defmodule Floki.Selector do
   defp classes_matches?(%HTMLNode{attributes: []}, _), do: false
 
   defp classes_matches?(%HTMLNode{attributes: attributes}, classes) do
-    Enum.all?(classes, fn class ->
-      selector = %AttributeSelector{match_type: :includes, attribute: "class", value: class}
-
-      AttributeSelector.match?(attributes, selector)
-    end)
+    case :proplists.get_value("class", attributes, nil) do
+      nil -> false
+      class -> classes -- String.split(class, ~r/\s+/) == []
+    end
   end
 
   defp attributes_matches?(_node, []), do: true

@@ -61,9 +61,9 @@ defmodule Floki.Selector.AttributeSelector do
 
     s.attribute
     |> get_value(attributes)
-    |> String.downcase()
-    |> String.split(~r/\s+/) # whitespace values
-    |> Enum.any?(fn v -> v == selector_value end)
+    # Splits by whitespaces ("a  b c" -> ["a", "b", "c"])
+    |> String.split(~r/\s+/)
+    |> Enum.any?(fn v -> String.downcase(v) == selector_value end)
   end
 
   def match?(attributes, s = %AttributeSelector{match_type: :dash_match, flag: "i"}) do
@@ -100,12 +100,10 @@ defmodule Floki.Selector.AttributeSelector do
     get_value(s.attribute, attributes) == s.value
   end
 
-  def match?(attributes, s = %AttributeSelector{match_type: :includes}) do
-    value = get_value(s.attribute, attributes)
-
-    whitespace_values = String.split(value, ~r/\s+/)
-
-    Enum.any?(whitespace_values, fn v -> v == s.value end)
+  def match?(attributes, s = %AttributeSelector{match_type: :includes, value: value}) do
+    get_value(s.attribute, attributes)
+    |> String.split(~r/\s+/)
+    |> Enum.any?(fn v -> v == value end)
   end
 
   def match?(attributes, s = %AttributeSelector{match_type: :dash_match}) do
