@@ -100,10 +100,10 @@ defmodule Floki.Selector do
 
   defp namespace_match?(%HTMLNode{type: type_maybe_with_namespace}, namespace) do
     case String.split(type_maybe_with_namespace, ":") do
-      [ns, _type] ->
-        ns == namespace
+      [^namespace, _type] ->
+        true
 
-      [_type] ->
+      _ ->
         false
     end
   end
@@ -114,11 +114,11 @@ defmodule Floki.Selector do
 
   defp type_match?(%HTMLNode{type: type_maybe_with_namespace}, type) do
     case String.split(type_maybe_with_namespace, ":") do
-      [_ns, tp] ->
-        tp == type
+      [_ns, ^type] ->
+        true
 
-      [tp] ->
-        tp == type
+      [^type] ->
+        true
 
       _ ->
         false
