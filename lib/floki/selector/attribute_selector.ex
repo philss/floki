@@ -8,13 +8,14 @@ defmodule Floki.Selector.AttributeSelector do
 
   defstruct match_type: nil, attribute: nil, value: nil, flag: nil
 
-  @type match_type :: nil
-  | :equal
-  | :includes
-  | :dash_match
-  | :prefix_match
-  | :suffix_match
-  | :substring_match
+  @type match_type ::
+          nil
+          | :equal
+          | :includes
+          | :dash_match
+          | :prefix_match
+          | :suffix_match
+          | :substring_match
 
   @type t :: %__MODULE__{
           match_type: match_type(),
