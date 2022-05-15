@@ -49,6 +49,9 @@ defmodule Floki.Selector do
     defp classes(%{classes: classes}), do: ".#{Enum.join(classes, ".")}"
   end
 
+  @wildcards [nil, "*"]
+  defguardp is_wildcard(x) when x in @wildcards
+
   @doc false
 
   # Returns if a given node matches with a given selector.
@@ -94,8 +97,7 @@ defmodule Floki.Selector do
     end)
   end
 
-  defp namespace_match?(_node, nil), do: true
-  defp namespace_match?(_node, "*"), do: true
+  defp namespace_match?(_node, namespace) when is_wildcard(namespace), do: true
   defp namespace_match?(%HTMLNode{type: :pi}, _type), do: false
 
   defp namespace_match?(%HTMLNode{type: type_maybe_with_namespace}, namespace) do
@@ -108,8 +110,7 @@ defmodule Floki.Selector do
     end
   end
 
-  defp type_match?(_node, nil), do: true
-  defp type_match?(_node, "*"), do: true
+  defp type_match?(_node, type) when is_wildcard(type), do: true
   defp type_match?(%HTMLNode{type: :pi}, _type), do: false
 
   defp type_match?(%HTMLNode{type: type_maybe_with_namespace}, type) do

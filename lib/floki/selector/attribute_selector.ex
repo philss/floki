@@ -58,11 +58,12 @@ defmodule Floki.Selector.AttributeSelector do
 
   def match?(attributes, s = %AttributeSelector{match_type: :includes, flag: "i"}) do
     selector_value = String.downcase(s.value)
-    value = String.downcase(get_value(s.attribute, attributes))
 
-    whitespace_values = String.split(value, ~r/\s+/)
-
-    Enum.any?(whitespace_values, fn v -> v == selector_value end)
+    s.attribute
+    |> get_value(attributes)
+    |> String.downcase()
+    |> String.split(~r/\s+/) # whitespace values
+    |> Enum.any?(fn v -> v == selector_value end)
   end
 
   def match?(attributes, s = %AttributeSelector{match_type: :dash_match, flag: "i"}) do
