@@ -8,8 +8,17 @@ defmodule Floki.Selector.AttributeSelector do
 
   defstruct match_type: nil, attribute: nil, value: nil, flag: nil
 
+  @type match_type ::
+          nil
+          | :equal
+          | :includes
+          | :dash_match
+          | :prefix_match
+          | :suffix_match
+          | :substring_match
+
   @type t :: %__MODULE__{
-          match_type: :atom | nil,
+          match_type: match_type(),
           attribute: String.t(),
           value: String.t() | nil,
           flag: String.t() | nil
@@ -26,7 +35,7 @@ defmodule Floki.Selector.AttributeSelector do
         :includes -> "~="
         :dash_match -> "|="
         :prefix_match -> "^="
-        :sufix_match -> "$="
+        :suffix_match -> "$="
         :substring_match -> "*="
         _ -> ""
       end
@@ -49,11 +58,12 @@ defmodule Floki.Selector.AttributeSelector do
 
   def match?(attributes, s = %AttributeSelector{match_type: :includes, flag: "i"}) do
     selector_value = String.downcase(s.value)
-    value = String.downcase(get_value(s.attribute, attributes))
 
-    whitespace_values = String.split(value, ~r/\s+/)
-
-    Enum.any?(whitespace_values, fn v -> v == selector_value end)
+    s.attribute
+    |> get_value(attributes)
+    # Splits by whitespaces ("a  b c" -> ["a", "b", "c"])
+    |> String.split(~r/\s+/)
+    |> Enum.any?(fn v -> String.downcase(v) == selector_value end)
   end
 
   def match?(attributes, s = %AttributeSelector{match_type: :dash_match, flag: "i"}) do
@@ -70,7 +80,7 @@ defmodule Floki.Selector.AttributeSelector do
     |> String.starts_with?(String.downcase(s.value))
   end
 
-  def match?(attributes, s = %AttributeSelector{match_type: :sufix_match, flag: "i"}) do
+  def match?(attributes, s = %AttributeSelector{match_type: :suffix_match, flag: "i"}) do
     s.attribute
     |> get_value(attributes)
     |> String.downcase()
@@ -90,12 +100,10 @@ defmodule Floki.Selector.AttributeSelector do
     get_value(s.attribute, attributes) == s.value
   end
 
-  def match?(attributes, s = %AttributeSelector{match_type: :includes}) do
-    value = get_value(s.attribute, attributes)
-
-    whitespace_values = String.split(value, ~r/\s+/)
-
-    Enum.any?(whitespace_values, fn v -> v == s.value end)
+  def match?(attributes, s = %AttributeSelector{match_type: :includes, value: value}) do
+    get_value(s.attribute, attributes)
+    |> String.split(~r/\s+/)
+    |> Enum.any?(fn v -> v == value end)
   end
 
   def match?(attributes, s = %AttributeSelector{match_type: :dash_match}) do
@@ -108,7 +116,7 @@ defmodule Floki.Selector.AttributeSelector do
     s.attribute |> get_value(attributes) |> String.starts_with?(s.value)
   end
 
-  def match?(attributes, s = %AttributeSelector{match_type: :sufix_match}) do
+  def match?(attributes, s = %AttributeSelector{match_type: :suffix_match}) do
     s.attribute |> get_value(attributes) |> String.ends_with?(s.value)
   end
 
@@ -117,15 +125,16 @@ defmodule Floki.Selector.AttributeSelector do
   end
 
   defp get_value(attr_name, attributes) do
-    {_attr_name, value} =
-      Enum.find(attributes, {attr_name, ""}, fn {k, _v} ->
-        k == attr_name
-      end)
-
-    value
+    Enum.find_value(attributes, "", fn
+      {^attr_name, value} -> value
+      _ -> false
+    end)
   end
 
   defp attribute_present?(name, attributes) do
-    Enum.any?(attributes, fn {k, _v} -> k == name end)
+    Enum.any?(attributes, fn
+      {^name, _v} -> true
+      _ -> false
+    end)
   end
 end

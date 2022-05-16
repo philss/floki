@@ -49,6 +49,9 @@ defmodule Floki.Selector do
     defp classes(%{classes: classes}), do: ".#{Enum.join(classes, ".")}"
   end
 
+  @wildcards [nil, "*"]
+  defguardp is_wildcard(x) when x in @wildcards
+
   @doc false
 
   # Returns if a given node matches with a given selector.
@@ -94,31 +97,29 @@ defmodule Floki.Selector do
     end)
   end
 
-  defp namespace_match?(_node, nil), do: true
-  defp namespace_match?(_node, "*"), do: true
+  defp namespace_match?(_node, namespace) when is_wildcard(namespace), do: true
   defp namespace_match?(%HTMLNode{type: :pi}, _type), do: false
 
   defp namespace_match?(%HTMLNode{type: type_maybe_with_namespace}, namespace) do
     case String.split(type_maybe_with_namespace, ":") do
-      [ns, _type] ->
-        ns == namespace
+      [^namespace, _type] ->
+        true
 
-      [_type] ->
+      _ ->
         false
     end
   end
 
-  defp type_match?(_node, nil), do: true
-  defp type_match?(_node, "*"), do: true
+  defp type_match?(_node, type) when is_wildcard(type), do: true
   defp type_match?(%HTMLNode{type: :pi}, _type), do: false
 
   defp type_match?(%HTMLNode{type: type_maybe_with_namespace}, type) do
     case String.split(type_maybe_with_namespace, ":") do
-      [_ns, tp] ->
-        tp == type
+      [_ns, ^type] ->
+        true
 
-      [tp] ->
-        tp == type
+      [^type] ->
+        true
 
       _ ->
         false
@@ -131,11 +132,10 @@ defmodule Floki.Selector do
   defp classes_matches?(%HTMLNode{attributes: []}, _), do: false
 
   defp classes_matches?(%HTMLNode{attributes: attributes}, classes) do
-    Enum.all?(classes, fn class ->
-      selector = %AttributeSelector{match_type: :includes, attribute: "class", value: class}
-
-      AttributeSelector.match?(attributes, selector)
-    end)
+    case :proplists.get_value("class", attributes, nil) do
+      nil -> false
+      class -> classes -- String.split(class, ~r/\s+/) == []
+    end
   end
 
   defp attributes_matches?(_node, []), do: true
