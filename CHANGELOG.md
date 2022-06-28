@@ -7,9 +7,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased][unreleased]
 
+## [0.33.0] - 2022-06-28
+
+### Added
+
+- Add support for searching elements that contains text in a case-insensitive manner with
+`fl-icontains` - thanks [@nuno84](https://github.com/nuno84)
+
 ### Changed
 
 - Drop support for Elixir 1.8 and 1.9.
+- Fix and improve internal things - thanks [@derek-zhou](https://github.com/derek-zhou) and [@hissssst](https://github.com/hissssst)
 
 ## [0.32.1] - 2022-03-24
 
@@ -600,7 +608,8 @@ of the parent element inside HTML.
 
 - Elixir version requirement from "~> 1.0.0" to ">= 1.0.0".
 
-[unreleased]: https://github.com/philss/floki/compare/v0.32.1...HEAD
+[unreleased]: https://github.com/philss/floki/compare/v0.33.0...HEAD
+[0.33.0]: https://github.com/philss/floki/compare/v0.32.1...v0.33.0
 [0.32.1]: https://github.com/philss/floki/compare/v0.32.0...v0.32.1
 [0.32.0]: https://github.com/philss/floki/compare/v0.31.0...v0.32.0
 [0.31.0]: https://github.com/philss/floki/compare/v0.30.1...v0.31.0
