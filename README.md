@@ -259,9 +259,10 @@ Here you find all the [CSS selectors](https://www.w3.org/TR/selectors/#selectors
 
 There are also some selectors based on non-standard specifications. They are:
 
-| Pattern              | Description                                         |
-|----------------------|-----------------------------------------------------|
-| E:fl-contains('foo') | an E element that contains "foo" inside a text node |
+| Pattern               | Description                                                            |
+|-----------------------|------------------------------------------------------------------------|
+| E:fl-contains('foo')  | an E element that contains "foo" inside a text node                    |
+| E:fl-icontains('foo') | an E element that contains "foo" inside a text node (case insensitive) |
 
 ## Special thanks
 
