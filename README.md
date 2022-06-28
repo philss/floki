@@ -9,7 +9,7 @@
 
 **Floki is a simple HTML parser that enables search for nodes using CSS selectors**.
 
-[Check the documentation](https://hexdocs.pm/floki).
+[Check the documentation 📙](https://hexdocs.pm/floki).
 
 ## Usage
 
@@ -112,10 +112,8 @@ Extracting the files is needed only once.
 
 #### Using `html5ever` as the HTML parser
 
-Rust needs to be installed on the system in order to compile html5ever. To do that, please
-[follow the instruction](https://www.rust-lang.org/en-US/install.html) presented in the official page.
-
-After Rust is set up, you need to add `html5ever` NIF to your dependency list:
+This dependency is written with a NIF using [Rustler](https://github.com/rusterlium/rustler), but
+you don't need to install anything to compile it thanks to [RustlerPrecompiled](https://hexdocs.pm/rustler_precompiled/).
 
 ```elixir
 defp deps do
