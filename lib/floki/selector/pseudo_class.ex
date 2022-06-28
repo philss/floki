@@ -71,9 +71,11 @@ defmodule Floki.Selector.PseudoClass do
 
     res != nil
   end
-  #Case insensitive contains
+
+  # Case insensitive contains
   def match_icontains?(tree, html_node, %__MODULE__{value: value}) do
     downcase_value = String.downcase(value)
+
     res =
       Enum.find(html_node.children_nodes_ids, fn id ->
         case Map.get(tree.nodes, id) do

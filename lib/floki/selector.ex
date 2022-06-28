@@ -210,7 +210,7 @@ defmodule Floki.Selector do
     PseudoClass.match_contains?(tree, html_node, pseudo_class)
   end
 
-  #Case insensitive contains
+  # Case insensitive contains
   defp pseudo_class_match?(html_node, pseudo_class = %{name: "fl-icontains"}, tree) do
     PseudoClass.match_icontains?(tree, html_node, pseudo_class)
   end
