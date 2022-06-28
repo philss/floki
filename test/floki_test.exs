@@ -1160,6 +1160,14 @@ defmodule FlokiTest do
            ]
   end
 
+  test "icontains pseudo-class" do
+    doc = document!(html_body(~s(<p>One</p><p>Two</p><div>nothing<b>42</b></div>)))
+
+    assert Floki.find(doc, "p:fl-icontains('two')") == [
+             {"p", [], ["Two"]}
+           ]
+  end
+
   test "contains psuedo-class with substring" do
     html =
       document!(
