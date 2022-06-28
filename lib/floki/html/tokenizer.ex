@@ -764,19 +764,19 @@ defmodule Floki.HTML.Tokenizer do
 
   # § tokenizer-script-data-escape-start-dash-state
 
-  defp script_data_escape_start_dash(<<?-, html::binary>>, s) do
-    script_data_escaped_dash_dash(
-      html,
-      %{
-        s
-        | tokens: append_char_token(s, @hyphen_minus)
-      }
-    )
-  end
+  # defp script_data_escape_start_dash(<<?-, html::binary>>, s) do
+  #   script_data_escaped_dash_dash(
+  #     html,
+  #     %{
+  #       s
+  #       | tokens: append_char_token(s, @hyphen_minus)
+  #     }
+  #   )
+  # end
 
-  defp script_data_escape_start_dash(html, s) do
-    script_data(html, s)
-  end
+  # defp script_data_escape_start_dash(html, s) do
+  #   script_data(html, s)
+  # end
 
   # § tokenizer-script-data-escaped-state
 
@@ -1741,7 +1741,7 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defp comment_end(html, s) do
-    new_comment = %Comment{s.token | data: [s.token.data | "--"]}
+    new_comment = %Comment{s.token | data: [s.token.data | ["--"]]}
 
     comment(html, %{s | token: new_comment})
   end
@@ -1749,7 +1749,7 @@ defmodule Floki.HTML.Tokenizer do
   # § tokenizer-comment-end-bang-state
 
   defp comment_end_bang(<<?-, html::binary>>, s) do
-    new_comment = %Comment{s.token | data: [s.token.data | "--!"]}
+    new_comment = %Comment{s.token | data: [s.token.data | ["--!"]]}
 
     comment_end_dash(html, %{s | token: new_comment})
   end
@@ -1773,7 +1773,7 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defp comment_end_bang(html, s) do
-    new_comment = %Comment{s.token | data: [s.token.data | "--!"]}
+    new_comment = %Comment{s.token | data: [s.token.data | ["--!"]]}
 
     comment(html, %{s | token: new_comment})
   end
