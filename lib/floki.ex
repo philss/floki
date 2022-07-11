@@ -570,6 +570,8 @@ defmodule Floki do
       iex> Floki.attribute([{"a", [{"class", "foo"}, {"href", "https://google.com"}], ["Google"]}], "a", "class")
       ["foo"]
 
+      iex> Floki.attribute([{"a", [{"href", "https://google.com"}, {"data-name", "google"}], ["Google"]}], "a[data-name]", "data-name")
+      ["google"]
   """
 
   @spec attribute(binary | html_tree | html_node, binary, binary) :: list
@@ -588,6 +590,8 @@ defmodule Floki do
       iex> Floki.attribute([{"a", [{"href", "https://google.com"}], ["Google"]}], "href")
       ["https://google.com"]
 
+      iex> Floki.attribute([{"a", [{"href", "https://google.com"}, {"data-name", "google"}], ["Google"]}], "data-name")
+      ["google"]
   """
 
   @spec attribute(binary | html_tree | html_node, binary) :: list
