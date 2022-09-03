@@ -250,6 +250,65 @@ defmodule FlokiTest do
     assert raw_html == "<link>www.example.com</link>"
   end
 
+  test "raw_html (with custom self closing tag without content and without attributes)" do
+    original_self_closing_tags = Application.get_env(:floki, :self_closing_tags)
+    Application.put_env(:floki, :self_closing_tags, ["shy"])
+
+    raw_html = Floki.raw_html({"shy", [], []})
+
+    assert raw_html == "<shy/>"
+
+    Application.put_env(:floki, :self_closing_tags, original_self_closing_tags)
+  end
+
+  test "raw_html (with custom self closing tag without content)" do
+    original_self_closing_tags = Application.get_env(:floki, :self_closing_tags)
+    Application.put_env(:floki, :self_closing_tags, ["download"])
+
+    raw_html = Floki.raw_html({"download", [{"href", "//www.example.com/file.zip"}], []})
+
+    assert raw_html == "<download href=\"//www.example.com/file.zip\"/>"
+
+    Application.put_env(:floki, :self_closing_tags, original_self_closing_tags)
+  end
+
+  test "raw_html (with custom self closing tag with content and with attribute)" do
+    original_self_closing_tags = Application.get_env(:floki, :self_closing_tags)
+    Application.put_env(:floki, :self_closing_tags, ["download"])
+
+    raw_html =
+      Floki.raw_html(
+        {"download", [{"href", "//www.example.com/file.zip"}], ["Download file.zip"]}
+      )
+
+    assert raw_html ==
+             "<download href=\"//www.example.com/file.zip\">Download file.zip</download>"
+
+    Application.put_env(:floki, :self_closing_tags, original_self_closing_tags)
+  end
+
+  test "raw_html (with custom self closing tag with content and without attribute)" do
+    original_self_closing_tags = Application.get_env(:floki, :self_closing_tags)
+    Application.put_env(:floki, :self_closing_tags, ["strike"])
+
+    raw_html = Floki.raw_html({"strike", [], ["stroke text"]})
+
+    assert raw_html == "<strike>stroke text</strike>"
+
+    Application.put_env(:floki, :self_closing_tags, original_self_closing_tags)
+  end
+
+  test "raw_html (with default self closing tag that isn't set while custom self closing tags are set must fail)" do
+    original_self_closing_tags = Application.get_env(:floki, :self_closing_tags)
+    Application.put_env(:floki, :self_closing_tags, ["page"])
+
+    raw_html = Floki.raw_html({"br", [], []})
+
+    assert raw_html != "<br/>"
+
+    Application.put_env(:floki, :self_closing_tags, original_self_closing_tags)
+  end
+
   test "raw_html (with script and style tags)" do
     tree = {
       "body",
