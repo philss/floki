@@ -11,7 +11,7 @@ defmodule Floki.Mixfile do
       name: "Floki",
       version: @version,
       description: @description,
-      elixir: "~> 1.10",
+      elixir: "~> 1.11",
       package: package(),
       erlc_paths: ["src", "gen"],
       deps: deps(),
@@ -81,8 +81,7 @@ defmodule Floki.Mixfile do
         {{:"test.#{cli_name}", &test_with_parser(parser, &1)}, [cli_name | acc]}
       end)
 
-    aliases
-    |> Keyword.put(:test, &test_with_parser(cli_names, &1))
+    Keyword.put(aliases, :test, &test_with_parser(cli_names, &1))
   end
 
   defp test_with_parser(parser_cli_names, args) when is_list(parser_cli_names) do
