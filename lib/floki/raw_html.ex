@@ -119,7 +119,7 @@ defmodule Floki.RawHTML do
 
   defp close_end_tag(type, children, padding) do
     case {type in self_closing_tags(), children} do
-      {true, []} -> ""
+      {true, []} -> []
       _ -> [leftpad(padding), "</", type, ">", line_ending(padding)]
     end
   end
