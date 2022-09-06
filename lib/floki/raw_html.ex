@@ -1,7 +1,7 @@
 defmodule Floki.RawHTML do
   @moduledoc false
 
-  @self_closing_tags [
+  @default_self_closing_tags [
     "area",
     "base",
     "br",
@@ -13,12 +13,23 @@ defmodule Floki.RawHTML do
     "input",
     "keygen",
     "link",
+    "menuitem",
     "meta",
     "param",
     "source",
     "track",
     "wbr"
   ]
+
+  def default_self_closing_tags(), do: @default_self_closing_tags
+
+  def self_closing_tags do
+    custom_self_closing_tags = Application.get_env(:floki, :self_closing_tags)
+
+    if is_list(custom_self_closing_tags),
+      do: custom_self_closing_tags,
+      else: @default_self_closing_tags
+  end
 
   @encoder &HtmlEntities.encode/1
 
@@ -99,13 +110,19 @@ defmodule Floki.RawHTML do
   defp tag_with_attrs(type, attrs, children, padding),
     do: [leftpad(padding), "<", type, ?\s, tag_attrs(attrs) | close_open_tag(type, children)]
 
-  defp close_open_tag(type, []) when type in @self_closing_tags, do: "/>"
-  defp close_open_tag(_type, _), do: ">"
+  defp close_open_tag(type, children) do
+    case {type in self_closing_tags(), children} do
+      {true, []} -> "/>"
+      _ -> ">"
+    end
+  end
 
-  defp close_end_tag(type, [], _padding) when type in @self_closing_tags, do: ""
-
-  defp close_end_tag(type, _, padding),
-    do: [leftpad(padding), "</", type, ">", line_ending(padding)]
+  defp close_end_tag(type, children, padding) do
+    case {type in self_closing_tags(), children} do
+      {true, []} -> []
+      _ -> [leftpad(padding), "</", type, ">", line_ending(padding)]
+    end
+  end
 
   defp build_attrs({attr, value}), do: [attr, "=\"", html_escape(value) | "\""]
   defp build_attrs(attr), do: attr
