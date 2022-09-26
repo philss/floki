@@ -37,7 +37,7 @@ defmodule Floki.RawHTML do
     encoder =
       case Keyword.fetch(options, :encode) do
         {:ok, true} -> @encoder
-        {:ok, false} -> & &1
+        {:ok, false} -> &Function.identity/1
         :error -> default_encoder()
       end
 
@@ -69,7 +69,7 @@ defmodule Floki.RawHTML do
   defp build_raw_html([{:pi, tag, attrs} | tail], html, encoder, padding) do
     build_raw_html(
       tail,
-      [html, leftpad(padding), "<?", tag, " ", tag_attrs(attrs), "?>"],
+      [html, leftpad(padding), "<?", tag, " ", tag_attrs(attrs, encoder), "?>"],
       encoder,
       padding
     )
@@ -100,15 +100,21 @@ defmodule Floki.RawHTML do
     )
   end
 
-  defp tag_attrs(attr_list) do
-    map_intersperse(attr_list, ?\s, &build_attrs/1)
+  defp tag_attrs(attr_list, encoder) do
+    map_intersperse(attr_list, ?\s, &build_attrs(&1, encoder))
   end
 
-  defp tag_with_attrs(type, [], children, padding),
+  defp tag_with_attrs(type, [], children, padding, _encoder),
     do: [leftpad(padding), "<", type | close_open_tag(type, children)]
 
-  defp tag_with_attrs(type, attrs, children, padding),
-    do: [leftpad(padding), "<", type, ?\s, tag_attrs(attrs) | close_open_tag(type, children)]
+  defp tag_with_attrs(type, attrs, children, padding, encoder),
+    do: [
+      leftpad(padding),
+      "<",
+      type,
+      ?\s,
+      tag_attrs(attrs, encoder) | close_open_tag(type, children)
+    ]
 
   defp close_open_tag(type, children) do
     case {type in self_closing_tags(), children} do
@@ -124,8 +130,15 @@ defmodule Floki.RawHTML do
     end
   end
 
-  defp build_attrs({attr, value}), do: [attr, "=\"", html_escape(value) | "\""]
-  defp build_attrs(attr), do: attr
+  defp build_attrs({attr, value}, encoder) do
+    if Function.info(encoder) == Function.info(&Function.identity/1) do
+      [attr, "=\"", value | "\""]
+    else
+      [attr, "=\"", html_escape(value) | "\""]
+    end
+  end
+
+  defp build_attrs(attr, _encoder), do: attr
 
   defp tag_for(type, attrs, children, encoder, padding) do
     encoder =
@@ -136,7 +149,7 @@ defmodule Floki.RawHTML do
       end
 
     [
-      tag_with_attrs(type, attrs, children, padding),
+      tag_with_attrs(type, attrs, children, padding, encoder),
       line_ending(padding),
       build_raw_html(children, "", encoder, pad_increase(padding)),
       close_end_tag(type, children, padding)
