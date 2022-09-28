@@ -391,6 +391,13 @@ defmodule FlokiTest do
     assert Floki.raw_html(tree, encode: false) == input
   end
 
+  test "raw_html encode: false does not encode attribute values" do
+    input = "<html><head></head><body class=\"1 > 0\">< \"test\" ></body></html>"
+    tree = document!(input)
+
+    assert Floki.raw_html(tree, encode: false) == input
+  end
+
   test "raw_html pretty with doctype" do
     html = """
       <!doctype html>
