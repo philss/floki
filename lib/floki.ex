@@ -403,9 +403,9 @@ defmodule Floki do
   """
 
   @spec traverse_and_update(
-          html_tree(),
-          (html_tag() | html_comment() | html_doctype() | html_declaration() -> html_node() | nil)
-        ) :: html_tree()
+          html_node() | html_tree(),
+          (html_node() -> html_node() | nil)
+        ) :: html_node() | html_tree()
 
   defdelegate traverse_and_update(html_tree, fun), to: Floki.Traversal
 
@@ -455,11 +455,11 @@ defmodule Floki do
   """
 
   @spec traverse_and_update(
-          html_tree(),
+          html_node() | html_tree(),
           traverse_acc,
-          (html_tag() | html_comment() | html_doctype() | html_declaration(), traverse_acc ->
+          (html_node(), traverse_acc ->
              {html_node() | nil, traverse_acc})
-        ) :: {html_node(), traverse_acc}
+        ) :: {html_node() | html_tree(), traverse_acc}
         when traverse_acc: any()
   defdelegate traverse_and_update(html_tree, acc, fun), to: Floki.Traversal
 
