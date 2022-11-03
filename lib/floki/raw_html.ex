@@ -31,7 +31,7 @@ defmodule Floki.RawHTML do
       else: @default_self_closing_tags
   end
 
-  @encoder &HtmlEntities.encode/1
+  @encoder &Floki.Entities.encode/1
 
   def raw_html(html_tree, options) do
     encoder =

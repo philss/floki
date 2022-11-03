@@ -56,7 +56,6 @@ defmodule Floki.Mixfile do
       |> Enum.map(fn name -> Keyword.fetch!(parsers_deps, name) end)
 
     [
-      {:html_entities, "~> 0.5.0"},
       {:jason, "~> 1.1", only: [:dev, :test, :docs]},
       {:earmark, "~> 1.2", only: :dev},
       {:ex_doc, "~> 0.29.0", only: :dev, runtime: false},
