@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased][unreleased]
 
+## [0.34.0] - 2022-11-03
+
+### Added
+
+- User configurable "self-closing" tags. Now it's possible to define which tags are considered
+"self-closing". Thanks [@inoas](https://github.com/inoas).
+
+### Fixed
+
+- Allow attribute values to not be escaped. This fixes `Floki.raw_html/2` when used with the
+option `encode: false`. Thanks [@juanazam](https://github.com/juanazam). 
+- Fix `traverse_and_update/3` spec. Thanks [@WLSF](https://github.com/WLSF).
+
+### Changed
+
+- Drop support for Elixir 1.9 and 1.10.
+- Remove `html_entities` dependency. We now use an internal encoder/decoder for entities.
+- Change the main branch name to `main`.
+
 ## [0.33.1] - 2022-06-28
 
 ### Fixed
@@ -614,7 +633,8 @@ of the parent element inside HTML.
 
 - Elixir version requirement from "~> 1.0.0" to ">= 1.0.0".
 
-[unreleased]: https://github.com/philss/floki/compare/v0.33.1...HEAD
+[unreleased]: https://github.com/philss/floki/compare/v0.34.0...HEAD
+[0.34.0]: https://github.com/philss/floki/compare/v0.33.1...v0.34.0
 [0.33.1]: https://github.com/philss/floki/compare/v0.33.0...v0.33.1
 [0.33.0]: https://github.com/philss/floki/compare/v0.32.1...v0.33.0
 [0.32.1]: https://github.com/philss/floki/compare/v0.32.0...v0.32.1

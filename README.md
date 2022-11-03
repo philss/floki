@@ -61,7 +61,7 @@ Add Floki to your `mix.exs`:
 ```elixir
 defp deps do
   [
-    {:floki, "~> 0.33.0"}
+    {:floki, "~> 0.34.0"}
   ]
 end
 ```
@@ -118,8 +118,8 @@ you don't need to install anything to compile it thanks to [RustlerPrecompiled](
 ```elixir
 defp deps do
   [
-    {:floki, "~> 0.33.0"},
-    {:html5ever, "~> 0.13.0"}
+    {:floki, "~> 0.34.0"},
+    {:html5ever, "~> 0.14.0"}
   ]
 end
 ```
@@ -146,7 +146,7 @@ First, add `fast_html` to your dependencies:
 ```elixir
 defp deps do
   [
-    {:floki, "~> 0.33.0"},
+    {:floki, "~> 0.34.0"},
     {:fast_html, "~> 2.0"}
   ]
 end
