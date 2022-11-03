@@ -2576,7 +2576,7 @@ defmodule Floki.HTML.Tokenizer do
        when c == ?; or is_letter(c) or
               is_digit(c) do
     buffer = IO.chardata_to_string([s.buffer | [c]])
-    candidate = Floki.Entities.get(buffer)
+    candidate = Floki.Entities.Codepoints.get(buffer)
 
     charref_state =
       if candidate != [] do
@@ -2675,7 +2675,7 @@ defmodule Floki.HTML.Tokenizer do
 
   defp character_buffer(%State{charref_state: %CharrefState{candidate: candidate}, buffer: buffer}) do
     if candidate do
-      Floki.Entities.get(candidate)
+      Floki.Entities.Codepoints.get(candidate)
     else
       buffer
     end
