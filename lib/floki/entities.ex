@@ -4,7 +4,7 @@ defmodule Floki.Entities do
   @moduledoc false
 
   @doc """
-  Decode charrefs and numeric charrefs
+  Decode charrefs and numeric charrefs.
 
   This is useful if you want to decode any charref. The tokenizer will
   use a more complex algorithm for detection, so this function is most
@@ -12,17 +12,17 @@ defmodule Floki.Entities do
   """
   def decode(charref) when is_binary(charref) do
     case charref do
-      <<"&#", numeric::binary()>> ->
+      <<"&#", numeric::binary>> ->
         case extract_byte_from_num_charref(numeric) do
           {:ok, number} ->
             {:ok, {_, unicode_number}} = Floki.HTML.NumericCharref.to_unicode_number(number)
-            {:ok, IO.iodata_to_binary([unicode_number])}
+            {:ok, <<unicode_number::utf8>>}
 
           :error ->
             {:error, :not_found}
         end
 
-      <<"&", _::binary()>> = binary ->
+      <<"&", _::binary>> = binary ->
         case get(binary) do
           [] ->
             {:error, :not_found}
@@ -30,7 +30,34 @@ defmodule Floki.Entities do
           codepoints ->
             {:ok, IO.chardata_to_string(codepoints)}
         end
+
+      _other ->
+        {:error, :not_found}
     end
+  end
+
+  @doc """
+  Encode HTML entities in a string.
+
+  Currently only encodes the main HTML entities:
+
+  * single quote - ' - is replaced by "&#39;".
+  * double quote - " - is replaced by "&quot;".
+  * ampersand - & - is replaced by "&amp;".
+  * less-than sign - < - is replaced by "&lt;".
+  * greater-than sign - > - is replaced by "&gt;".
+
+  All other simbols are going to remain the same.
+  """
+  @spec encode(String.t()) :: String.t()
+  def encode(string) when is_binary(string) do
+    String.replace(string, ["'", "\"", "&", "<", ">"], fn
+      "'" -> "&#39;"
+      "\"" -> "&quot;"
+      "&" -> "&amp;"
+      "<" -> "&lt;"
+      ">" -> "&gt;"
+    end)
   end
 
   defp extract_byte_from_num_charref(<<maybe_x, rest::binary>>) when maybe_x in [?x, ?X] do
