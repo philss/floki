@@ -5,8 +5,7 @@ defmodule Floki.Entities do
   Decode charrefs and numeric charrefs.
 
   This is useful if you want to decode any charref. The tokenizer will
-  use a more complex algorithm for detection, so this function is most
-  likely not needed
+  use a different algorithm, so this may not be necessary.
   """
   def decode(charref) when is_binary(charref) do
     case charref do
@@ -34,6 +33,18 @@ defmodule Floki.Entities do
     end
   end
 
+  defp extract_byte_from_num_charref(<<maybe_x, rest::binary>>) when maybe_x in [?x, ?X] do
+    with {number, _} <- Integer.parse(rest, 16) do
+      {:ok, number}
+    end
+  end
+
+  defp extract_byte_from_num_charref(binary) when is_binary(binary) do
+    with {number, _} <- Integer.parse(binary, 10) do
+      {:ok, number}
+    end
+  end
+
   @doc """
   Encode HTML entities in a string.
 
@@ -56,17 +67,5 @@ defmodule Floki.Entities do
       "<" -> "&lt;"
       ">" -> "&gt;"
     end)
-  end
-
-  defp extract_byte_from_num_charref(<<maybe_x, rest::binary>>) when maybe_x in [?x, ?X] do
-    with {number, _} <- Integer.parse(rest, 16) do
-      {:ok, number}
-    end
-  end
-
-  defp extract_byte_from_num_charref(binary) when is_binary(binary) do
-    with {number, _} <- Integer.parse(binary, 10) do
-      {:ok, number}
-    end
   end
 end
