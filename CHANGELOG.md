@@ -275,7 +275,7 @@ this function can create a tree with more or less nodes. - thanks [@ericlathrop]
 - Added support for `nth-of-type`, `first-of-type`, `last-of-type` and `last-child` pseudo-classes - thanks [@saleem1337](https://github.com/saleem1337).
 - Added support for `nth-child` pseudo-class functional notation - thanks [@nirev](https://github.com/nirev).
 - Added functional notation support for `nth-of-type` pseudo-class.
-- Added a [Contributing guide](https://github.com/philss/floki/blob/master/CONTRIBUTING.md).
+- Added a [Contributing guide](https://github.com/philss/floki/blob/main/CONTRIBUTING.md).
 
 ### Fixed
 
@@ -286,7 +286,7 @@ this function can create a tree with more or less nodes. - thanks [@ericlathrop]
 
 ### Added
 
-- Added a [Code of Conduct](https://github.com/philss/floki/blob/master/CODE_OF_CONDUCT.md).
+- Added a [Code of Conduct](https://github.com/philss/floki/blob/main/CODE_OF_CONDUCT.md).
 
 ### Fixed
 

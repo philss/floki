@@ -1,9 +1,9 @@
-[![Actions Status](https://github.com/philss/floki/workflows/CI/badge.svg?branch=master)](https://github.com/philss/floki/actions)
+[![Actions Status](https://github.com/philss/floki/workflows/CI/badge.svg?branch=main)](https://github.com/philss/floki/actions)
 [![Floki version](https://img.shields.io/hexpm/v/floki.svg)](https://hex.pm/packages/floki)
 [![Hex Docs](https://img.shields.io/badge/hex-docs-lightgreen.svg)](https://hexdocs.pm/floki/)
 [![Hex.pm](https://img.shields.io/hexpm/dt/floki.svg)](https://hex.pm/packages/floki)
-[![License](https://img.shields.io/hexpm/l/floki.svg)](https://github.com/philss/floki/blob/master/LICENSE)
-[![Last Updated](https://img.shields.io/github/last-commit/philss/floki.svg)](https://github.com/philss/floki/commits/master)
+[![License](https://img.shields.io/hexpm/l/floki.svg)](https://github.com/philss/floki/blob/main/LICENSE)
+[![Last Updated](https://img.shields.io/github/last-commit/philss/floki.svg)](https://github.com/philss/floki/commits/main)
 
 <img src="assets/images/floki-logo-with-type.svg" width="500" alt="Floki logo">
 
@@ -270,4 +270,4 @@ There are also some selectors based on non-standard specifications. They are:
 
 Copyright (c) 2014 Philip Sampaio Silva
 
-Floki is under MIT license. Check the [LICENSE](https://github.com/philss/floki/blob/master/LICENSE) file for more details.
+Floki is under MIT license. Check the [LICENSE](https://github.com/philss/floki/blob/main/LICENSE) file for more details.

@@ -3,7 +3,7 @@
 We want to encourage you to contribute to Floki with documentation, code and ideas.
 To do so, you can read the existing docs and take a look at our source code through [closed pull requests](https://github.com/philss/floki/pulls?q=is%3Apr+is%3Aclosed).
 
-Before starting, please read our [Code of Conduct](https://github.com/philss/floki/blob/master/CODE_OF_CONDUCT.md) and our [License](https://github.com/philss/floki/blob/master/LICENSE) files.
+Before starting, please read our [Code of Conduct](https://github.com/philss/floki/blob/main/CODE_OF_CONDUCT.md) and our [License](https://github.com/philss/floki/blob/main/LICENSE) files.
 
 ### Docs
 
