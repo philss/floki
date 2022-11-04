@@ -41,28 +41,16 @@ defmodule Floki.Mixfile do
   end
 
   defp deps do
-    # Needed to avoid installing unnecessary deps on the CI
-    parsers_deps = [
-      html5ever: {:html5ever, ">= 0.8.0", optional: true, only: [:dev, :test]},
-      fast_html: {:fast_html, ">= 0.0.0", optional: true, only: [:dev, :test]}
-    ]
-
-    parsers =
-      case System.get_env("PARSER") do
-        nil -> [:fast_html, :html5ever]
-        parser when parser in ~w(html5ever fast_html) -> [String.to_atom(parser)]
-        _ -> []
-      end
-      |> Enum.map(fn name -> Keyword.fetch!(parsers_deps, name) end)
-
     [
       {:jason, "~> 1.1", only: [:dev, :test, :docs]},
       {:earmark, "~> 1.2", only: :dev},
       {:ex_doc, "~> 0.29.0", only: :dev, runtime: false},
       {:benchee, "~> 1.1.0", only: :dev},
       {:credo, ">= 0.0.0", only: [:dev, :test]},
-      {:dialyxir, "~> 1.0", only: [:dev], runtime: false}
-    ] ++ parsers
+      {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
+      {:html5ever, ">= 0.8.0", optional: true, only: [:dev, :test]},
+      {:fast_html, ">= 0.0.0", optional: true, only: [:dev, :test]}
+    ]
   end
 
   defp aliases do
