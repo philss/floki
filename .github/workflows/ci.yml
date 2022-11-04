@@ -9,9 +9,6 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    env:
-      PARSER: ${{ matrix.parser }}
-
     name: Elixir ${{ matrix.elixir }} / OTP ${{ matrix.otp }} with ${{ matrix.parser }}
 
     strategy:
@@ -57,4 +54,4 @@ jobs:
 
       - name: Run test
         run: |-
-          MIX_ENV=test mix test.$PARSER
+          MIX_ENV=test mix test.${{ matrix.parser }}
