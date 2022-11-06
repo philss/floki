@@ -26,7 +26,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - uses: erlef/setup-beam@v1.12
+      - uses: erlef/setup-beam@v1.14
         with:
           otp-version: ${{matrix.otp}}
           elixir-version: ${{matrix.elixir}}
@@ -41,15 +41,8 @@ jobs:
       - name: Check for unused dependencies
         run: mix deps.unlock --check-unused
 
-      - name: Install Rust toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-        if: matrix.parser == 'html5ever'
-
       - name: Install CMake
-        uses: lukka/get-cmake@v3.21.2
+        uses: lukka/get-cmake@v3.24.3
         if: matrix.parser == 'fast_html'
 
       - name: Run test
