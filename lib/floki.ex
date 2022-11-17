@@ -502,7 +502,7 @@ defmodule Floki do
 
   """
 
-  @spec text(html_tree | binary) :: binary
+  @spec text(html_tree | html_node | binary) :: binary
 
   def text(html, opts \\ [deep: true, js: false, style: true, sep: ""]) do
     cleaned_html_tree =
