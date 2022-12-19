@@ -216,6 +216,11 @@ defmodule Floki.Selector.Parser do
     do_parse_pseudo_not(t, pseudo_class)
   end
 
+  # At this point we want to ignore comma, because it's going to start a new selector.
+  defp do_parse_pseudo_not([{:comma, _} | t], pseudo_class) do
+    do_parse_pseudo_not(t, pseudo_class)
+  end
+
   defp do_parse_pseudo_not(tokens, pseudo_class) do
     do_parse_pseudo_not(tokens, %Selector{}, pseudo_class)
   end
@@ -227,6 +232,7 @@ defmodule Floki.Selector.Parser do
 
   defp do_parse_pseudo_not([{:close_parentesis, _} | t], pseudo_not_selector, pseudo_class) do
     pseudo_class = update_pseudo_not_value(pseudo_class, pseudo_not_selector)
+
     {t, pseudo_class}
   end
 
@@ -239,9 +245,11 @@ defmodule Floki.Selector.Parser do
     do_parse_pseudo_not(t, pseudo_not_selector, pseudo_class)
   end
 
-  defp do_parse_pseudo_not(tokens = [{'[', _} | _t], pseudo_not_selector, pseudo_class) do
-    {pseudo_not_selector, remaining_tokens} = do_parse(tokens, pseudo_not_selector)
-    pseudo_class = update_pseudo_not_value(pseudo_class, pseudo_not_selector)
+  defp do_parse_pseudo_not([{'[', _} | tokens], pseudo_not_selector, pseudo_class) do
+    {remaining_tokens, result} = consume_attribute(tokens)
+    selector = %{pseudo_not_selector | attributes: [result | pseudo_not_selector.attributes]}
+
+    pseudo_class = update_pseudo_not_value(pseudo_class, selector)
     do_parse_pseudo_not(remaining_tokens, pseudo_class)
   end
 
