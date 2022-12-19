@@ -228,7 +228,7 @@ defmodule Floki.Selector.ParserTest do
            ] = Parser.parse(tokens)
   end
 
-  test "not pseudo-class" do
+  test "not pseudo-class - simple class" do
     assert Parser.parse("a.foo:not(.bar)") == [
              %Selector{
                type: "a",
@@ -236,7 +236,9 @@ defmodule Floki.Selector.ParserTest do
                pseudo_classes: [%PseudoClass{name: "not", value: [%Selector{classes: ["bar"]}]}]
              }
            ]
+  end
 
+  test "not pseudo-class - two classes" do
     assert Parser.parse("a.foo:not(.bar, .baz)") == [
              %Selector{
                type: "a",
@@ -249,7 +251,9 @@ defmodule Floki.Selector.ParserTest do
                ]
              }
            ]
+  end
 
+  test "not pseudo-class - double not - accumulative" do
     assert Parser.parse("a.foo:not(.bar):not(.baz)") == [
              %Selector{
                type: "a",
@@ -260,7 +264,9 @@ defmodule Floki.Selector.ParserTest do
                ]
              }
            ]
+  end
 
+  test "not pseudo-class - with pseudo nth-child inside and descendant outside" do
     assert Parser.parse("li:not(:nth-child(2)) a") == [
              %Selector{
                type: "li",
@@ -273,7 +279,9 @@ defmodule Floki.Selector.ParserTest do
                combinator: %Combinator{match_type: :descendant, selector: %Selector{type: "a"}}
              }
            ]
+  end
 
+  test "not pseudo-class - ignore combinators inside" do
     assert Parser.parse("a.foo:not(.bar > .baz)") == [
              %Selector{
                type: "a",
@@ -282,6 +290,11 @@ defmodule Floki.Selector.ParserTest do
              }
            ]
 
+    assert capture_log(log_capturer("a.foo:not(.bar > .baz)")) =~
+             "module=Floki.Selector.Parser  Only simple selectors are allowed in :not() pseudo-class. Ignoring."
+  end
+
+  test "not pseudo-class - with attribute selector" do
     assert Parser.parse("a.foo:not([style*=crazy])") == [
              %Selector{
                attributes: [],
@@ -307,7 +320,9 @@ defmodule Floki.Selector.ParserTest do
                type: "a"
              }
            ]
+  end
 
+  test "not pseudo-class - with attribute selector and class" do
     assert Parser.parse("a.foo:not([style*=crazy], .bar)") == [
              %Selector{
                attributes: [],
@@ -334,9 +349,26 @@ defmodule Floki.Selector.ParserTest do
                type: "a"
              }
            ]
+  end
 
-    assert capture_log(log_capturer("a.foo:not(.bar > .baz)")) =~
-             "module=Floki.Selector.Parser  Only simple selectors are allowed in :not() pseudo-class. Ignoring."
+  test "not pseudo-class and attr selection with another selector" do
+    assert Parser.parse("a.foo:not([class]), hr") == [
+             %Selector{
+               type: "a",
+               classes: ["foo"],
+               pseudo_classes: [
+                 %PseudoClass{
+                   name: "not",
+                   value: [%Selector{attributes: [%AttributeSelector{attribute: "class"}]}]
+                 }
+               ]
+             },
+             %Selector{
+               type: "hr",
+               classes: [],
+               pseudo_classes: []
+             }
+           ]
   end
 
   test "warn unknown tokens" do
