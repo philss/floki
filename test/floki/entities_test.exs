@@ -55,6 +55,7 @@ defmodule Floki.EntitiesTest do
     test "returns not found for unknown entities" do
       assert {:error, :not_found} = Entities.decode("&pastel;")
       assert {:error, :not_found} = Entities.decode("&churrasco;")
+      assert {:error, :not_found} = Entities.decode("&#-37;")
     end
   end
 end

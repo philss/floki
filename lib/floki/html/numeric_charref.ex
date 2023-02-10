@@ -104,5 +104,8 @@ defmodule Floki.HTML.NumericCharref do
     {:ok, {:list_of_errors, number}}
   end
 
-  def to_unicode_number(number), do: {:ok, {:unicode, number}}
+  def to_unicode_number(number) when is_integer(number) and number >= 0,
+    do: {:ok, {:unicode, number}}
+
+  def to_unicode_number(number), do: {:error, {:negative_number, number}}
 end

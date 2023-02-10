@@ -12,8 +12,13 @@ defmodule Floki.Entities do
       <<"&#", numeric::binary>> ->
         case extract_byte_from_num_charref(numeric) do
           {:ok, number} ->
-            {:ok, {_, unicode_number}} = Floki.HTML.NumericCharref.to_unicode_number(number)
-            {:ok, <<unicode_number::utf8>>}
+            case Floki.HTML.NumericCharref.to_unicode_number(number) do
+              {:ok, {_, unicode_number}} ->
+                {:ok, <<unicode_number::utf8>>}
+
+              {:error, {:negative_number, _}} ->
+                {:error, :not_found}
+            end
 
           :error ->
             {:error, :not_found}
