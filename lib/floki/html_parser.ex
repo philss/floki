@@ -21,15 +21,19 @@ defmodule Floki.HTMLParser do
 
   @default_parser Floki.HTMLParser.Mochiweb
 
-  @callback parse_document(binary()) :: {:ok, Floki.html_tree()} | {:error, String.t()}
-  @callback parse_fragment(binary()) :: {:ok, Floki.html_tree()} | {:error, String.t()}
+  @callback parse_document(binary(), list()) :: {:ok, Floki.html_tree()} | {:error, String.t()}
+  @callback parse_fragment(binary(), list()) :: {:ok, Floki.html_tree()} | {:error, String.t()}
 
   def parse_document(html, opts \\ []) do
-    parser(opts).parse_document(html)
+    parser_args = opts[:parser_args] || []
+
+    parser(opts).parse_document(html, parser_args)
   end
 
   def parse_fragment(html, opts \\ []) do
-    parser(opts).parse_fragment(html)
+    parser_args = opts[:parser_args] || []
+
+    parser(opts).parse_fragment(html, parser_args)
   end
 
   defp parser(opts) do

@@ -175,6 +175,80 @@ defmodule FlokiTest do
 
       Enum.each(@plain_text_tags, validate_html)
     end
+
+    @tag only_parser: FastHtml
+    test "parses all elements as strings by default" do
+      html = html_body(~s(<div><p>Content</p><custom>Custom</custom></div>))
+
+      {:ok, parsed} = Floki.parse_document(html)
+
+      assert [
+               {
+                 "html",
+                 [],
+                 [
+                   {"head", [], []},
+                   {
+                     "body",
+                     [],
+                     [
+                       {"div", [], [{"p", [], ["Content"]}, {"custom", [], ["Custom"]}]}
+                     ]
+                   }
+                 ]
+               }
+             ] = parsed
+    end
+
+    @tag only_parser: FastHtml
+    test "parses known elements as atoms when :html_atoms format argument is given" do
+      html = html_body(~s(<div><p>Content</p><custom>Custom</custom></div>))
+
+      {:ok, parsed} = Floki.parse_document(html, parser_args: [format: [:html_atoms]])
+
+      assert [
+               {
+                 :html,
+                 [],
+                 [
+                   {:head, [], []},
+                   {
+                     :body,
+                     [],
+                     [
+                       {:div, [], [{:p, [], ["Content"]}, {"custom", [], ["Custom"]}]}
+                     ]
+                   }
+                 ]
+               }
+             ] == parsed
+    end
+  end
+
+  describe "parse_fragment/2" do
+    @tag only_parser: FastHtml
+    test "does not parse a table row with missing parent table tag by default" do
+      html = "<tr><td>Column 1</td><td>Column 2</td></tr>"
+
+      {:ok, parsed} = Floki.parse_fragment(html)
+
+      assert ["Column 1Column 2"] == parsed
+    end
+
+    @tag only_parser: FastHtml
+    test "parses a table row with missing parent table tag when table context is given" do
+      html = "<tr><td>1</td><td>2</td></tr>"
+
+      {:ok, parsed} = Floki.parse_fragment(html, parser_args: [context: "table"])
+
+      assert [
+               {
+                 "tbody",
+                 [],
+                 [{"tr", [], [{"td", [], ["1"]}, {"td", [], ["2"]}]}]
+               }
+             ] == parsed
+    end
   end
 
   # Floki.raw_html/2
