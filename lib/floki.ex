@@ -372,9 +372,9 @@ defmodule Floki do
   The tree is traversed in a post-walk fashion, where the children are traversed
   before the parent.
 
-  When the function `fun` encounters HTML tag, it receives a tuple with
-  `{name, attributes, children}`, and should either return a similar tuple or
-  `nil` to delete the current node.
+  When the function `fun` encounters HTML tag, it receives a tuple with `{name,
+  attributes, children}`, and should either return a similar tuple, a list of
+  tuples to split current node or `nil` to delete it.
 
   The function `fun` can also encounter HTML doctype, comment or declaration and
   will receive, and should return, different tuple for these types. See the
@@ -404,7 +404,7 @@ defmodule Floki do
 
   @spec traverse_and_update(
           html_node() | html_tree(),
-          (html_node() -> html_node() | nil)
+          (html_node() -> html_node() | [html_node()] | nil)
         ) :: html_node() | html_tree()
 
   defdelegate traverse_and_update(html_tree, fun), to: Floki.Traversal
@@ -458,7 +458,7 @@ defmodule Floki do
           html_node() | html_tree(),
           traverse_acc,
           (html_node(), traverse_acc ->
-             {html_node() | nil, traverse_acc})
+             {html_node() | [html_node()] | nil, traverse_acc})
         ) :: {html_node() | html_tree(), traverse_acc}
         when traverse_acc: any()
   defdelegate traverse_and_update(html_tree, acc, fun), to: Floki.Traversal
