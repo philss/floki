@@ -21,6 +21,7 @@ defmodule Floki.Traversal do
 
       {mapped_head, new_acc} ->
         {mapped_tail, new_acc2} = traverse_and_update(tail, new_acc, fun)
+
         mapped =
           if is_list(mapped_head) do
             mapped_head ++ mapped_tail
