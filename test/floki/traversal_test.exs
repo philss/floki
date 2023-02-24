@@ -75,6 +75,39 @@ defmodule Floki.TraversalTest do
                 ]}
              ]
     end
+
+    test "splits a node" do
+      html = [
+        {"div", [],
+         [
+           {"p", [], ["foo"]}
+         ]},
+        {"div", [],
+         [
+           {"p", [], ["hello world"]}
+         ]}
+      ]
+
+      assert Floki.traverse_and_update(html, fn
+               {"p", attrs, [text]} ->
+                 for word <- String.split(text) do
+                   {"p", attrs, [word]}
+                 end
+
+               tag ->
+                 tag
+             end) == [
+               {"div", [],
+                [
+                  {"p", [], ["foo"]}
+                ]},
+               {"div", [],
+                [
+                  {"p", [], ["hello"]},
+                  {"p", [], ["world"]}
+                ]}
+             ]
+    end
   end
 
   describe "traverse_and_update/3" do
@@ -157,6 +190,29 @@ defmodule Floki.TraversalTest do
                      {"span", [], ["a comment"]}
                    ]}
                 ], 5}
+    end
+
+    test "splits a node" do
+      html = [
+        {"p", [], ["hello world"]}
+      ]
+
+      assert Floki.traverse_and_update(html, 0, fn
+               {"p", attrs, [text]}, acc ->
+                 nodes =
+                   for word <- String.split(text) do
+                     {"p", attrs, [word]}
+                   end
+
+                 {nodes, acc + 1}
+
+               tag, acc ->
+                 {tag, acc + 1}
+             end) ==
+               {[
+                  {"p", [], ["hello"]},
+                  {"p", [], ["world"]}
+                ], 1}
     end
   end
 end
