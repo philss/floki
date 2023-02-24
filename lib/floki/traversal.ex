@@ -21,7 +21,14 @@ defmodule Floki.Traversal do
 
       {mapped_head, new_acc} ->
         {mapped_tail, new_acc2} = traverse_and_update(tail, new_acc, fun)
-        {List.flatten([mapped_head | mapped_tail]), new_acc2}
+        mapped =
+          if is_list(mapped_head) do
+            mapped_head ++ mapped_tail
+          else
+            [mapped_head | mapped_tail]
+          end
+
+        {mapped, new_acc2}
     end
   end
 
