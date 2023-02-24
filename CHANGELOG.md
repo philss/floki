@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased][unreleased]
 
+## [0.34.2] - 2023-02-24
+
+### Added
+
+- Add option to pass down arguments to the parser in `Floki.parse_document/2` and
+  `Floki.parse_fragment/2`. Thanks [@Kuret](https://github.com/Kuret).
+
+- Add support for returning more elements from the `Floki.traverse_and_update/2` function callback.
+  This enables the creation of more elements in the tree, but should be used with care,
+  since the tree can grow a lot if the change is not controlled. Thanks [@martosaur](https://github.com/martosaur).
+
 ## [0.34.1] - 2023-02-11
 
 ### Fixed
@@ -643,7 +654,8 @@ of the parent element inside HTML.
 
 - Elixir version requirement from "~> 1.0.0" to ">= 1.0.0".
 
-[unreleased]: https://github.com/philss/floki/compare/v0.34.1...HEAD
+[unreleased]: https://github.com/philss/floki/compare/v0.34.2...HEAD
+[0.34.2]: https://github.com/philss/floki/compare/v0.34.1...v0.34.2
 [0.34.1]: https://github.com/philss/floki/compare/v0.34.0...v0.34.1
 [0.34.0]: https://github.com/philss/floki/compare/v0.33.1...v0.34.0
 [0.33.1]: https://github.com/philss/floki/compare/v0.33.0...v0.33.1
