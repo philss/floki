@@ -22,6 +22,14 @@ defmodule Floki.Selector.ParserTest do
     end
   end
 
+  test "escaped colons in class names" do 
+    tokens = tokenize("a.xs\\:red-500")
+
+    assert Parser.parse(tokens) == [
+      %Selector{type: "a", classes: ["xs\\:red-500"], pseudo_classes: []}
+    ]
+  end
+
   test "multiple selectors" do
     tokens = tokenize("ol, ul")
 

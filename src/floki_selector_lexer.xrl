@@ -20,6 +20,7 @@ Rules.
 {SYMBOL}                             : {token, {TokenChars, TokenLine}}.
 #{IDENTIFIER}                        : {token, {hash, TokenLine, tail(TokenChars)}}.
 \.{IDENTIFIER}                       : {token, {class, TokenLine, tail(TokenChars)}}.
+\.{IDENTIFIER}\\:{IDENTIFIER}        : {token, {class, TokenLine, tail(TokenChars)}}.
 \:{NOT}\(                            : {token, {pseudo_not, TokenLine}}.
 \:{IDENTIFIER}                       : {token, {pseudo, TokenLine, tail(TokenChars)}}.
 \({INT}\)                            : {token, {pseudo_class_int, TokenLine, list_to_integer(remove_wrapper(TokenChars))}}.
