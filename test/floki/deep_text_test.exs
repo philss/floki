@@ -15,6 +15,30 @@ defmodule Floki.DeepTextTest do
     assert Floki.DeepText.get(node, " ") == "Google"
   end
 
+  test "extracts text from text input" do
+    html = "<input value='foo' />"
+    {:ok, node} = Floki.parse_document(html)
+
+    assert Floki.DeepText.get(node, " ", true) == "foo"
+  end
+
+  test "extracts text from textarea" do
+    html = "<textarea value='bar' />"
+    {:ok, node} = Floki.parse_document(html)
+
+    assert Floki.DeepText.get(node, " ", true) == "bar"
+  end
+
+  test "extracts text from nested inputs" do
+    node =
+      {"div", [],
+       [
+         {"input", [{"value", "bar"}], []}
+       ]}
+
+    assert Floki.DeepText.get(node, " ", true) == "bar"
+  end
+
   test "text from a list of deep nodes" do
     nodes = [
       {

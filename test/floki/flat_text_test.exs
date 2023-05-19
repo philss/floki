@@ -15,6 +15,28 @@ defmodule Floki.FlatTextTest do
     assert Floki.FlatText.get(node, " ") == "Elixir lang"
   end
 
+  test "extracts text from text input" do
+    node = {"input", [{"value", "foo"}], []}
+
+    assert Floki.FlatText.get(node, " ", true) == "foo"
+  end
+
+  test "extracts text from textarea" do
+    node = {"textarea", [{"value", "bar"}], []}
+
+    assert Floki.FlatText.get(node, " ", true) == "bar"
+  end
+
+  test "extracts text from nested inputs" do
+    node =
+      {"div", [],
+       [
+         {"input", [{"value", "bar"}], []}
+       ]}
+
+    assert Floki.FlatText.get(node, " ", true) == "bar"
+  end
+
   test "a blank string when the node does not have text in the same level" do
     node = {"div", [], [{"a", [], ["Something in a deeper node"]}]}
 
