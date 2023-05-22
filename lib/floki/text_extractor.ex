@@ -2,7 +2,6 @@ defmodule Floki.TextExtractor do
   @moduledoc false
 
   @allowed_input_types [
-    nil,
     "color",
     "date",
     "datetime-local",
@@ -18,18 +17,12 @@ defmodule Floki.TextExtractor do
   ]
 
   def extract_input_value(attrs) do
-    type = Enum.find(attrs, &match?({"type", _}, &1))
+    {"type", t} = Enum.find(attrs, {"type", "text"}, &match?({"type", _}, &1))
 
-    case type do
-      {"type", t} ->
-        if t in @allowed_input_types do
-          extract_value(attrs)
-        else
-          ""
-        end
-
-      nil ->
-        extract_value(attrs)
+    if t in @allowed_input_types do
+      extract_value(attrs)
+    else
+      ""
     end
   end
 
