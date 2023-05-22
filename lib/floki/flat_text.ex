@@ -11,31 +11,36 @@ defmodule Floki.FlatText do
 
   @type html_tree :: tuple | list
 
-  @spec get(html_tree, binary) :: binary
+  @spec get(html_tree, binary, boolean) :: binary
 
-  def get(html_nodes, sep \\ "")
+  def get(html_nodes, sep \\ "", include_inputs? \\ false)
 
-  def get(html_nodes, sep) when is_list(html_nodes) do
+  def get(html_nodes, sep, include_inputs?) when is_list(html_nodes) do
     Enum.reduce(html_nodes, "", fn html_node, acc ->
-      text_from_node(html_node, acc, sep)
+      text_from_node(html_node, acc, 0, sep, include_inputs?)
     end)
   end
 
-  def get(html_node, sep) do
-    text_from_node(html_node, "", sep)
+  def get(html_node, sep, include_inputs?) do
+    text_from_node(html_node, "", 0, sep, include_inputs?)
   end
 
-  defp text_from_node({_tag, _attrs, html_nodes}, acc, sep) do
+  defp text_from_node({"input", attrs, []}, acc, _, _, true) do
+    acc <> Floki.TextExtractor.extract_input_value(attrs)
+  end
+
+  defp text_from_node({"textarea", attrs, []}, acc, _, _, true) do
+    acc <> Floki.TextExtractor.extract_input_value(attrs)
+  end
+
+  defp text_from_node({_tag, _attrs, html_nodes}, acc, depth, sep, include_inputs?)
+       when depth < 1 do
     Enum.reduce(html_nodes, acc, fn html_node, acc ->
-      capture_text(html_node, acc, sep)
+      text_from_node(html_node, acc, depth + 1, sep, include_inputs?)
     end)
   end
 
-  defp text_from_node(text, "", _sep) when is_binary(text), do: text
-  defp text_from_node(text, acc, sep) when is_binary(text), do: Enum.join([acc, text], sep)
-  defp text_from_node(_, acc, _), do: acc
-
-  defp capture_text(text, "", _sep) when is_binary(text), do: text
-  defp capture_text(text, acc, sep) when is_binary(text), do: Enum.join([acc, text], sep)
-  defp capture_text(_html_node, acc, _), do: acc
+  defp text_from_node(text, "", _, _sep, _) when is_binary(text), do: text
+  defp text_from_node(text, acc, _, sep, _) when is_binary(text), do: Enum.join([acc, text], sep)
+  defp text_from_node(_, acc, _, _, _), do: acc
 end

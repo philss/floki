@@ -482,6 +482,9 @@ defmodule Floki do
       iex> Floki.text({"div", [], [{"script", [], ["hello"]}, " world"]})
       " world"
 
+      iex> Floki.text([{"input", [{"type", "date"}, {"value", "2017-06-01"}], []}], include_inputs: true)
+      "2017-06-01"
+
       iex> Floki.text({"div", [], [{"script", [], ["hello"]}, " world"]}, js: true)
       "hello world"
 
@@ -504,7 +507,7 @@ defmodule Floki do
 
   @spec text(html_tree | html_node | binary) :: binary
 
-  def text(html, opts \\ [deep: true, js: false, style: true, sep: ""]) do
+  def text(html, opts \\ [deep: true, js: false, style: true, sep: "", include_inputs: false]) do
     cleaned_html_tree =
       html
       |> parse_it()
@@ -518,8 +521,8 @@ defmodule Floki do
       end
 
     case opts[:sep] do
-      nil -> search_strategy.get(cleaned_html_tree)
-      sep -> search_strategy.get(cleaned_html_tree, sep)
+      nil -> search_strategy.get(cleaned_html_tree, "", opts[:include_inputs])
+      sep -> search_strategy.get(cleaned_html_tree, sep, opts[:include_inputs])
     end
   end
 
