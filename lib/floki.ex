@@ -521,7 +521,7 @@ defmodule Floki do
       end
 
     case opts[:sep] do
-      nil -> search_strategy.get(cleaned_html_tree, "", opts[:include_inputs?])
+      nil -> search_strategy.get(cleaned_html_tree, "", opts[:include_inputs])
       sep -> search_strategy.get(cleaned_html_tree, sep, opts[:include_inputs])
     end
   end
