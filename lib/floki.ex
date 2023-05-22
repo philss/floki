@@ -507,7 +507,7 @@ defmodule Floki do
 
   @spec text(html_tree | html_node | binary) :: binary
 
-  def text(html, opts \\ [deep: true, js: false, style: true, sep: "", include_inputs?: false]) do
+  def text(html, opts \\ [deep: true, js: false, style: true, sep: "", include_inputs: false]) do
     cleaned_html_tree =
       html
       |> parse_it()
