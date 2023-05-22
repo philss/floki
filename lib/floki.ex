@@ -482,7 +482,7 @@ defmodule Floki do
       iex> Floki.text({"div", [], [{"script", [], ["hello"]}, " world"]})
       " world"
 
-      iex> Floki.text([{"input", [{"type", "date"}, {"value", "2017-06-01"}], []}], include_inputs?: true)
+      iex> Floki.text([{"input", [{"type", "date"}, {"value", "2017-06-01"}], []}], include_inputs: true)
       "2017-06-01"
 
       iex> Floki.text({"div", [], [{"script", [], ["hello"]}, " world"]}, js: true)
