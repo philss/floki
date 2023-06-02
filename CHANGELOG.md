@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased][unreleased]
 
+## [0.34.3] - 2023-06-02
+
+### Added
+
+- Add boolean option `:include_inputs` to `Floki.text/2` that changes the result
+  of this function to include the values of inputs. So if there is any input with
+  a "value" attribute, we now include that value if this option is set to `true`.
+  Thanks [@viniciusmuller](https://github.com/viniciusmuller).
+
+### Fixed
+
+- Fix find of elements by classes that contain colons. This is useful for when 
+  people are trying to find elements that contain Tailwind classes.
+  Thanks [@viniciusmuller](https://github.com/viniciusmuller).
+
+- Fix some typespecs that were using types from private modules. This is a fix
+  to the documentation.
+
 ## [0.34.2] - 2023-02-24
 
 ### Added
@@ -654,7 +672,8 @@ of the parent element inside HTML.
 
 - Elixir version requirement from "~> 1.0.0" to ">= 1.0.0".
 
-[unreleased]: https://github.com/philss/floki/compare/v0.34.2...HEAD
+[unreleased]: https://github.com/philss/floki/compare/v0.34.3...HEAD
+[0.34.3]: https://github.com/philss/floki/compare/v0.34.2...v0.34.3
 [0.34.2]: https://github.com/philss/floki/compare/v0.34.1...v0.34.2
 [0.34.1]: https://github.com/philss/floki/compare/v0.34.0...v0.34.1
 [0.34.0]: https://github.com/philss/floki/compare/v0.33.1...v0.34.0

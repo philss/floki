@@ -73,7 +73,7 @@ defmodule Floki do
           html_tag() | html_comment() | html_doctype() | html_declaration() | html_text()
   @type html_tree :: [html_node()]
 
-  @type css_selector :: String.t() | Floki.Selector.t() | [Floki.Selector.t()]
+  @type css_selector :: String.t() | %Floki.Selector{} | [%Floki.Selector{}]
 
   @doc """
   Parses a HTML Document from a String.
@@ -684,7 +684,7 @@ defmodule Floki do
 
   """
 
-  @spec filter_out(html_node() | html_tree() | binary(), FilterOut.selector()) ::
+  @spec filter_out(html_node() | html_tree() | binary(), :comment | :text | css_selector()) ::
           html_node() | html_tree()
 
   def filter_out(html, selector) when is_binary(html) do
