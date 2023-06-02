@@ -1,4 +1,9 @@
-current_parser = Application.get_env(:floki, :html_parser)
+current_parser = Application.get_env(:floki, :html_parser, Floki.HTMLParser.Mochiweb)
+
+Application.put_env(:logger, :console,
+  format: "$metadata $message\n",
+  metadata: [:module]
+)
 
 # fast_html uses a C-Node worker for parsing, so starting the application
 # is necessary for it to work

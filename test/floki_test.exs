@@ -116,7 +116,7 @@ defmodule FlokiTest do
                 ]}
              ] = parsed
 
-      current_parser = Application.get_env(:floki, :html_parser)
+      current_parser = Application.get_env(:floki, :html_parser, Mochiweb)
 
       case current_parser do
         Mochiweb ->
