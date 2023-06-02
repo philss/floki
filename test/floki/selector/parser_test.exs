@@ -26,7 +26,13 @@ defmodule Floki.Selector.ParserTest do
     tokens = tokenize("a.xs\\:red-500")
 
     assert Parser.parse(tokens) == [
-             %Selector{type: "a", classes: ["xs\\:red-500"], pseudo_classes: []}
+             %Selector{type: "a", classes: ["xs:red-500"], pseudo_classes: []}
+           ]
+
+    tokens = tokenize("a.xs\\:red-500\\:big")
+
+    assert Parser.parse(tokens) == [
+             %Selector{type: "a", classes: ["xs:red-500:big"], pseudo_classes: []}
            ]
   end
 

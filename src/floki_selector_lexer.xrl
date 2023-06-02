@@ -1,6 +1,7 @@
 Definitions.
 
-IDENTIFIER = [-A-Za-z0-9_]+(\\\.[-A-Za-z0-9_]+)*
+ESCAPED = \\[:.]
+IDENTIFIER = [-A-Za-z0-9_]+(({ESCAPED})?[-A-Za-z0-9_]+)*
 QUOTED = (\"[^"]*\"|\'[^']*\')
 PARENTESIS = \([^)]*\)
 INT = [0-9]+
@@ -18,9 +19,8 @@ Rules.
 {QUOTED}                             : {token, {quoted, TokenLine, remove_wrapper(TokenChars)}}.
 {ATTRIBUTE_IDENTIFIER}               : {token, {attribute_identifier, TokenLine, TokenChars}}.
 {SYMBOL}                             : {token, {TokenChars, TokenLine}}.
-#{IDENTIFIER}                        : {token, {hash, TokenLine, tail(TokenChars)}}.
-\.{IDENTIFIER}                       : {token, {class, TokenLine, tail(TokenChars)}}.
-\.{IDENTIFIER}\\:{IDENTIFIER}        : {token, {class, TokenLine, tail(TokenChars)}}.
+#{IDENTIFIER}                        : {token, {hash, TokenLine, unescape_inside_id_name(tail(TokenChars))}}.
+\.{IDENTIFIER}                       : {token, {class, TokenLine, unescape_inside_class_name(tail(TokenChars))}}.
 \:{NOT}\(                            : {token, {pseudo_not, TokenLine}}.
 \:{IDENTIFIER}                       : {token, {pseudo, TokenLine, tail(TokenChars)}}.
 \({INT}\)                            : {token, {pseudo_class_int, TokenLine, list_to_integer(remove_wrapper(TokenChars))}}.
@@ -51,3 +51,9 @@ remove_wrapper(Chars) ->
 
 tail([_|T]) ->
   T.
+
+unescape_inside_class_name(Chars) ->
+  lists:flatten(string:replace(Chars, "\\:", ":", all)).
+
+unescape_inside_id_name(Chars) ->
+  lists:flatten(string:replace(Chars, "\\.", ".", all)).
