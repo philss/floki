@@ -51,4 +51,4 @@ jobs:
 
       - name: Run test
         run: |-
-          MIX_ENV=test mix test.${{ matrix.parser }}
+          MIX_ENV=test mix test_${{ matrix.parser }}

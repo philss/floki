@@ -65,15 +65,15 @@ defmodule Floki.Mixfile do
           |> List.last()
           |> Macro.underscore()
 
-        {{:"test.#{cli_name}", &test_with_parser(parser, &1)}, [cli_name | acc]}
+        {{:"test_#{cli_name}", &test_with_parser(parser, &1)}, [cli_name | acc]}
       end)
 
-    Keyword.put(aliases, :test, &test_with_parser(cli_names, &1))
+    Keyword.put(aliases, :test_all, &test_with_parser(cli_names, &1))
   end
 
   defp test_with_parser(parser_cli_names, args) when is_list(parser_cli_names) do
     Enum.each(parser_cli_names, fn cli_name ->
-      Mix.shell().cmd("mix test.#{cli_name} --color #{Enum.join(args, " ")}",
+      Mix.shell().cmd("mix test_#{cli_name} --color #{Enum.join(args, " ")}",
         env: [{"MIX_ENV", "test"}]
       )
     end)
