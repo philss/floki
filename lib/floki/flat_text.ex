@@ -16,21 +16,25 @@ defmodule Floki.FlatText do
   def get(html_nodes, sep \\ "", include_inputs? \\ false)
 
   def get(html_nodes, sep, include_inputs?) when is_list(html_nodes) do
-    Enum.reduce(html_nodes, "", fn html_node, acc ->
+    html_nodes
+    |> Enum.reduce([], fn html_node, acc ->
       text_from_node(html_node, acc, 0, sep, include_inputs?)
     end)
+    |> IO.iodata_to_binary()
   end
 
   def get(html_node, sep, include_inputs?) do
-    text_from_node(html_node, "", 0, sep, include_inputs?)
+    html_node
+    |> text_from_node([], 0, sep, include_inputs?)
+    |> IO.iodata_to_binary()
   end
 
   defp text_from_node({"input", attrs, []}, acc, _, _, true) do
-    acc <> Floki.TextExtractor.extract_input_value(attrs)
+    [acc, Floki.TextExtractor.extract_input_value(attrs)]
   end
 
   defp text_from_node({"textarea", attrs, []}, acc, _, _, true) do
-    acc <> Floki.TextExtractor.extract_input_value(attrs)
+    [acc, Floki.TextExtractor.extract_input_value(attrs)]
   end
 
   defp text_from_node({_tag, _attrs, html_nodes}, acc, depth, sep, include_inputs?)
@@ -40,7 +44,7 @@ defmodule Floki.FlatText do
     end)
   end
 
-  defp text_from_node(text, "", _, _sep, _) when is_binary(text), do: text
-  defp text_from_node(text, acc, _, sep, _) when is_binary(text), do: Enum.join([acc, text], sep)
+  defp text_from_node(text, [], _, _sep, _) when is_binary(text), do: text
+  defp text_from_node(text, acc, _, sep, _) when is_binary(text), do: [acc, sep, text]
   defp text_from_node(_, acc, _, _, _), do: acc
 end
