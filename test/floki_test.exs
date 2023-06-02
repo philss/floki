@@ -630,6 +630,31 @@ defmodule FlokiTest do
     assert Floki.find(document!(@html), class_selector) == []
   end
 
+  test "find elements with colon in class names" do
+    html =
+      document!(
+        html_body("""
+        <div class="w-56 flex justify-end astro-SCKKX6R4"></div>
+        <div class="m-auto max-w-7xl px-4 pt-12 pb-20 flex flex-col xl:flex-row space-y-16
+        md:space-y-20 xl:space-y-0"></div>
+        <section class="flex flex-col xl:flex-row"></section>
+        """)
+      )
+
+    assert Floki.find(html, ".xl\\:flex-row.md\\:space-y-20") == [
+             {
+               "div",
+               [
+                 {
+                   "class",
+                   "m-auto max-w-7xl px-4 pt-12 pb-20 flex flex-col xl:flex-row space-y-16\nmd:space-y-20 xl:space-y-0"
+                 }
+               ],
+               []
+             }
+           ]
+  end
+
   # Floki.find/2 - Tag name
 
   test "select elements by tag name" do
