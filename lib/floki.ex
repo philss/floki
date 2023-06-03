@@ -96,11 +96,18 @@ defmodule Floki do
   end
 
   @doc """
-  Parses a HTML Document from a string.
+  Parses an HTML document from a string.
 
-  It will use the available parser from application env or the one from the
-  `:html_parser` option.
-  Check https://github.com/philss/floki#alternative-html-parsers for more details.
+  This is the main function to get a tree from an HTML string.
+
+  ## Options
+
+    * `:html_parser` - The module of the backend that is responsible for parsing
+      the HTML string. By default it is set to the built-in parser, and the module
+      name is equal to `Floki.HTMLParser.Mochiweb`, or from the value of the
+      application env of the same name.
+
+      See https://github.com/philss/floki#alternative-html-parsers for more details.
 
   ## Examples
 
@@ -139,12 +146,19 @@ defmodule Floki do
   end
 
   @doc """
-  Parses a HTML fragment from a string.
+  Parses an HTML fragment from a string.
 
-  It will use the available parser from application env or the one from the
-  `:html_parser` option.
+  This is mostly for parsing sections of an HTML document.
 
-  Check https://github.com/philss/floki#alternative-html-parsers for more details.
+  ## Options
+
+    * `:html_parser` - The module of the backend that is responsible for parsing
+      the HTML string. By default it is set to the built-in parser, and the module
+      name is equal to `Floki.HTMLParser.Mochiweb`, or from the value of the
+      application env of the same name.
+
+      See https://github.com/philss/floki#alternative-html-parsers for more details.
+
   """
 
   @spec parse_fragment(binary(), Keyword.t()) :: {:ok, html_tree()} | {:error, String.t()}
@@ -169,26 +183,28 @@ defmodule Floki do
 
   @doc """
   Converts HTML tree to raw HTML.
+
   Note that the resultant HTML may be different from the original one.
   Spaces after tags and doctypes are ignored.
 
   ## Options
 
-  - `:encode`: accepts `true` or `false`. Will encode html special characters
-  to html entities.
-  You can also control the encoding behaviour at the application level via
-  `config :floki, :encode_raw_html, true | false`
+    * `:encode` - A boolean option to control if special HTML characters
+    should be encoded as HTML entities. Defaults to `true`. 
 
-  - `:pretty`: accepts `true` or `false`. Will format the output, ignoring
-  breaklines and spaces from the input and putting new ones in order to pretty format
-  the html.
+    You can also control the encoding behaviour at the application level via
+    `config :floki, :encode_raw_html, false`
+
+    * `:pretty` - Controls if the output should be formatted, ignoring
+    breaklines and spaces from the input and putting new ones in order
+    to pretty format the html. Defaults to `false`.
 
   ## Examples
 
       iex> Floki.raw_html({"div", [{"class", "wrapper"}], ["my content"]})
       ~s(<div class="wrapper">my content</div>)
 
-      iex> Floki.raw_html({"div", [{"class", "wrapper"}], ["10 > 5"]}, encode: true)
+      iex> Floki.raw_html({"div", [{"class", "wrapper"}], ["10 > 5"]})
       ~s(<div class="wrapper">10 &gt; 5</div>)
 
       iex> Floki.raw_html({"div", [{"class", "wrapper"}], ["10 > 5"]}, encode: false)
@@ -209,7 +225,7 @@ defmodule Floki do
   defdelegate raw_html(html_tree, options \\ []), to: Floki.RawHTML
 
   @doc """
-  Find elements inside a HTML tree or string.
+  Find elements inside an HTML tree or string.
 
   ## Examples
 
@@ -471,6 +487,26 @@ defmodule Floki do
   You can include content of script tags with the option `js` assigned to true.
   You can specify a separator between nodes content.
 
+  ## Options
+
+    * `:deep` - A boolean option to control how deep the search for 
+      text is going to be. If `false`, only the level of the HTML node
+      or the first level of the HTML document is going to be considered.
+      Defaults to `true`.
+
+    * `:js` - A boolean option to control if the contents of script tags
+      should be considered as text. Defaults to `false`.
+
+    * `:sep` - A separator string that is added between text nodes.
+      Defaults to `""`.
+
+    * `:include_inputs` - A boolean to control if `<input>` or `<textarea>`
+      values should be included in the resultant string.
+      Defaults to `false`.
+
+    * `:html_parser` - The module of the backend that is responsible for parsing
+      the HTML string. By default it is set to `Floki.HTMLParser.Mochiweb`.
+
   ## Examples
 
       iex> Floki.text({"div", [], [{"span", [], ["hello"]}, " world"]})
@@ -505,25 +541,23 @@ defmodule Floki do
 
   """
 
-  @spec text(html_tree | html_node | binary) :: binary
+  @spec text(html_tree | html_node | binary, Keyword.t()) :: binary
 
-  def text(html, opts \\ [deep: true, js: false, style: true, sep: "", include_inputs: false]) do
+  def text(html, opts \\ []) do
+    defaults = [deep: true, js: false, style: true, sep: "", include_inputs: false]
+
+    # We can use `Keyword.validate!` when require Elixir 1.13
+    opts = Keyword.merge(defaults, opts)
+
     cleaned_html_tree =
       html
-      |> parse_it()
+      |> maybe_parse_it()
       |> clean_html_tree(:js, opts[:js])
       |> clean_html_tree(:style, opts[:style])
 
-    search_strategy =
-      case opts[:deep] do
-        false -> Floki.FlatText
-        _ -> Floki.DeepText
-      end
+    search_strategy = if opts[:deep], do: Floki.DeepText, else: Floki.FlatText
 
-    case opts[:sep] do
-      nil -> search_strategy.get(cleaned_html_tree, "", opts[:include_inputs])
-      sep -> search_strategy.get(cleaned_html_tree, sep, opts[:include_inputs])
-    end
+    search_strategy.get(cleaned_html_tree, opts[:sep], opts[:include_inputs])
   end
 
   @doc """
@@ -648,7 +682,7 @@ defmodule Floki do
     )
   end
 
-  defp parse_it(html) when is_binary(html) do
+  defp maybe_parse_it(html) when is_binary(html) do
     Logger.info(
       "deprecation: parse the HTML with parse_document or parse_fragment before using text/2"
     )
@@ -657,7 +691,7 @@ defmodule Floki do
     document
   end
 
-  defp parse_it(html), do: html
+  defp maybe_parse_it(html), do: html
 
   defp clean_html_tree(html_tree, :js, true), do: html_tree
   defp clean_html_tree(html_tree, :js, _), do: filter_out(html_tree, "script")
