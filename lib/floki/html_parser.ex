@@ -16,24 +16,47 @@ defmodule Floki.HTMLParser do
   The default parser is Mochiweb, which comes with Floki.
   You can also choose between Html5ever or FastHtml.
 
+  And it's possible to pass down options to the parsers using
+  the `parser_args` option.
+
   This module is also a behaviour that those parsers must implement.
   """
 
   @default_parser Floki.HTMLParser.Mochiweb
 
-  @callback parse_document(binary(), list()) :: {:ok, Floki.html_tree()} | {:error, String.t()}
-  @callback parse_fragment(binary(), list()) :: {:ok, Floki.html_tree()} | {:error, String.t()}
+  @typep result(success) :: {:ok, success} | {:error, String.t()}
+  @typep html :: binary()
 
-  def parse_document(html, opts \\ []) do
-    parser_args = opts[:parser_args] || []
+  @callback parse_document(html(), Keyword.t()) :: result(Floki.html_tree())
+  @callback parse_fragment(html(), Keyword.t()) :: result(Floki.html_tree())
 
-    parser(opts).parse_document(html, parser_args)
+  @callback parse_document_with_attributes_as_maps(html(), Keyword.t()) ::
+              result(Floki.html_tree())
+  @callback parse_fragment_with_attributes_as_maps(html(), Keyword.t()) ::
+              result(Floki.html_tree())
+
+  def parse_document(html, opts \\ []) when is_binary(html) do
+    {parser_args, opts} = Keyword.pop(opts, :parser_args, [])
+
+    parser = parser(opts)
+
+    if opts[:attributes_as_maps] do
+      parser.parse_document_with_attributes_as_maps(html, parser_args)
+    else
+      parser.parse_document(html, parser_args)
+    end
   end
 
-  def parse_fragment(html, opts \\ []) do
-    parser_args = opts[:parser_args] || []
+  def parse_fragment(html, opts \\ []) when is_binary(html) do
+    {parser_args, opts} = Keyword.pop(opts, :parser_args, [])
 
-    parser(opts).parse_fragment(html, parser_args)
+    parser = parser(opts)
+
+    if opts[:attributes_as_maps] do
+      parser.parse_fragment_with_attributes_as_maps(html, parser_args)
+    else
+      parser.parse_fragment(html, parser_args)
+    end
   end
 
   defp parser(opts) do

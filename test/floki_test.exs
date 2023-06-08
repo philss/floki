@@ -1792,6 +1792,40 @@ defmodule FlokiTest do
     assert result == html
   end
 
+  @tag only_parser: Mochiweb
+  test "parse document with attributes as map option enabled" do
+    html =
+      html_body("""
+      <div class="container">
+        <ul>
+          <li class="link active"><a href="/">Home</a></li>
+          <li class="link"><a href="/about-us">About us</a></li>
+        </ul>
+      </div>
+      """)
+
+    assert {:ok, html_tree} = Floki.parse_document(html, attributes_as_maps: true)
+
+    assert html_tree == [
+             {"html", %{},
+              [
+                {"head", %{}, []},
+                {"body", %{},
+                 [
+                   {"div", %{"class" => "container"},
+                    [
+                      {"ul", %{},
+                       [
+                         {"li", %{"class" => "link active"}, [{"a", %{"href" => "/"}, ["Home"]}]},
+                         {"li", %{"class" => "link"},
+                          [{"a", %{"href" => "/about-us"}, ["About us"]}]}
+                       ]}
+                    ]}
+                 ]}
+              ]}
+           ]
+  end
+
   defp html_body(body) do
     "<html><head></head><body>#{body}</body></html>"
   end
