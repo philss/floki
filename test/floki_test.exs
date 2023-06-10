@@ -1826,6 +1826,41 @@ defmodule FlokiTest do
            ]
   end
 
+  @tag only_parser: Mochiweb
+  test "parse document with attributes as map option enabled and duplicated attributes" do
+    html =
+      html_body("""
+      <div class="container">
+        <ul>
+          <li class="link active"><a href="/">Home</a></li>
+          <li class="link" id="about-us" class="link company"><a href="/about-us">About us</a></li>
+        </ul>
+      </div>
+      """)
+
+    assert {:ok, html_tree} = Floki.parse_document(html, attributes_as_maps: true)
+
+    # It takes the first attribute and ignores the second one.
+    assert html_tree == [
+             {"html", %{},
+              [
+                {"head", %{}, []},
+                {"body", %{},
+                 [
+                   {"div", %{"class" => "container"},
+                    [
+                      {"ul", %{},
+                       [
+                         {"li", %{"class" => "link active"}, [{"a", %{"href" => "/"}, ["Home"]}]},
+                         {"li", %{"class" => "link", "id" => "about-us"},
+                          [{"a", %{"href" => "/about-us"}, ["About us"]}]}
+                       ]}
+                    ]}
+                 ]}
+              ]}
+           ]
+  end
+
   defp html_body(body) do
     "<html><head></head><body>#{body}</body></html>"
   end

@@ -257,7 +257,11 @@ norm({Tag, Attrs}, Opts) ->
     Attrs = [{norm(K, Opts), iolist_to_binary(V)} || {K, V} <- Attrs],
     case lists:keyfind(attributes_as_maps, 1, Opts) of
         {attributes_as_maps, true} ->
-            {norm(Tag, Opts), maps:from_list(Attrs), []};
+            % The HTML specs says we should ignore duplicated attributes and keep the first
+            % occurence of a given key.
+            % Since `maps:from_list/1` does the opposite, we need to reverse the attributes.
+            % See https://github.com/philss/floki/pull/467#discussion_r1225548333
+            {norm(Tag, Opts), maps:from_list(lists:reverse(Attrs)), []};
         _ ->
             {norm(Tag, Opts), Attrs, []}
     end;
