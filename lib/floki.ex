@@ -105,8 +105,7 @@ defmodule Floki do
   ## Options
 
     * `:attributes_as_maps` - Change the behaviour of the parser to return the attributes
-      as maps, instead of a list of `{"key", "value"}`. Remember that maps are no longer 
-      ordered since OTP 26. Default to `false`.
+      as maps, instead of a list of `{"key", "value"}`. Default to `false`.
 
     * `:html_parser` - The module of the backend that is responsible for parsing
       the HTML string. By default it is set to the built-in parser, and the module
