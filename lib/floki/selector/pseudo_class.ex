@@ -111,35 +111,30 @@ defmodule Floki.Selector.PseudoClass do
   end
 
   def match_checked?(%{type: "input"} = html_node) do
-    case List.keyfind(html_node.attributes, "checked", 0) do
-      {"checked", _} -> true
-      _ -> false
-    end
+    attribute_is_present?(html_node.attributes, "checked")
   end
 
   def match_checked?(%{type: "option"} = html_node) do
-    case List.keyfind(html_node.attributes, "selected", 0) do
-      {"selected", _} -> true
-      _ -> false
-    end
+    attribute_is_present?(html_node.attributes, "selected")
   end
 
-  def match_checked?(_) do
-    false
+  def match_checked?(_), do: false
+
+  defp attribute_is_present?(attributes, attribute_name) when is_list(attributes) do
+    match?({^attribute_name, _}, List.keyfind(attributes, attribute_name, 0))
+  end
+
+  defp attribute_is_present?(attributes, attribute_name) when is_map(attributes) do
+    not is_nil(attributes[attribute_name])
   end
 
   @disableable_html_nodes ~w[button input select option textarea]
 
   def match_disabled?(%{type: type} = html_node) when type in @disableable_html_nodes do
-    case List.keyfind(html_node.attributes, "disabled", 0) do
-      {"disabled", _} -> true
-      _ -> false
-    end
+    attribute_is_present?(html_node.attributes, "disabled")
   end
 
-  def match_disabled?(_html_node) do
-    false
-  end
+  def match_disabled?(_html_node), do: false
 
   def match_root?(html_node, tree) do
     html_node.node_id in tree.root_nodes_ids

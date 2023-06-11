@@ -46,7 +46,8 @@ defmodule Floki.Selector.AttributeSelector do
   end
 
   # Returns if attributes of a node matches with a given attribute selector.
-  def match?(attributes, s = %AttributeSelector{match_type: nil, value: nil}) do
+  def match?(attributes, s = %AttributeSelector{match_type: nil, value: nil})
+      when is_list(attributes) or is_map(attributes) do
     attribute_present?(s.attribute, attributes)
   end
 

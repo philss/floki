@@ -533,9 +533,7 @@ defmodule FlokiTest do
   # Floki.find/2 - Classes
 
   test "find elements with a given class" do
-    class_selector = ".js-cool"
-
-    assert Floki.find(document!(@html), class_selector) == [
+    assert Floki.find(document!(@html), ".js-cool") == [
              {
                "a",
                [
@@ -547,6 +545,25 @@ defmodule FlokiTest do
              {
                "a",
                [{"href", "http://elixir-lang.org"}, {"class", "js-elixir js-cool"}],
+               ["Elixir lang"]
+             }
+           ]
+  end
+
+  @tag only_parser: Mochiweb
+  test "find elements with a given class and attributes as maps" do
+    assert Floki.find(document!(@html, attributes_as_maps: true), ".js-cool") == [
+             {
+               "a",
+               %{
+                 "href" => "http://google.com",
+                 "class" => "js-google js-cool"
+               },
+               ["Google"]
+             },
+             {
+               "a",
+               %{"href" => "http://elixir-lang.org", "class" => "js-elixir js-cool"},
                ["Elixir lang"]
              }
            ]
@@ -675,6 +692,17 @@ defmodule FlokiTest do
            ]
   end
 
+  @tag only_parser: Mochiweb
+  test "find element by id when tree has attributes as maps" do
+    assert Floki.find(document!(@html_with_img, attributes_as_maps: true), "#logo") == [
+             {
+               "img",
+               %{"src" => "logo.png", "id" => "logo"},
+               []
+             }
+           ]
+  end
+
   ## Floki.find/2 - Attributes
 
   test "find elements with a tag and a given attribute value with shorthand syntax" do
@@ -688,6 +716,26 @@ defmodule FlokiTest do
                  {"class", "js-google js-cool"},
                  {"data-action", "lolcats"}
                ],
+               ["Google"]
+             }
+           ]
+  end
+
+  @tag only_parser: Mochiweb
+  test "find elements with a tag and a given attribute value with tree containing attributes as maps" do
+    attribute_selector = "a[data-action=lolcats]"
+
+    assert Floki.find(
+             document!(@html_with_data_attributes, attributes_as_maps: true),
+             attribute_selector
+           ) == [
+             {
+               "a",
+               %{
+                 "class" => "js-google js-cool",
+                 "data-action" => "lolcats",
+                 "href" => "http://google.com"
+               },
                ["Google"]
              }
            ]
@@ -709,7 +757,7 @@ defmodule FlokiTest do
            ]
   end
 
-  test "find elements by the atributte's |= selector" do
+  test "find elements by the attribute's |= selector" do
     attribute_selector = "a[href|='http://elixir']"
 
     assert Floki.find(document!(@html), attribute_selector) == [
@@ -721,7 +769,7 @@ defmodule FlokiTest do
            ]
   end
 
-  test "find elements by the atributte's ^= selector" do
+  test "find elements by the attribute's ^= selector" do
     attribute_selector = "a[href^='http://g']"
 
     assert Floki.find(document!(@html), attribute_selector) == [
@@ -733,7 +781,20 @@ defmodule FlokiTest do
            ]
   end
 
-  test "find elements by the atributte's $= selector" do
+  @tag only_parser: Mochiweb
+  test "find elements by the attribute's ^= selector against a tree with attributes as maps" do
+    attribute_selector = "a[href^='http://g']"
+
+    assert Floki.find(document!(@html, attributes_as_maps: true), attribute_selector) == [
+             {
+               "a",
+               %{"href" => "http://google.com", "class" => "js-google js-cool"},
+               ["Google"]
+             }
+           ]
+  end
+
+  test "find elements by the attribute's $= selector" do
     attribute_selector = "a[href$='.org']"
 
     assert Floki.find(document!(@html), attribute_selector) == [
@@ -745,7 +806,7 @@ defmodule FlokiTest do
            ]
   end
 
-  test "find elements by the atributte's *= selector" do
+  test "find elements by the attribute's *= selector" do
     attribute_selector = "a[class*='google']"
 
     assert Floki.find(document!(@html), attribute_selector) == [
@@ -1865,19 +1926,13 @@ defmodule FlokiTest do
     "<html><head></head><body>#{body}</body></html>"
   end
 
-  defp document!(html_string) do
-    {:ok, doc} = Floki.parse_document(html_string)
-
-    case doc do
+  defp document!(html_string, opts \\ []) do
+    case Floki.parse_document!(html_string, opts) do
       [{:doctype, "html", "", ""}, {"html", _, _} = html | _] ->
         html
 
       [{"html", _, _} = html | _] ->
         html
-
-      x ->
-        IO.inspect(x)
-        raise "unexpected return from parser"
     end
   end
 
