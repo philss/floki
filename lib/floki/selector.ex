@@ -131,11 +131,20 @@ defmodule Floki.Selector do
   defp classes_matches?(_node, []), do: true
   defp classes_matches?(%HTMLNode{attributes: []}, _), do: false
 
-  defp classes_matches?(%HTMLNode{attributes: attributes}, classes) do
-    case :proplists.get_value("class", attributes, nil) do
-      nil -> false
-      class -> classes -- String.split(class, ~r/\s+/) == []
-    end
+  defp classes_matches?(%HTMLNode{attributes: attributes}, classes) when is_list(attributes) do
+    class_attr_value = :proplists.get_value("class", attributes, nil)
+
+    do_classes_matches?(class_attr_value, classes)
+  end
+
+  defp classes_matches?(%HTMLNode{attributes: attributes}, classes) when is_map(attributes) do
+    do_classes_matches?(attributes["class"], classes)
+  end
+
+  defp do_classes_matches?(nil, _classes), do: false
+
+  defp do_classes_matches?(class_attr_value, classes) do
+    classes -- String.split(class_attr_value, ~r/\s+/) == []
   end
 
   defp attributes_matches?(_node, []), do: true

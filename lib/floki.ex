@@ -63,12 +63,14 @@ defmodule Floki do
   inside a list.
   """
 
-  @type html_declaration :: {:pi, String.t(), [html_attribute()]}
+  @type html_attribute :: {String.t(), String.t()}
+  @type html_attributes :: [html_attribute()] | html_attributes_map()
+  @type html_attributes_map :: %{String.t() => String.t()}
+  @type html_declaration :: {:pi, String.t(), html_attributes()}
   @type html_comment :: {:comment, String.t()}
   @type html_doctype :: {:doctype, String.t(), String.t(), String.t()}
-  @type html_attribute :: {String.t(), String.t()}
   @type html_text :: String.t()
-  @type html_tag :: {String.t(), [html_attribute()], [html_node()]}
+  @type html_tag :: {String.t(), html_attributes(), [html_node()]}
   @type html_node ::
           html_tag() | html_comment() | html_doctype() | html_declaration() | html_text()
   @type html_tree :: [html_node()]
@@ -102,12 +104,18 @@ defmodule Floki do
 
   ## Options
 
+    * `:attributes_as_maps` - Change the behaviour of the parser to return the attributes
+      as maps, instead of a list of `{"key", "value"}`. Default to `false`.
+
     * `:html_parser` - The module of the backend that is responsible for parsing
       the HTML string. By default it is set to the built-in parser, and the module
       name is equal to `Floki.HTMLParser.Mochiweb`, or from the value of the
       application env of the same name.
 
       See https://github.com/philss/floki#alternative-html-parsers for more details.
+
+    * `:parser_args` - A list of options to the parser. This can be used to pass options
+      that are specific for a given parser. Defaults to an empty list.
 
   ## Examples
 
@@ -116,6 +124,13 @@ defmodule Floki do
 
       iex> Floki.parse_document("<html><head></head><body>hello</body></html>", html_parser: Floki.HTMLParser.Mochiweb)
       {:ok, [{"html", [], [{"head", [], []}, {"body", [], ["hello"]}]}]}
+
+      iex> Floki.parse_document(
+      ...>   "<html><head></head><body class=main>hello</body></html>",
+      ...>   attributes_as_maps: true,
+      ...>   html_parser: Floki.HTMLParser.Mochiweb
+      ...>)
+      {:ok, [{"html", %{}, [{"head", %{}, []}, {"body", %{"class" => "main"}, ["hello"]}]}]}
 
   """
 
@@ -152,12 +167,19 @@ defmodule Floki do
 
   ## Options
 
+    * `:attributes_as_maps` - Change the behaviour of the parser to return the attributes
+      as maps, instead of a list of `{"key", "value"}`. Remember that maps are no longer 
+      ordered since OTP 26. Default to `false`.
+
     * `:html_parser` - The module of the backend that is responsible for parsing
       the HTML string. By default it is set to the built-in parser, and the module
       name is equal to `Floki.HTMLParser.Mochiweb`, or from the value of the
       application env of the same name.
 
       See https://github.com/philss/floki#alternative-html-parsers for more details.
+
+    * `:parser_args` - A list of options to the parser. This can be used to pass options
+      that are specific for a given parser. Defaults to an empty list.
 
   """
 
@@ -355,7 +377,7 @@ defmodule Floki do
   @spec find_and_update(
           html_tree(),
           css_selector(),
-          ({String.t(), [html_attribute()]} -> {String.t(), [html_attribute()]} | :delete)
+          ({String.t(), html_attributes()} -> {String.t(), html_attributes()} | :delete)
         ) :: html_tree()
   def find_and_update(html_tree, selector, fun) do
     {tree, results} = Finder.find(html_tree, selector)

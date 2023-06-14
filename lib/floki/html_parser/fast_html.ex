@@ -12,6 +12,16 @@ defmodule Floki.HTMLParser.FastHtml do
     execute_with_module(fn module -> module.decode_fragment(html, args) end)
   end
 
+  @impl true
+  def parse_document_with_attributes_as_maps(_html, _args) do
+    raise "parsing with attributes as maps is not supported yet for FastHTML"
+  end
+
+  @impl true
+  def parse_fragment_with_attributes_as_maps(_html, _args) do
+    raise "parsing with attributes as maps is not supported yet for FastHTML"
+  end
+
   defp execute_with_module(fun) do
     case Code.ensure_loaded(:fast_html) do
       {:module, module} ->

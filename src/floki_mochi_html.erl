@@ -23,7 +23,7 @@
 -module(floki_mochi_html).
 -export([
     tokens/1,
-    parse/1
+    parse/2
 ]).
 -ifdef(TEST).
 -export([destack/1, destack/2, is_singleton/1]).
@@ -96,17 +96,28 @@
 
 %% External API.
 
-%% @spec parse(string() | binary()) -> html_node()
+%% @spec parse(string() | binary(), list()) -> html_node()
 %% @doc tokenize and then transform the token stream into a HTML tree.
-parse(Input) ->
-    parse_tokens(tokens(Input)).
+%%
+%% The following option is supported:
+%%
+%% <dl>
+%% <dt>`attributes_as_maps`</dt>
+%% <dd>
+%% When `true`, it configures the parser to use maps for the attributes.
+%% It is `false` by default, which means attributes are going to be represented
+%% as a list of tuples.
+%% </dd>
+%% </dl>
+parse(Input, Opts) ->
+    parse_tokens(tokens(Input), Opts).
 
 %% @spec parse_tokens([html_token()]) -> html_node()
 %% @doc Transform the output of tokens(Doc) into a HTML tree.
-parse_tokens(Tokens) when is_list(Tokens) ->
+parse_tokens(Tokens, Opts) when is_list(Tokens) andalso is_list(Opts) ->
     %% Skip over doctype, processing instructions
     [{start_tag, Tag, Attrs, false} | Rest] = find_document(Tokens, normal),
-    {Tree, _} = tree(Rest, [norm({Tag, Attrs})]),
+    {Tree, _} = tree(Rest, [norm({Tag, Attrs}, Opts)], Opts),
     Tree.
 
 find_document(Tokens = [{start_tag, _Tag, _Attrs, false} | _Rest], Mode) ->
@@ -215,38 +226,48 @@ tree_data([{data, Data, Whitespace} | Rest], AllWhitespace, Acc) ->
 tree_data(Rest, AllWhitespace, Acc) ->
     {iolist_to_binary(lists:reverse(Acc)), AllWhitespace, Rest}.
 
-tree([], Stack) ->
+tree([], Stack, _Opts) ->
     {destack(Stack), []};
-tree([{end_tag, Tag} | Rest], Stack) ->
-    case destack(norm(Tag), Stack) of
+tree([{end_tag, Tag} | Rest], Stack, Opts) ->
+    case destack(norm(Tag, Opts), Stack) of
         S when is_list(S) ->
-            tree(Rest, S);
+            tree(Rest, S, Opts);
         Result ->
             {Result, []}
     end;
-tree([{start_tag, Tag, Attrs, true} | Rest], S) ->
-    tree(Rest, append_stack_child(norm({Tag, Attrs}), S));
-tree([{start_tag, Tag, Attrs, false} | Rest], S) ->
-    tree(Rest, stack(norm({Tag, Attrs}), S));
-tree([T = {pi, _Tag, _Attrs} | Rest], S) ->
-    tree(Rest, append_stack_child(T, S));
-tree([T = {comment, _Comment} | Rest], S) ->
-    tree(Rest, append_stack_child(T, S));
-tree(L = [{data, _Data, _Whitespace} | _], S) ->
+tree([{start_tag, Tag, Attrs, true} | Rest], S, Opts) ->
+    tree(Rest, append_stack_child(norm({Tag, Attrs}, Opts), S), Opts);
+tree([{start_tag, Tag, Attrs, false} | Rest], S, Opts) ->
+    tree(Rest, stack(norm({Tag, Attrs}, Opts), S), Opts);
+tree([T = {pi, _Tag, _Attrs} | Rest], S, Opts) ->
+    tree(Rest, append_stack_child(T, S), Opts);
+tree([T = {comment, _Comment} | Rest], S, Opts) ->
+    tree(Rest, append_stack_child(T, S), Opts);
+tree(L = [{data, _Data, _Whitespace} | _], S, Opts) ->
     case tree_data(L, true, []) of
         {_, true, Rest} ->
-            tree(Rest, S);
+            tree(Rest, S, Opts);
         {Data, false, Rest} ->
-            tree(Rest, append_stack_child(Data, S))
+            tree(Rest, append_stack_child(Data, S), Opts)
     end;
-tree([{doctype, _} | Rest], Stack) ->
-    tree(Rest, Stack).
+tree([{doctype, _} | Rest], Stack, Opts) ->
+    tree(Rest, Stack, Opts).
 
-norm({Tag, Attrs}) ->
-    {norm(Tag), [{norm(K), iolist_to_binary(V)} || {K, V} <- Attrs], []};
-norm(Tag) when is_binary(Tag) ->
+norm({Tag, Attrs}, Opts) ->
+    Attrs = [{norm(K, Opts), iolist_to_binary(V)} || {K, V} <- Attrs],
+    case lists:keyfind(attributes_as_maps, 1, Opts) of
+        {attributes_as_maps, true} ->
+            % The HTML specs says we should ignore duplicated attributes and keep the first
+            % occurence of a given key.
+            % Since `maps:from_list/1` does the opposite, we need to reverse the attributes.
+            % See https://github.com/philss/floki/pull/467#discussion_r1225548333
+            {norm(Tag, Opts), maps:from_list(lists:reverse(Attrs)), []};
+        _ ->
+            {norm(Tag, Opts), Attrs, []}
+    end;
+norm(Tag, _Opts) when is_binary(Tag) ->
     Tag;
-norm(Tag) ->
+norm(Tag, _Opts) ->
     list_to_binary(string:to_lower(Tag)).
 
 stack(T1 = {TN, _, _}, Stack = [{TN, _, _} | _Rest]) when
