@@ -550,7 +550,7 @@ defmodule FlokiTest do
            ]
   end
 
-  @tag only_parser: Mochiweb
+  @tag except_parser: FastHtml
   test "find elements with a given class and attributes as maps" do
     assert Floki.find(document!(@html, attributes_as_maps: true), ".js-cool") == [
              {
