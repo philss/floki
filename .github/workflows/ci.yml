@@ -14,17 +14,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        elixir: ["1.14", "1.11"]
+        elixir: ["1.14", "1.12"]
         otp: ["26.0", "25.3", "22.3"]
         parser: [fast_html, html5ever, mochiweb]
         exclude:
           - elixir: "1.14"
             otp: "22.3"
 
-          - elixir: "1.11"
+          - elixir: "1.12"
             otp: "25.3"
 
-          - elixir: "1.11"
+          - elixir: "1.12"
             otp: "26.0"
 
     steps:

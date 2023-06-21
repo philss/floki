@@ -11,7 +11,7 @@ defmodule Floki.Mixfile do
       name: "Floki",
       version: @version,
       description: @description,
-      elixir: "~> 1.11",
+      elixir: "~> 1.12",
       package: package(),
       erlc_paths: ["src", "gen"],
       deps: deps(),
