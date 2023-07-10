@@ -49,7 +49,7 @@ defmodule Floki.Selector.Parser do
     do_parse(t, %{selector | type: to_string(type)})
   end
 
-  defp do_parse([{'*', _} | t], selector) do
+  defp do_parse([{~c"*", _} | t], selector) do
     do_parse(t, %{selector | type: "*"})
   end
 
@@ -61,7 +61,7 @@ defmodule Floki.Selector.Parser do
     do_parse(t, %{selector | classes: [to_string(class) | selector.classes]})
   end
 
-  defp do_parse([{'[', _} | t], selector) do
+  defp do_parse([{~c"[", _} | t], selector) do
     {t, result} = consume_attribute(t)
 
     do_parse(t, %{selector | attributes: [result | selector.attributes]})
@@ -174,7 +174,7 @@ defmodule Floki.Selector.Parser do
     consume_attribute(:done, t, new_selector)
   end
 
-  defp consume_attribute(:consuming, [{']', _} | t], attr_selector) do
+  defp consume_attribute(:consuming, [{~c"]", _} | t], attr_selector) do
     consume_attribute(:done, t, attr_selector)
   end
 
@@ -245,7 +245,7 @@ defmodule Floki.Selector.Parser do
     do_parse_pseudo_not(t, pseudo_not_selector, pseudo_class)
   end
 
-  defp do_parse_pseudo_not([{'[', _} | tokens], pseudo_not_selector, pseudo_class) do
+  defp do_parse_pseudo_not([{~c"[", _} | tokens], pseudo_not_selector, pseudo_class) do
     {remaining_tokens, result} = consume_attribute(tokens)
     selector = %{pseudo_not_selector | attributes: [result | pseudo_not_selector.attributes]}
 
