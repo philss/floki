@@ -7,11 +7,6 @@ defmodule Floki.Selector.ParserTest do
   alias Floki.Selector
   alias Selector.{Parser, Functional, Combinator, AttributeSelector, PseudoClass}
 
-  setup_all do
-    :ok = Logger.remove_backend(:console)
-    on_exit(fn -> Logger.add_backend(:console, flush: true) end)
-  end
-
   def tokenize(string) do
     Selector.Tokenizer.tokenize(string)
   end
@@ -296,13 +291,15 @@ defmodule Floki.Selector.ParserTest do
   end
 
   test "not pseudo-class - ignore combinators inside" do
-    assert Parser.parse("a.foo:not(.bar > .baz)") == [
-             %Selector{
-               type: "a",
-               classes: ["foo"],
-               pseudo_classes: []
-             }
-           ]
+    capture_log(fn ->
+      assert Parser.parse("a.foo:not(.bar > .baz)") == [
+               %Selector{
+                 type: "a",
+                 classes: ["foo"],
+                 pseudo_classes: []
+               }
+             ]
+    end)
 
     assert capture_log(log_capturer("a.foo:not(.bar > .baz)")) =~
              "module=Floki.Selector.Parser  Only simple selectors are allowed in :not() pseudo-class. Ignoring."
@@ -387,9 +384,9 @@ defmodule Floki.Selector.ParserTest do
 
   test "warn unknown tokens" do
     assert capture_log(log_capturer("a { b")) =~
-             "module=Floki.Selector.Parser  Unknown token '{'. Ignoring."
+             ~r/module=Floki\.Selector\.Parser  Unknown token ('{'|~c"{")\. Ignoring/
 
     assert capture_log(log_capturer("a + b@")) =~
-             "module=Floki.Selector.Parser  Unknown token '@'. Ignoring."
+             ~r/module=Floki\.Selector\.Parser  Unknown token ('@'|~c"@")\. Ignoring/
   end
 end
