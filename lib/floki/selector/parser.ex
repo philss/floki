@@ -143,7 +143,7 @@ defmodule Floki.Selector.Parser do
   end
 
   defp do_parse([{:unknown, _, unknown} | t], selector) do
-    Logger.info(fn -> "Unknown token #{inspect(unknown)}. Ignoring." end)
+    Logger.debug(fn -> "Unknown token #{inspect(unknown)}. Ignoring." end)
 
     do_parse(t, selector)
   end
@@ -179,7 +179,7 @@ defmodule Floki.Selector.Parser do
   end
 
   defp consume_attribute(:consuming, [unknown | t], attr_selector) do
-    Logger.info(fn -> "Unknown token #{inspect(unknown)}. Ignoring." end)
+    Logger.debug(fn -> "Unknown token #{inspect(unknown)}. Ignoring." end)
     consume_attribute(:consuming, t, attr_selector)
   end
 
@@ -264,7 +264,7 @@ defmodule Floki.Selector.Parser do
   end
 
   defp update_pseudo_not_value(_pseudo_class, _pseudo_not_selector) do
-    Logger.info("Only simple selectors are allowed in :not() pseudo-class. Ignoring.")
+    Logger.debug("Only simple selectors are allowed in :not() pseudo-class. Ignoring.")
     nil
   end
 end

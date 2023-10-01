@@ -262,6 +262,14 @@ There are also some selectors based on non-standard specifications. They are:
 | E:fl-contains('foo')  | an E element that contains "foo" inside a text node                    |
 | E:fl-icontains('foo') | an E element that contains "foo" inside a text node (case insensitive) |
 
+## Suppressing log messages
+
+Floki may log debug messages related to problems in the parsing of selectors, or parsing of the HTML tree.
+It also may log some "info" messages related to deprecated APIs. If you want to suppress these log messages,
+please consider setting the `:compile_time_purge_matching` option for `:logger` in your compile time configuration.
+
+See https://hexdocs.pm/logger/Logger.html#module-compile-configuration for details.
+
 ## Special thanks
 
 * [@arasatasaygin](https://github.com/arasatasaygin) for Floki's logo from the [Open Logos project](http://openlogos.org/).

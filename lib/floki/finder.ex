@@ -1,6 +1,4 @@
 defmodule Floki.Finder do
-  require Logger
-
   @moduledoc false
 
   # The finder engine traverse the HTML tree searching for nodes matching
