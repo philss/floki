@@ -102,7 +102,7 @@ defmodule Floki.Selector.PseudoClass do
         relative_position in s
 
       expression ->
-        Logger.info(fn ->
+        Logger.debug(fn ->
           "Pseudo-class #{name} with expressions like #{inspect(expression)} are not supported yet. Ignoring."
         end)
 
