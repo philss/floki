@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased][unreleased]
 
+### Added
+
+- Add support for parsing attributes as maps.
+
+  This makes `parse_document/2` and `parse_fragment/2` accept the option
+  `:attributes_as_maps` to change the behaviour and return attributes as
+  maps instead of lists of tuples.
+  The only parser that does not support it yet is the `fast_html`.
+
+### Changed
+
+- Drop support for Elixir v1.11.
+
+- Change the log level of parsing logger calls from "info" to "debug".
+  This will help to reduce the amount of noise in production apps.
+
 ## [0.34.3] - 2023-06-02
 
 ### Added
