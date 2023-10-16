@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased][unreleased]
 
+## [0.35.1] - 2023-10-16
+
+### Fixed
+
+- Fix a small regression of the mochiweb parser that was breaking when a
+  malformed HTML was used. For more details, see the original issue:
+  https://github.com/philss/floki/issues/492
+
 ## [0.35.0] - 2023-10-13
 
 ### Added
@@ -690,7 +698,8 @@ of the parent element inside HTML.
 
 - Elixir version requirement from "~> 1.0.0" to ">= 1.0.0".
 
-[unreleased]: https://github.com/philss/floki/compare/v0.35.0...HEAD
+[unreleased]: https://github.com/philss/floki/compare/v0.35.1...HEAD
+[0.35.1]: https://github.com/philss/floki/compare/v0.35.0...v0.35.1
 [0.35.0]: https://github.com/philss/floki/compare/v0.34.3...v0.35.0
 [0.34.3]: https://github.com/philss/floki/compare/v0.34.2...v0.34.3
 [0.34.2]: https://github.com/philss/floki/compare/v0.34.1...v0.34.2

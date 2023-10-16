@@ -1922,6 +1922,18 @@ defmodule FlokiTest do
            ]
   end
 
+  @tag only_parser: Mochiweb
+  test "parse fragment containing malformed HTML with mochiweb" do
+    html = "<spanclass=\"trade\">™ curl gelée<br><br><br></spanclass=\"trade\">"
+
+    tree = Floki.parse_fragment!(html)
+
+    assert tree == [
+             {"spanclass", [{"=", "="}, {"\"trade\"", "\"trade\""}],
+              ["™ curl gelée", {"br", [], []}, {"br", [], []}, {"br", [], []}]}
+           ]
+  end
+
   defp html_body(body) do
     "<html><head></head><body>#{body}</body></html>"
   end
