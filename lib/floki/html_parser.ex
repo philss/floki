@@ -25,7 +25,7 @@ defmodule Floki.HTMLParser do
   @default_parser Floki.HTMLParser.Mochiweb
 
   @typep result(success) :: {:ok, success} | {:error, String.t()}
-  @typep html :: binary()
+  @typep html :: binary() | iodata()
 
   @callback parse_document(html(), Keyword.t()) :: result(Floki.html_tree())
   @callback parse_fragment(html(), Keyword.t()) :: result(Floki.html_tree())
@@ -35,7 +35,7 @@ defmodule Floki.HTMLParser do
   @callback parse_fragment_with_attributes_as_maps(html(), Keyword.t()) ::
               result(Floki.html_tree())
 
-  def parse_document(html, opts \\ []) when is_binary(html) do
+  def parse_document(html, opts \\ []) do
     {parser_args, opts} = Keyword.pop(opts, :parser_args, [])
 
     parser = parser(opts)
@@ -47,7 +47,7 @@ defmodule Floki.HTMLParser do
     end
   end
 
-  def parse_fragment(html, opts \\ []) when is_binary(html) do
+  def parse_fragment(html, opts \\ []) do
     {parser_args, opts} = Keyword.pop(opts, :parser_args, [])
 
     parser = parser(opts)
