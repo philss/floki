@@ -224,6 +224,9 @@ defmodule Floki.RawHTML do
   defp map_intersperse([head | rest], separator, mapper),
     do: [mapper.(head), separator | map_intersperse(rest, separator, mapper)]
 
+  defp map_intersperse(%{} = attrs, separator, mapper),
+    do: map_intersperse(Map.to_list(attrs), separator, mapper)
+
   defp leftpad(:noop), do: ""
   defp leftpad(%{pad: pad, depth: depth}), do: String.duplicate(pad, depth)
 
