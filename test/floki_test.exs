@@ -3,6 +3,7 @@ defmodule FlokiTest do
 
   doctest Floki
 
+  require Floki
   alias Floki.HTMLParser.{Html5ever, Mochiweb, FastHtml}
 
   @plain_text_tags [
@@ -1851,6 +1852,33 @@ defmodule FlokiTest do
       |> hd()
 
     assert result == html
+  end
+
+  describe "is_html_node/1 guard" do
+    test "returns true when html_tag is passed" do
+      assert Floki.is_html_node({"div", [], []})
+    end
+
+    test "returns true when html_comment is passed" do
+      assert Floki.is_html_node({:comment, "Ok"})
+    end
+
+    test "returns true when html_doctype is passed" do
+      assert Floki.is_html_node({:doctype, "html", nil, nil})
+    end
+
+    test "returns true when html_declaration is passed" do
+      assert Floki.is_html_node({:pi, "xml", [{"version", "1.0"}]})
+    end
+
+    test "returns true when html_text is passed" do
+      assert Floki.is_html_node("I am html_text")
+    end
+
+    test "returns false when {:ok, val} / {:error, reason} is supplied" do
+      refute Floki.is_html_node({:ok, 1})
+      refute Floki.is_html_node({:error, :reason})
+    end
   end
 
   @tag only_parser: Mochiweb

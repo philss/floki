@@ -78,9 +78,8 @@ defmodule Floki do
   @type css_selector :: String.t() | %Floki.Selector{} | [%Floki.Selector{}]
 
   defguard is_html_node(value)
-           when is_binary(value) or
-           is_list(value) or tuple_size(value) == 3 or
-                  (tuple_size(value) == 2 and elem(value, 0) in [:pi, :comment, :doctype])
+           when is_binary(value) or tuple_size(value) == 3 or
+                  (tuple_size(value) == 2 and elem(value, 0) in [:pi, :comment]) or (tuple_size(value) == 4 and elem(value, 0) == :doctype)
 
   @doc """
   Parses a HTML Document from a String.
@@ -286,7 +285,7 @@ defmodule Floki do
     end
   end
 
-  def find(html_tree_as_tuple, selector) when is_html_node(html_tree_as_tuple) do
+  def find(html_tree_as_tuple, selector) when is_list(html_tree_as_tuple) or is_html_node(html_tree_as_tuple) do
     {tree, results} = Finder.find(html_tree_as_tuple, selector)
 
     Enum.map(results, fn html_node -> HTMLTree.to_tuple(tree, html_node) end)
