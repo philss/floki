@@ -1,5 +1,4 @@
 defmodule Floki do
-  require Floki
   alias Floki.{Finder, FilterOut, HTMLTree}
 
   require Logger
@@ -78,7 +77,10 @@ defmodule Floki do
 
   @type css_selector :: String.t() | %Floki.Selector{} | [%Floki.Selector{}]
 
-  defguard is_html_node(value) when is_binary(value) or tuple_size(value) == 3 or (tuple_size(value) == 2 and elem(value, 0) in [:pi, :comment, :doctype])
+  defguard is_html_node(value)
+           when is_binary(value) or
+           is_list(value) or tuple_size(value) == 3 or
+                  (tuple_size(value) == 2 and elem(value, 0) in [:pi, :comment, :doctype])
 
   @doc """
   Parses a HTML Document from a String.
@@ -272,7 +274,6 @@ defmodule Floki do
   """
 
   @spec find(binary() | html_tree() | html_node(), css_selector()) :: html_tree
-
   def find(html, selector) when is_binary(html) do
     Logger.info(
       "deprecation: parse the HTML with parse_document or parse_fragment before using find/2"
@@ -285,7 +286,7 @@ defmodule Floki do
     end
   end
 
-  def find(html_tree_as_tuple, selector) when is_html_node(html_tree_as_tuple) or is_list(html_tree_as_tuple) do
+  def find(html_tree_as_tuple, selector) when is_html_node(html_tree_as_tuple) do
     {tree, results} = Finder.find(html_tree_as_tuple, selector)
 
     Enum.map(results, fn html_node -> HTMLTree.to_tuple(tree, html_node) end)
