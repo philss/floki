@@ -530,7 +530,7 @@ defmodule FlokiTest do
            """
   end
 
-  @tag except_parser: FastHtml
+  @tag only_parser: Mochiweb
   test "raw_html when :attributes_as_maps options was used to parse (new Floki v0.35.0)" do
     html_string =
       ~s(<div id="content"><p><a href="site" class="bar"><span>lol</span><img src="foo.png"/></a></p><br/></div>)
