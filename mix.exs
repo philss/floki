@@ -14,6 +14,7 @@ defmodule Floki.Mixfile do
       elixir: "~> 1.12",
       package: package(),
       erlc_paths: ["src", "gen"],
+      compilers: [:leex] ++ Mix.compilers(),
       deps: deps(),
       aliases: aliases(),
       docs: docs(),
