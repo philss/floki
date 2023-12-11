@@ -77,6 +77,10 @@ defmodule Floki do
 
   @type css_selector :: String.t() | %Floki.Selector{} | [%Floki.Selector{}]
 
+  defguard is_html_node(value)
+           when is_binary(value) or tuple_size(value) == 3 or
+                  (tuple_size(value) == 2 and elem(value, 0) in [:pi, :comment]) or (tuple_size(value) == 4 and elem(value, 0) == :doctype)
+
   @doc """
   Parses a HTML Document from a String.
 
@@ -168,7 +172,7 @@ defmodule Floki do
   ## Options
 
     * `:attributes_as_maps` - Change the behaviour of the parser to return the attributes
-      as maps, instead of a list of `{"key", "value"}`. Remember that maps are no longer 
+      as maps, instead of a list of `{"key", "value"}`. Remember that maps are no longer
       ordered since OTP 26. Default to `false`.
 
     * `:html_parser` - The module of the backend that is responsible for parsing
@@ -212,7 +216,7 @@ defmodule Floki do
   ## Options
 
     * `:encode` - A boolean option to control if special HTML characters
-    should be encoded as HTML entities. Defaults to `true`. 
+    should be encoded as HTML entities. Defaults to `true`.
 
     You can also control the encoding behaviour at the application level via
     `config :floki, :encode_raw_html, false`
@@ -269,7 +273,6 @@ defmodule Floki do
   """
 
   @spec find(binary() | html_tree() | html_node(), css_selector()) :: html_tree
-
   def find(html, selector) when is_binary(html) do
     Logger.info(
       "deprecation: parse the HTML with parse_document or parse_fragment before using find/2"
@@ -282,7 +285,7 @@ defmodule Floki do
     end
   end
 
-  def find(html_tree_as_tuple, selector) do
+  def find(html_tree_as_tuple, selector) when is_list(html_tree_as_tuple) or is_html_node(html_tree_as_tuple) do
     {tree, results} = Finder.find(html_tree_as_tuple, selector)
 
     Enum.map(results, fn html_node -> HTMLTree.to_tuple(tree, html_node) end)
@@ -511,7 +514,7 @@ defmodule Floki do
 
   ## Options
 
-    * `:deep` - A boolean option to control how deep the search for 
+    * `:deep` - A boolean option to control how deep the search for
       text is going to be. If `false`, only the level of the HTML node
       or the first level of the HTML document is going to be considered.
       Defaults to `true`.
