@@ -4,12 +4,12 @@ defmodule Floki.HTMLParser.FastHtml do
 
   @impl true
   def parse_document(html, args) do
-    execute_with_module(fn module -> module.decode(html, args) end)
+    execute_with_module(fn module -> module.decode(IO.chardata_to_string(html), args) end)
   end
 
   @impl true
   def parse_fragment(html, args) do
-    execute_with_module(fn module -> module.decode_fragment(html, args) end)
+    execute_with_module(fn module -> module.decode_fragment(IO.chardata_to_string(html), args) end)
   end
 
   @impl true

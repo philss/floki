@@ -6,7 +6,7 @@ defmodule Floki.HTMLParser.Mochiweb do
 
   @impl true
   def parse_document(html, args) do
-    html = "<#{@root_node}>#{html}</#{@root_node}>"
+    html = ["<#{@root_node}>", html, "</#{@root_node}>"]
     {@root_node, _, parsed} = :floki_mochi_html.parse(html, args)
 
     {:ok, parsed}
