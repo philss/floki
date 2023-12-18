@@ -131,10 +131,10 @@ defmodule Floki.RawHTML do
   end
 
   defp build_attrs({attr, value}, encoder) do
-    if Function.info(encoder) == Function.info(&Function.identity/1) do
-      [attr, "=\"", value | "\""]
-    else
+    if encoder == @encoder do
       [attr, "=\"", html_escape(value) | "\""]
+    else
+      [attr, "=\"", value | "\""]
     end
   end
 
