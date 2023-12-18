@@ -166,14 +166,14 @@ tokens(B, S = #decoder{offset = O}, Acc) ->
     end.
 
 parse_flag({start_tag, B, _, false}) ->
-    case string:to_lower(binary_to_list(B)) of
-        "script" ->
+    case B of
+        <<"script">> ->
             script;
-        "style" ->
+        <<"style">> ->
             style;
-        "title" ->
+        <<"title">> ->
             title;
-        "textarea" ->
+        <<"textarea">> ->
             textarea;
         _ ->
             none
