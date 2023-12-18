@@ -7,7 +7,7 @@ defmodule Floki.HTMLParser.Html5ever do
   def parse_document(html, _args) do
     case Code.ensure_loaded(Html5ever) do
       {:module, module} ->
-        case apply(module, :parse, [html]) do
+        case apply(module, :parse, [IO.chardata_to_string(html)]) do
           {:ok, result} ->
             {:ok, result}
 

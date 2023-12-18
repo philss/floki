@@ -262,7 +262,7 @@ defmodule FlokiTest do
 
     raw_html = Floki.raw_html(document!(html))
 
-    assert raw_html == html
+    assert raw_html == IO.chardata_to_string(html)
 
     html_with_doctype = [
       {:doctype, "html", "", ""},
@@ -283,7 +283,7 @@ defmodule FlokiTest do
 
     parsed = document!(span_with_entities)
 
-    assert Floki.raw_html(parsed) == span_with_entities
+    assert Floki.raw_html(parsed) == IO.chardata_to_string(span_with_entities)
   end
 
   test "raw_html/1 with plain text" do
@@ -1858,7 +1858,7 @@ defmodule FlokiTest do
       end)
       |> Floki.raw_html()
 
-    assert result == expects
+    assert result == IO.chardata_to_string(expects)
   end
 
   test "changing attribute don't change the order of nodes" do
@@ -1986,7 +1986,7 @@ defmodule FlokiTest do
   end
 
   defp html_body(body) do
-    "<html><head></head><body>#{body}</body></html>"
+    ["<html><head></head><body>", body, "</body></html>"]
   end
 
   defp document!(html_string, opts \\ []) do
