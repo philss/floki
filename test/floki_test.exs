@@ -1986,7 +1986,7 @@ defmodule FlokiTest do
   end
 
   defp html_body(body) do
-    ["<html><head></head><body>", body, "</body></html>"]
+    "<html><head></head><body>" <> body <> "</body></html>"
   end
 
   defp document!(html_string, opts \\ []) do
