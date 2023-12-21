@@ -45,8 +45,11 @@ defmodule Floki.Finder do
     results =
       tree.node_ids
       |> Enum.reverse()
-      |> get_nodes(tree)
-      |> Enum.flat_map(fn html_node -> get_matches_for_selectors(tree, html_node, selectors) end)
+      |> Enum.reduce([], fn node_id, acc ->
+        html_node = get_node(node_id, tree)
+        get_matches_for_selectors(tree, html_node, selectors, acc)
+      end)
+      |> Enum.reverse()
       |> Enum.uniq()
 
     {tree, results}
@@ -58,23 +61,17 @@ defmodule Floki.Finder do
     |> Selector.Parser.parse()
   end
 
-  defp get_matches_for_selectors(tree, html_node, selectors) do
-    Enum.flat_map(selectors, fn selector -> get_matches(tree, html_node, selector) end)
+  defp get_matches_for_selectors(tree, html_node, selectors, acc) do
+    Enum.reduce(selectors, acc, fn selector, acc ->
+      get_matches(tree, html_node, selector, acc)
+    end)
   end
 
-  defp get_matches(tree, html_node, selector = %Selector{combinator: nil}) do
+  defp get_matches(tree, html_node, selector = %Selector{combinator: combinator}, acc) do
     if selector_match?(tree, html_node, selector) do
-      [html_node]
+      traverse_with(combinator, tree, html_node, acc)
     else
-      []
-    end
-  end
-
-  defp get_matches(tree, html_node, selector = %Selector{combinator: combinator}) do
-    if selector_match?(tree, html_node, selector) do
-      traverse_with(combinator, tree, [html_node])
-    else
-      []
+      acc
     end
   end
 
@@ -84,69 +81,54 @@ defmodule Floki.Finder do
 
   # The stack serves as accumulator when there is another combinator to traverse.
   # So the scope of one combinator is the stack (or acc) or the parent one.
-  defp traverse_with(_, _, []), do: []
-  defp traverse_with(nil, _, results), do: results
+  defp traverse_with(_, _, [], acc), do: acc
+  defp traverse_with(nil, _, html_node, acc), do: [html_node | acc]
 
-  defp traverse_with(%Selector.Combinator{match_type: :child, selector: s}, tree, stack) do
-    results =
-      Enum.flat_map(stack, fn html_node ->
-        nodes =
-          html_node.children_nodes_ids
-          |> Enum.reverse()
-          |> get_nodes(tree)
-
-        Enum.filter(nodes, fn html_node -> selector_match?(tree, html_node, s) end)
-      end)
-
-    traverse_with(s.combinator, tree, results)
+  defp traverse_with(%Selector.Combinator{match_type: :child, selector: s}, tree, html_node, acc) do
+    Enum.reduce(Enum.reverse(html_node.children_nodes_ids), acc, fn node_id, acc ->
+      html_node = get_node(node_id, tree)
+      get_matches(tree, html_node, s, acc)
+    end)
   end
 
-  defp traverse_with(%Selector.Combinator{match_type: :sibling, selector: s}, tree, stack) do
-    results =
-      Enum.flat_map(stack, fn html_node ->
-        # It treats sibling as list to easily ignores those that didn't match
-        sibling_id =
-          html_node
-          |> get_siblings(tree)
-          |> Enum.take(1)
+  defp traverse_with(
+         %Selector.Combinator{match_type: :sibling, selector: s},
+         tree,
+         html_node,
+         acc
+       ) do
+    case get_siblings(html_node, tree) do
+      [sibling_id | _] ->
+        html_node = get_node(sibling_id, tree)
+        get_matches(tree, html_node, s, acc)
 
-        nodes = get_nodes(sibling_id, tree)
-
-        # Finally, try to match those siblings with the selector
-        Enum.filter(nodes, fn html_node -> selector_match?(tree, html_node, s) end)
-      end)
-
-    traverse_with(s.combinator, tree, results)
+      _ ->
+        acc
+    end
   end
 
-  defp traverse_with(%Selector.Combinator{match_type: :general_sibling, selector: s}, tree, stack) do
-    results =
-      Enum.flat_map(stack, fn html_node ->
-        sibling_ids = get_siblings(html_node, tree)
-
-        nodes = get_nodes(sibling_ids, tree)
-
-        # Finally, try to match those siblings with the selector
-        Enum.filter(nodes, fn html_node -> selector_match?(tree, html_node, s) end)
-      end)
-
-    traverse_with(s.combinator, tree, results)
+  defp traverse_with(
+         %Selector.Combinator{match_type: :general_sibling, selector: s},
+         tree,
+         html_node,
+         acc
+       ) do
+    Enum.reduce(get_siblings(html_node, tree), acc, fn node_id, acc ->
+      html_node = get_node(node_id, tree)
+      get_matches(tree, html_node, s, acc)
+    end)
   end
 
-  defp traverse_with(%Selector.Combinator{match_type: :descendant, selector: s}, tree, stack) do
-    results =
-      Enum.flat_map(stack, fn html_node ->
-        ids_to_match = get_descendant_ids(html_node.node_id, tree)
-        nodes = get_nodes(ids_to_match, tree)
-
-        Enum.filter(nodes, fn html_node -> selector_match?(tree, html_node, s) end)
-      end)
-
-    traverse_with(s.combinator, tree, results)
-  end
-
-  defp get_nodes(ids, tree) do
-    Enum.map(ids, fn id -> Map.get(tree.nodes, id) end)
+  defp traverse_with(
+         %Selector.Combinator{match_type: :descendant, selector: s},
+         tree,
+         html_node,
+         acc
+       ) do
+    Enum.reduce(get_descendant_ids(html_node.node_id, tree), acc, fn node_id, acc ->
+      html_node = get_node(node_id, tree)
+      get_matches(tree, html_node, s, acc)
+    end)
   end
 
   defp get_node(id, tree) do
