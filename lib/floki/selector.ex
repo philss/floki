@@ -144,7 +144,7 @@ defmodule Floki.Selector do
   defp do_classes_matches?(nil, _classes), do: false
 
   defp do_classes_matches?(class_attr_value, classes) do
-    classes -- String.split(class_attr_value, ~r/\s+/) == []
+    classes -- String.split(class_attr_value, [" ", "\t", "\n"]) == []
   end
 
   defp attributes_matches?(_node, []), do: true
