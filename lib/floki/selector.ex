@@ -148,6 +148,11 @@ defmodule Floki.Selector do
     false
   end
 
+  defp do_classes_matches?(class_attr_value, [class])
+       when bit_size(class_attr_value) == bit_size(class) do
+    class == class_attr_value
+  end
+
   defp do_classes_matches?(class_attr_value, classes) do
     classes -- String.split(class_attr_value, [" ", "\t", "\n"]) == []
   end
