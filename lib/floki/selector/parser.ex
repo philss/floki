@@ -37,9 +37,9 @@ defmodule Floki.Selector.Parser do
     do_parse_all(remaining_tokens, [selector | selectors])
   end
 
-  defp do_parse([], selector), do: {selector, []}
-  defp do_parse([{:close_parentesis, _} | t], selector), do: {selector, t}
-  defp do_parse([{:comma, _} | t], selector), do: {selector, t}
+  defp do_parse([], selector), do: {optimize_selector(selector), []}
+  defp do_parse([{:close_parentesis, _} | t], selector), do: {optimize_selector(selector), t}
+  defp do_parse([{:comma, _} | t], selector), do: {optimize_selector(selector), t}
 
   defp do_parse([{:identifier, _, namespace}, {:namespace_pipe, _} | t], selector) do
     do_parse(t, %{selector | namespace: to_string(namespace)})
@@ -266,5 +266,9 @@ defmodule Floki.Selector.Parser do
   defp update_pseudo_not_value(_pseudo_class, _pseudo_not_selector) do
     Logger.debug("Only simple selectors are allowed in :not() pseudo-class. Ignoring.")
     nil
+  end
+
+  defp optimize_selector(selector) do
+    %{selector | classes: Enum.sort(selector.classes, &(byte_size(&1) >= byte_size(&2)))}
   end
 end

@@ -31,6 +31,14 @@ defmodule Floki.Selector.ParserTest do
            ]
   end
 
+  test "reorders classes in selector to improve matching performance" do
+    tokens = tokenize(".small.longer.even-longer")
+
+    assert Parser.parse(tokens) == [
+             %Selector{classes: ["even-longer", "longer", "small"]}
+           ]
+  end
+
   test "multiple selectors" do
     tokens = tokenize("ol, ul")
 
