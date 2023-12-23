@@ -31,12 +31,15 @@ defmodule Floki.HTMLTree do
     root_id = IDSeeder.seed([])
     root_node = %HTMLNode{type: tag, attributes: attrs, node_id: root_id}
 
-    build_tree(
-      %HTMLTree{root_nodes_ids: [root_id], node_ids: [root_id], nodes: %{root_id => root_node}},
-      children,
-      root_id,
-      []
-    )
+    tree =
+      build_tree(
+        %HTMLTree{root_nodes_ids: [root_id], node_ids: [root_id], nodes: []},
+        children,
+        root_node,
+        []
+      )
+
+    build_nodes_map(tree)
   end
 
   def build(html_tuples) when is_list(html_tuples) do
@@ -52,12 +55,11 @@ defmodule Floki.HTMLTree do
         build_tree(
           %{
             tree
-            | nodes: Map.put(tree.nodes, root_id, root_node),
-              node_ids: [root_id | tree.node_ids],
+            | node_ids: [root_id | tree.node_ids],
               root_nodes_ids: [root_id | tree.root_nodes_ids]
           },
           children,
-          root_id,
+          root_node,
           []
         )
 
@@ -69,12 +71,11 @@ defmodule Floki.HTMLTree do
         build_tree(
           %{
             tree
-            | nodes: Map.put(tree.nodes, root_id, root_node),
-              node_ids: [root_id | tree.node_ids],
+            | node_ids: [root_id | tree.node_ids],
               root_nodes_ids: [root_id | tree.root_nodes_ids]
           },
           [],
-          root_id,
+          root_node,
           []
         )
 
@@ -86,12 +87,11 @@ defmodule Floki.HTMLTree do
         build_tree(
           %{
             tree
-            | nodes: Map.put(tree.nodes, root_id, root_node),
-              node_ids: [root_id | tree.node_ids],
+            | node_ids: [root_id | tree.node_ids],
               root_nodes_ids: [root_id | tree.root_nodes_ids]
           },
           [],
-          root_id,
+          root_node,
           []
         )
 
@@ -99,10 +99,15 @@ defmodule Floki.HTMLTree do
         tree
     end
 
-    Enum.reduce(html_tuples, %HTMLTree{}, reducer)
+    tree = Enum.reduce(html_tuples, %HTMLTree{nodes: []}, reducer)
+    build_nodes_map(tree)
   end
 
   def build(_), do: %HTMLTree{}
+
+  defp build_nodes_map(tree) do
+    %{tree | nodes: Map.new(tree.nodes)}
+  end
 
   def delete_node(tree, html_node) do
     do_delete(tree, [html_node], [])
@@ -174,70 +179,94 @@ defmodule Floki.HTMLTree do
   defp get_ids_for_delete_stack(%HTMLNode{children_nodes_ids: ids}), do: ids
   defp get_ids_for_delete_stack(_), do: []
 
-  defp build_tree(tree, [], _, []), do: tree
+  defp build_tree(tree, [], parent_node, []) do
+    %{tree | nodes: [{parent_node.node_id, parent_node} | tree.nodes]}
+  end
 
-  defp build_tree(tree, [{:pi, _, _} | children], parent_id, stack),
-    do: build_tree(tree, children, parent_id, stack)
+  defp build_tree(tree, [{:pi, _, _} | children], parent_node, stack) do
+    build_tree(tree, children, parent_node, stack)
+  end
 
-  defp build_tree(tree, [{tag, attrs, child_children} | children], parent_id, stack) do
+  defp build_tree(tree, [{tag, attrs, child_children} | children], parent_node, stack) do
     new_id = IDSeeder.seed(tree.node_ids)
 
-    new_node = %HTMLNode{type: tag, attributes: attrs, node_id: new_id, parent_node_id: parent_id}
+    new_node = %HTMLNode{
+      type: tag,
+      attributes: attrs,
+      node_id: new_id,
+      parent_node_id: parent_node.node_id
+    }
 
-    nodes = put_new_node(tree.nodes, new_node)
+    parent_node = %{
+      parent_node
+    | children_nodes_ids: [new_id | parent_node.children_nodes_ids]
+    }
 
     build_tree(
-      %{tree | nodes: nodes, node_ids: [new_id | tree.node_ids]},
+      %{tree | node_ids: [new_id | tree.node_ids]},
       child_children,
-      new_id,
-      [{parent_id, children} | stack]
+      new_node,
+      [{parent_node, children} | stack]
     )
   end
 
-  defp build_tree(tree, [{:comment, comment} | children], parent_id, stack) do
+  defp build_tree(tree, [{:comment, comment} | children], parent_node, stack) do
     new_id = IDSeeder.seed(tree.node_ids)
-    new_node = %Comment{content: comment, node_id: new_id, parent_node_id: parent_id}
+    new_node = %Comment{content: comment, node_id: new_id, parent_node_id: parent_node.node_id}
 
-    nodes = put_new_node(tree.nodes, new_node)
+    {tree, parent_node} = put_new_node(tree, new_node, parent_node)
 
     build_tree(
-      %{tree | nodes: nodes, node_ids: [new_id | tree.node_ids]},
+      tree,
       children,
-      parent_id,
+      parent_node,
       stack
     )
   end
 
-  defp build_tree(tree, [text | children], parent_id, stack) when is_binary(text) do
+  defp build_tree(tree, [text | children], parent_node, stack) when is_binary(text) do
     new_id = IDSeeder.seed(tree.node_ids)
-    new_node = %Text{content: text, node_id: new_id, parent_node_id: parent_id}
+    new_node = %Text{content: text, node_id: new_id, parent_node_id: parent_node.node_id}
 
-    nodes = put_new_node(tree.nodes, new_node)
+    {tree, parent_node} = put_new_node(tree, new_node, parent_node)
 
     build_tree(
-      %{tree | nodes: nodes, node_ids: [new_id | tree.node_ids]},
+      tree,
       children,
-      parent_id,
+      parent_node,
       stack
     )
   end
 
-  defp build_tree(tree, [_other | children], parent_id, stack) do
-    build_tree(tree, children, parent_id, stack)
+  defp build_tree(tree, [_other | children], parent_node, stack) do
+    build_tree(tree, children, parent_node, stack)
   end
 
-  defp build_tree(tree, [], _, [{parent_node_id, children} | stack]) do
-    build_tree(tree, children, parent_node_id, stack)
+  defp build_tree(tree, [], parent_node, [{next_parent_node, next_parent_children} | stack]) do
+
+    build_tree(
+      %{tree | nodes: [{parent_node.node_id, parent_node} | tree.nodes]},
+      next_parent_children,
+      next_parent_node,
+      stack
+    )
   end
 
-  defp put_new_node(nodes, new_node) do
-    parent_node = Map.get(nodes, new_node.parent_node_id)
-    children_ids = parent_node.children_nodes_ids
-    updated_parent = %{parent_node | children_nodes_ids: [new_node.node_id | children_ids]}
+  defp put_new_node(tree, new_node, parent_node) do
+    new_node_id = new_node.node_id
 
-    nodes
-    |> Map.put(new_node.node_id, new_node)
-    |> Map.put(new_node.parent_node_id, updated_parent)
+    updated_tree = %{
+      tree
+      | nodes: [{new_node_id, new_node} | tree.nodes],
+        node_ids: [new_node_id | tree.node_ids]
+    }
+
+    updated_parent_node = %{
+      parent_node
+      | children_nodes_ids: [new_node_id | parent_node.children_nodes_ids]
+    }
+
+    {updated_tree, updated_parent_node}
   end
 
   def patch_nodes(html_tree, operation_with_nodes) do
