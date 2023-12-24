@@ -62,15 +62,51 @@ defmodule Floki.Entities do
   * greater-than sign - > - is replaced by "&gt;".
 
   All other simbols are going to remain the same.
+
+  Optimized IO data implementation from Plug.HTML
   """
-  @spec encode(String.t()) :: String.t()
-  def encode(string) when is_binary(string) do
-    String.replace(string, ["'", "\"", "&", "<", ">"], fn
-      "'" -> "&#39;"
-      "\"" -> "&quot;"
-      "&" -> "&amp;"
-      "<" -> "&lt;"
-      ">" -> "&gt;"
-    end)
+  @spec encode(iodata()) :: iodata()
+  def encode(string) when is_binary(string), do: encode(string, 0, string, [])
+  def encode(data), do: encode(IO.iodata_to_binary(data))
+
+  escapes = [
+    {?<, "&lt;"},
+    {?>, "&gt;"},
+    {?&, "&amp;"},
+    {?", "&quot;"},
+    {?', "&#39;"}
+  ]
+
+  for {match, insert} <- escapes do
+    defp encode(<<unquote(match), rest::bits>>, skip, original, acc) do
+      encode(rest, skip + 1, original, [acc | unquote(insert)])
+    end
+  end
+
+  defp encode(<<_char, rest::bits>>, skip, original, acc) do
+    encode(rest, skip, original, acc, 1)
+  end
+
+  defp encode(<<>>, _skip, _original, acc) do
+    acc
+  end
+
+  for {match, insert} <- escapes do
+    defp encode(<<unquote(match), rest::bits>>, skip, original, acc, len) do
+      part = binary_part(original, skip, len)
+      encode(rest, skip + len + 1, original, [acc, part | unquote(insert)])
+    end
+  end
+
+  defp encode(<<_char, rest::bits>>, skip, original, acc, len) do
+    encode(rest, skip, original, acc, len + 1)
+  end
+
+  defp encode(<<>>, 0, original, _acc, _len) do
+    original
+  end
+
+  defp encode(<<>>, skip, original, acc, len) do
+    [acc | binary_part(original, skip, len)]
   end
 end

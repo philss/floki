@@ -5,23 +5,23 @@ defmodule Floki.EntitiesTest do
 
   describe "encode/1" do
     test "encode single-quote" do
-      assert Entities.encode("'") == "&#39;"
+      assert IO.iodata_to_binary(Entities.encode("'")) == "&#39;"
     end
 
     test "encode double-quote" do
-      assert Entities.encode("\"") == "&quot;"
+      assert IO.iodata_to_binary(Entities.encode("\"")) == "&quot;"
     end
 
     test "ampersand" do
-      assert Entities.encode("&") == "&amp;"
+      assert IO.iodata_to_binary(Entities.encode("&")) == "&amp;"
     end
 
     test "encode less-than sign" do
-      assert Entities.encode("<") == "&lt;"
+      assert IO.iodata_to_binary(Entities.encode("<")) == "&lt;"
     end
 
     test "encode greater-than sign" do
-      assert Entities.encode(">") == "&gt;"
+      assert IO.iodata_to_binary(Entities.encode(">")) == "&gt;"
     end
 
     test "does not encode others" do

@@ -131,11 +131,7 @@ defmodule Floki.RawHTML do
   end
 
   defp build_attrs({attr, value}, encoder) do
-    if encoder == @encoder do
-      [attr, "=\"", html_escape(value) | "\""]
-    else
-      [attr, "=\"", value | "\""]
-    end
+    [attr, "=\"", encoder.(value) | "\""]
   end
 
   defp build_attrs(attr, _encoder), do: attr
@@ -162,53 +158,6 @@ defmodule Floki.RawHTML do
     else
       & &1
     end
-  end
-
-  # html_escape
-  # Optimized IO data implementation from Plug.HTML
-
-  defp html_escape(data) when is_binary(data), do: html_escape(data, 0, data, [])
-  defp html_escape(data), do: html_escape(IO.iodata_to_binary(data))
-
-  escapes = [
-    {?<, "&lt;"},
-    {?>, "&gt;"},
-    {?&, "&amp;"},
-    {?", "&quot;"},
-    {?', "&#39;"}
-  ]
-
-  for {match, insert} <- escapes do
-    defp html_escape(<<unquote(match), rest::bits>>, skip, original, acc) do
-      html_escape(rest, skip + 1, original, [acc | unquote(insert)])
-    end
-  end
-
-  defp html_escape(<<_char, rest::bits>>, skip, original, acc) do
-    html_escape(rest, skip, original, acc, 1)
-  end
-
-  defp html_escape(<<>>, _skip, _original, acc) do
-    acc
-  end
-
-  for {match, insert} <- escapes do
-    defp html_escape(<<unquote(match), rest::bits>>, skip, original, acc, len) do
-      part = binary_part(original, skip, len)
-      html_escape(rest, skip + len + 1, original, [acc, part | unquote(insert)])
-    end
-  end
-
-  defp html_escape(<<_char, rest::bits>>, skip, original, acc, len) do
-    html_escape(rest, skip, original, acc, len + 1)
-  end
-
-  defp html_escape(<<>>, 0, original, _acc, _len) do
-    original
-  end
-
-  defp html_escape(<<>>, skip, original, acc, len) do
-    [acc | binary_part(original, skip, len)]
   end
 
   # helpers
