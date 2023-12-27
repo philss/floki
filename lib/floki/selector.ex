@@ -169,13 +169,15 @@ defmodule Floki.Selector do
   end
 
   defp do_classes_matches?(class_attr_value, [class]) do
-    Enum.member?(String.split(class_attr_value, [" ", "\t", "\n"]), class)
+    class_attr_value
+    |> String.split([" ", "\t", "\n"], trim: true)
+    |> Enum.member?(class)
   end
 
   defp do_classes_matches?(class_attr_value, classes) do
     min_size = Enum.reduce(classes, -1, fn item, acc -> acc + 1 + bit_size(item) end)
     can_match? = bit_size(class_attr_value) >= min_size
-    can_match? && classes -- String.split(class_attr_value, [" ", "\t", "\n"]) == []
+    can_match? && classes -- String.split(class_attr_value, [" ", "\t", "\n"], trim: true) == []
   end
 
   defp attributes_matches?(_node, []), do: true
