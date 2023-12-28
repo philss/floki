@@ -268,7 +268,8 @@ defmodule Floki.Selector.Parser do
     nil
   end
 
+  # Reorders classes in selector to improve matching performance.
   defp optimize_selector(selector) do
-    %{selector | classes: Enum.sort(selector.classes, &(byte_size(&1) >= byte_size(&2)))}
+    %{selector | classes: Enum.sort(selector.classes, &(bit_size(&1) >= bit_size(&2)))}
   end
 end
