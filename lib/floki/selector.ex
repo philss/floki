@@ -78,11 +78,26 @@ defmodule Floki.Selector do
   def match?(%Comment{}, _selector, _tree), do: false
 
   def match?(html_node, selector, tree) do
-    id_match?(html_node, selector.id) && namespace_match?(html_node, selector.namespace) &&
-      type_match?(html_node, selector.type) && classes_matches?(html_node, selector.classes) &&
+    can_match_combinator?(html_node, selector.combinator) &&
+      id_match?(html_node, selector.id) &&
+      namespace_match?(html_node, selector.namespace) &&
+      type_match?(html_node, selector.type) &&
+      classes_matches?(html_node, selector.classes) &&
       attributes_matches?(html_node, selector.attributes) &&
       pseudo_classes_match?(html_node, selector.pseudo_classes, tree)
   end
+
+  defp can_match_combinator?(_node, nil), do: true
+
+  defp can_match_combinator?(
+         %HTMLNode{children_nodes_ids: []},
+         %Selector.Combinator{match_type: match_type}
+       )
+       when match_type in [:child, :descendant] do
+    false
+  end
+
+  defp can_match_combinator?(_node, _combinator), do: true
 
   defp id_match?(_node, nil), do: true
   defp id_match?(%HTMLNode{attributes: []}, _), do: false
@@ -143,8 +158,26 @@ defmodule Floki.Selector do
 
   defp do_classes_matches?(nil, _classes), do: false
 
+  defp do_classes_matches?(class_attr_value, [class | _])
+       when bit_size(class_attr_value) < bit_size(class) do
+    false
+  end
+
+  defp do_classes_matches?(class_attr_value, [class])
+       when bit_size(class_attr_value) == bit_size(class) do
+    class == class_attr_value
+  end
+
+  defp do_classes_matches?(class_attr_value, [class]) do
+    class_attr_value
+    |> String.split([" ", "\t", "\n"], trim: true)
+    |> Enum.member?(class)
+  end
+
   defp do_classes_matches?(class_attr_value, classes) do
-    classes -- String.split(class_attr_value, ~r/\s+/) == []
+    min_size = Enum.reduce(classes, -1, fn item, acc -> acc + 1 + bit_size(item) end)
+    can_match? = bit_size(class_attr_value) >= min_size
+    can_match? && classes -- String.split(class_attr_value, [" ", "\t", "\n"], trim: true) == []
   end
 
   defp attributes_matches?(_node, []), do: true
