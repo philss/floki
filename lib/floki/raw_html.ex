@@ -47,7 +47,7 @@ defmodule Floki.RawHTML do
         _ -> :noop
       end
 
-    self_closing_tags = self_closing_tags()
+    self_closing_tags = MapSet.new(self_closing_tags())
 
     IO.iodata_to_binary(build_raw_html(html_tree, [], encoder, padding, self_closing_tags))
   end
@@ -143,7 +143,7 @@ defmodule Floki.RawHTML do
     ]
 
   defp close_open_tag(type, [], self_closing_tags) do
-    if type in self_closing_tags do
+    if MapSet.member?(self_closing_tags, type) do
       "/>"
     else
       ">"
@@ -153,7 +153,7 @@ defmodule Floki.RawHTML do
   defp close_open_tag(_type, _children, _self_closing_tags), do: ">"
 
   defp close_end_tag(type, [], padding, self_closing_tags) do
-    if type in self_closing_tags do
+    if MapSet.member?(self_closing_tags, type) do
       []
     else
       [leftpad(padding), "</", type, ">", line_ending(padding)]
