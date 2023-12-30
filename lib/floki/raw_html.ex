@@ -47,35 +47,59 @@ defmodule Floki.RawHTML do
         _ -> :noop
       end
 
-    IO.iodata_to_binary(build_raw_html(html_tree, [], encoder, padding))
+    self_closing_tags = self_closing_tags()
+
+    IO.iodata_to_binary(build_raw_html(html_tree, [], encoder, padding, self_closing_tags))
   end
 
-  defp build_raw_html([], html, _encoder, _padding), do: html
+  defp build_raw_html([], html, _encoder, _padding, _self_closing_tags), do: html
 
-  defp build_raw_html(string, _html, encoder, padding) when is_binary(string) do
+  defp build_raw_html(string, _html, encoder, padding, _self_closing_tags)
+       when is_binary(string) do
     leftpad_content(padding, encoder.(string))
   end
 
-  defp build_raw_html(tuple, html, encoder, padding) when is_tuple(tuple),
-    do: build_raw_html([tuple], html, encoder, padding)
+  defp build_raw_html(tuple, html, encoder, padding, self_closing_tags) when is_tuple(tuple),
+    do: build_raw_html([tuple], html, encoder, padding, self_closing_tags)
 
-  defp build_raw_html([string | tail], html, encoder, padding) when is_binary(string) do
-    build_raw_html(tail, [html, leftpad_content(padding, encoder.(string))], encoder, padding)
+  defp build_raw_html([string | tail], html, encoder, padding, self_closing_tags)
+       when is_binary(string) do
+    build_raw_html(
+      tail,
+      [html, leftpad_content(padding, encoder.(string))],
+      encoder,
+      padding,
+      self_closing_tags
+    )
   end
 
-  defp build_raw_html([{:comment, comment} | tail], html, encoder, padding),
-    do: build_raw_html(tail, [html, leftpad(padding), "<!--", comment, "-->"], encoder, padding)
+  defp build_raw_html([{:comment, comment} | tail], html, encoder, padding, self_closing_tags),
+    do:
+      build_raw_html(
+        tail,
+        [html, leftpad(padding), "<!--", comment, "-->"],
+        encoder,
+        padding,
+        self_closing_tags
+      )
 
-  defp build_raw_html([{:pi, tag, attrs} | tail], html, encoder, padding) do
+  defp build_raw_html([{:pi, tag, attrs} | tail], html, encoder, padding, self_closing_tags) do
     build_raw_html(
       tail,
       [html, leftpad(padding), "<?", tag, " ", tag_attrs(attrs, encoder), "?>"],
       encoder,
-      padding
+      padding,
+      self_closing_tags
     )
   end
 
-  defp build_raw_html([{:doctype, type, public, system} | tail], html, encoder, padding) do
+  defp build_raw_html(
+         [{:doctype, type, public, system} | tail],
+         html,
+         encoder,
+         padding,
+         self_closing_tags
+       ) do
     attr =
       case {public, system} do
         {"", ""} -> []
@@ -87,16 +111,18 @@ defmodule Floki.RawHTML do
       tail,
       [html, leftpad(padding), "<!DOCTYPE ", type, attr | ">"],
       encoder,
-      padding
+      padding,
+      self_closing_tags
     )
   end
 
-  defp build_raw_html([{type, attrs, children} | tail], html, encoder, padding) do
+  defp build_raw_html([{type, attrs, children} | tail], html, encoder, padding, self_closing_tags) do
     build_raw_html(
       tail,
-      [html | tag_for(type, attrs, children, encoder, padding)],
+      [html | tag_for(type, attrs, children, encoder, padding, self_closing_tags)],
       encoder,
-      padding
+      padding,
+      self_closing_tags
     )
   end
 
@@ -104,30 +130,38 @@ defmodule Floki.RawHTML do
     map_intersperse(attr_list, ?\s, &build_attrs(&1, encoder))
   end
 
-  defp tag_with_attrs(type, [], children, padding, _encoder),
-    do: [leftpad(padding), "<", type | close_open_tag(type, children)]
+  defp tag_with_attrs(type, [], children, padding, _encoder, self_closing_tags),
+    do: [leftpad(padding), "<", type | close_open_tag(type, children, self_closing_tags)]
 
-  defp tag_with_attrs(type, attrs, children, padding, encoder),
+  defp tag_with_attrs(type, attrs, children, padding, encoder, self_closing_tags),
     do: [
       leftpad(padding),
       "<",
       type,
       ?\s,
-      tag_attrs(attrs, encoder) | close_open_tag(type, children)
+      tag_attrs(attrs, encoder) | close_open_tag(type, children, self_closing_tags)
     ]
 
-  defp close_open_tag(type, children) do
-    case {type in self_closing_tags(), children} do
-      {true, []} -> "/>"
-      _ -> ">"
+  defp close_open_tag(type, [], self_closing_tags) do
+    if type in self_closing_tags do
+      "/>"
+    else
+      ">"
     end
   end
 
-  defp close_end_tag(type, children, padding) do
-    case {type in self_closing_tags(), children} do
-      {true, []} -> []
-      _ -> [leftpad(padding), "</", type, ">", line_ending(padding)]
+  defp close_open_tag(_type, _children, _self_closing_tags), do: ">"
+
+  defp close_end_tag(type, [], padding, self_closing_tags) do
+    if type in self_closing_tags do
+      []
+    else
+      [leftpad(padding), "</", type, ">", line_ending(padding)]
     end
+  end
+
+  defp close_end_tag(type, _children, padding, _self_closing_tags) do
+    [leftpad(padding), "</", type, ">", line_ending(padding)]
   end
 
   defp build_attrs({attr, value}, encoder) do
@@ -136,7 +170,7 @@ defmodule Floki.RawHTML do
 
   defp build_attrs(attr, _encoder), do: attr
 
-  defp tag_for(type, attrs, children, encoder, padding) do
+  defp tag_for(type, attrs, children, encoder, padding, self_closing_tags) do
     encoder =
       case type do
         "script" -> & &1
@@ -145,10 +179,10 @@ defmodule Floki.RawHTML do
       end
 
     [
-      tag_with_attrs(type, attrs, children, padding, encoder),
+      tag_with_attrs(type, attrs, children, padding, encoder, self_closing_tags),
       line_ending(padding),
-      build_raw_html(children, "", encoder, pad_increase(padding)),
-      close_end_tag(type, children, padding)
+      build_raw_html(children, "", encoder, pad_increase(padding), self_closing_tags),
+      close_end_tag(type, children, padding, self_closing_tags)
     ]
   end
 
