@@ -28,17 +28,6 @@ defmodule Floki.Finder do
     find_selectors(html_tree, selectors)
   end
 
-  @spec map(Floki.html_tree() | Floki.html_node(), function()) ::
-          Floki.html_tree() | Floki.html_node()
-
-  def map({name, attrs, rest}, fun) do
-    {new_name, new_attrs} = fun.({name, attrs})
-
-    {new_name, new_attrs, Enum.map(rest, &map(&1, fun))}
-  end
-
-  def map(other, _fun), do: other
-
   defp find_selectors(html_tuple_or_list, selectors) do
     tree = HTMLTree.build(html_tuple_or_list)
 
@@ -165,4 +154,15 @@ defmodule Floki.Finder do
         []
     end
   end
+
+  @spec map(Floki.html_tree() | Floki.html_node(), function()) ::
+          Floki.html_tree() | Floki.html_node()
+
+  def map({name, attrs, rest}, fun) do
+    {new_name, new_attrs} = fun.({name, attrs})
+
+    {new_name, new_attrs, Enum.map(rest, &map(&1, fun))}
+  end
+
+  def map(other, _fun), do: other
 end
