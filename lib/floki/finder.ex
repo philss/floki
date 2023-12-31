@@ -62,29 +62,29 @@ defmodule Floki.Finder do
 
   defp get_matches_for_selectors(tree, node_id, selectors, acc) do
     Enum.reduce(selectors, acc, fn selector, acc ->
-      traverse_with(selector, tree, node_id, acc)
+      traverse_with(selector, node_id, tree, acc)
     end)
   end
 
   # The stack serves as accumulator when there is another combinator to traverse.
   # So the scope of one combinator is the stack (or acc) or the parent one.
-  defp traverse_with(nil, _, html_node, acc), do: [html_node | acc]
-  defp traverse_with(_, _, [], acc), do: acc
+  defp traverse_with(nil, html_node, _, acc), do: [html_node | acc]
+  defp traverse_with(_, [], _, acc), do: acc
 
-  defp traverse_with(selector, tree, [node_id | rest], acc) do
+  defp traverse_with(selector, [node_id | rest], tree, acc) do
     traverse_with(
       selector,
-      tree,
       rest,
-      traverse_with(selector, tree, node_id, acc)
+      tree,
+      traverse_with(selector, node_id, tree, acc)
     )
   end
 
-  defp traverse_with(%Selector{combinator: combinator} = selector, tree, node_id, acc) do
+  defp traverse_with(%Selector{combinator: combinator} = selector, node_id, tree, acc) do
     html_node = get_node(node_id, tree)
 
     if Selector.match?(html_node, selector, tree) do
-      traverse_with(combinator, tree, html_node, acc)
+      traverse_with(combinator, html_node, tree, acc)
     else
       acc
     end
@@ -92,41 +92,41 @@ defmodule Floki.Finder do
 
   defp traverse_with(
          %Selector.Combinator{match_type: :child, selector: s},
-         tree,
          html_node,
+         tree,
          acc
        ) do
-    traverse_with(s, tree, Enum.reverse(html_node.children_nodes_ids), acc)
+    traverse_with(s, Enum.reverse(html_node.children_nodes_ids), tree, acc)
   end
 
   defp traverse_with(
          %Selector.Combinator{match_type: :sibling, selector: s},
-         tree,
          html_node,
+         tree,
          acc
        ) do
     case get_siblings(html_node, tree) do
-      [sibling_id | _] -> traverse_with(s, tree, sibling_id, acc)
+      [sibling_id | _] -> traverse_with(s, sibling_id, tree, acc)
       _ -> acc
     end
   end
 
   defp traverse_with(
          %Selector.Combinator{match_type: :general_sibling, selector: s},
-         tree,
          html_node,
+         tree,
          acc
        ) do
-    traverse_with(s, tree, get_siblings(html_node, tree), acc)
+    traverse_with(s, get_siblings(html_node, tree), tree, acc)
   end
 
   defp traverse_with(
          %Selector.Combinator{match_type: :descendant, selector: s},
-         tree,
          html_node,
+         tree,
          acc
        ) do
-    traverse_with(s, tree, get_descendant_ids(html_node.node_id, tree), acc)
+    traverse_with(s, get_descendant_ids(html_node.node_id, tree), tree, acc)
   end
 
   defp get_node(id, tree) do
