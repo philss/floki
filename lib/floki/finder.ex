@@ -16,7 +16,7 @@ defmodule Floki.Finder do
   def find(html_as_string, _) when is_binary(html_as_string), do: {%HTMLTree{}, []}
 
   def find(html_tree, selector_as_string) when is_binary(selector_as_string) do
-    selectors = get_selectors(selector_as_string)
+    selectors = Selector.Parser.parse(selector_as_string)
     find(html_tree, selectors)
   end
 
@@ -52,12 +52,6 @@ defmodule Floki.Finder do
       |> Enum.uniq()
 
     {tree, results}
-  end
-
-  defp get_selectors(selector_as_string) do
-    selector_as_string
-    |> Selector.Tokenizer.tokenize()
-    |> Selector.Parser.parse()
   end
 
   defp get_matches_for_selectors(tree, node_id, selectors, acc) do
