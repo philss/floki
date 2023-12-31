@@ -25,28 +25,20 @@ defmodule Floki.Finder do
   end
 
   def find(html_tree, selectors) when is_list(selectors) do
-    find_selectors(html_tree, selectors)
-  end
-
-  defp find_selectors(html_tuple_or_list, selectors) do
-    tree = HTMLTree.build(html_tuple_or_list)
+    tree = HTMLTree.build(html_tree)
 
     results =
       tree.node_ids
       |> Enum.reverse()
       |> Enum.reduce([], fn node_id, acc ->
-        get_matches_for_selectors(tree, node_id, selectors, acc)
+        Enum.reduce(selectors, acc, fn selector, acc ->
+          traverse_with(selector, node_id, tree, acc)
+        end)
       end)
       |> Enum.reverse()
       |> Enum.uniq()
 
     {tree, results}
-  end
-
-  defp get_matches_for_selectors(tree, node_id, selectors, acc) do
-    Enum.reduce(selectors, acc, fn selector, acc ->
-      traverse_with(selector, node_id, tree, acc)
-    end)
   end
 
   # The stack serves as accumulator when there is another combinator to traverse.
