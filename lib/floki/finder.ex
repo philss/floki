@@ -68,49 +68,30 @@ defmodule Floki.Finder do
     html_node = get_node(node_id, tree)
 
     if Selector.match?(html_node, selector, tree) do
-      traverse_with(combinator, html_node, tree, acc)
+      nodes = get_selector_nodes(combinator, html_node, tree)
+      traverse_with(combinator.selector, nodes, tree, acc)
     else
       acc
     end
   end
 
-  defp traverse_with(
-         %Selector.Combinator{match_type: :child, selector: s},
-         html_node,
-         tree,
-         acc
-       ) do
-    traverse_with(s, Enum.reverse(html_node.children_nodes_ids), tree, acc)
+  defp get_selector_nodes(%Selector.Combinator{match_type: :child}, html_node, _tree) do
+    Enum.reverse(html_node.children_nodes_ids)
   end
 
-  defp traverse_with(
-         %Selector.Combinator{match_type: :sibling, selector: s},
-         html_node,
-         tree,
-         acc
-       ) do
+  defp get_selector_nodes(%Selector.Combinator{match_type: :sibling}, html_node, tree) do
     case get_siblings(html_node, tree) do
-      [sibling_id | _] -> traverse_with(s, sibling_id, tree, acc)
-      _ -> acc
+      [sibling_id | _] -> sibling_id
+      _ -> nil
     end
   end
 
-  defp traverse_with(
-         %Selector.Combinator{match_type: :general_sibling, selector: s},
-         html_node,
-         tree,
-         acc
-       ) do
-    traverse_with(s, get_siblings(html_node, tree), tree, acc)
+  defp get_selector_nodes(%Selector.Combinator{match_type: :general_sibling}, html_node, tree) do
+    get_siblings(html_node, tree)
   end
 
-  defp traverse_with(
-         %Selector.Combinator{match_type: :descendant, selector: s},
-         html_node,
-         tree,
-         acc
-       ) do
-    traverse_with(s, get_descendant_ids(html_node.node_id, tree), tree, acc)
+  defp get_selector_nodes(%Selector.Combinator{match_type: :descendant}, html_node, tree) do
+    get_descendant_ids(html_node.node_id, tree)
   end
 
   defp get_node(id, tree) do
