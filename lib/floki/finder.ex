@@ -43,7 +43,6 @@ defmodule Floki.Finder do
 
   # The stack serves as accumulator when there is another combinator to traverse.
   # So the scope of one combinator is the stack (or acc) or the parent one.
-  defp traverse_with(nil, html_node, _, acc), do: [html_node | acc]
   defp traverse_with(_, [], _, acc), do: acc
 
   defp traverse_with(selector, [node_id | rest], tree, acc) do
@@ -53,6 +52,16 @@ defmodule Floki.Finder do
       tree,
       traverse_with(selector, node_id, tree, acc)
     )
+  end
+
+  defp traverse_with(%Selector{combinator: nil} = selector, node_id, tree, acc) do
+    html_node = get_node(node_id, tree)
+
+    if Selector.match?(html_node, selector, tree) do
+      [html_node | acc]
+    else
+      acc
+    end
   end
 
   defp traverse_with(%Selector{combinator: combinator} = selector, node_id, tree, acc) do
