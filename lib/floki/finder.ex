@@ -27,14 +27,11 @@ defmodule Floki.Finder do
   def find(html_tree, selectors) when is_list(selectors) do
     tree = HTMLTree.build(html_tree)
 
+    node_ids = Enum.reverse(tree.node_ids)
+    stack = Enum.map(selectors, fn s -> {s, node_ids} end)
+
     results =
-      tree.node_ids
-      |> Enum.reverse()
-      |> Enum.reduce([], fn node_id, acc ->
-        Enum.reduce(selectors, acc, fn selector, acc ->
-          traverse_with(selector, node_id, tree, acc)
-        end)
-      end)
+      traverse_with(:cont, tree, [], stack)
       |> Enum.reverse()
       |> Enum.uniq()
 
@@ -43,36 +40,48 @@ defmodule Floki.Finder do
 
   # The stack serves as accumulator when there is another combinator to traverse.
   # So the scope of one combinator is the stack (or acc) or the parent one.
-  defp traverse_with(_, [], _, acc), do: acc
-
-  defp traverse_with(selector, [node_id | rest], tree, acc) do
-    traverse_with(
-      selector,
-      rest,
-      tree,
-      traverse_with(selector, node_id, tree, acc)
-    )
+  defp traverse_with(:cont, _, acc, []) do
+    acc
   end
 
-  defp traverse_with(%Selector{combinator: nil} = selector, node_id, tree, acc) do
-    html_node = get_node(node_id, tree)
-
-    if Selector.match?(html_node, selector, tree) do
-      [html_node | acc]
-    else
-      acc
-    end
+  defp traverse_with(:cont, tree, acc, [next | rest]) do
+    traverse_with(next, tree, acc, rest)
   end
 
-  defp traverse_with(%Selector{combinator: combinator} = selector, node_id, tree, acc) do
+  defp traverse_with({selector, [node_id]}, tree, acc, stack) do
+    traverse_with({selector, node_id}, tree, acc, stack)
+  end
+
+  defp traverse_with({selector, [next | rest]}, tree, acc, stack) do
+    stack = [{selector, rest} | stack]
+    traverse_with({selector, next}, tree, acc, stack)
+  end
+
+  defp traverse_with({%Selector{combinator: nil} = selector, node_id}, tree, acc, stack) do
     html_node = get_node(node_id, tree)
 
-    if Selector.match?(html_node, selector, tree) do
-      nodes = get_selector_nodes(combinator, html_node, tree)
-      traverse_with(combinator.selector, nodes, tree, acc)
-    else
-      acc
-    end
+    acc =
+      if Selector.match?(html_node, selector, tree) do
+        [html_node | acc]
+      else
+        acc
+      end
+
+    traverse_with(:cont, tree, acc, stack)
+  end
+
+  defp traverse_with({%Selector{combinator: combinator} = selector, node_id}, tree, acc, stack) do
+    html_node = get_node(node_id, tree)
+
+    stack =
+      if Selector.match?(html_node, selector, tree) do
+        nodes = get_selector_nodes(combinator, html_node, tree)
+        [{combinator.selector, nodes} | stack]
+      else
+        stack
+      end
+
+    traverse_with(:cont, tree, acc, stack)
   end
 
   defp get_selector_nodes(%Selector.Combinator{match_type: :child}, html_node, _tree) do
