@@ -103,13 +103,14 @@ defmodule Floki.Selector do
   defp id_match?(%HTMLNode{attributes: []}, _), do: false
   defp id_match?(%HTMLNode{type: :pi}, _), do: false
 
-  defp id_match?(%HTMLNode{attributes: attributes}, id) do
-    Enum.any?(attributes, fn attribute ->
-      case attribute do
-        {"id", ^id} -> true
-        _ -> false
-      end
-    end)
+  defp id_match?(%HTMLNode{attributes: attributes}, id) when is_list(attributes) do
+    id_attr_value = :proplists.get_value("id", attributes, nil)
+    id_attr_value == id
+  end
+
+  defp id_match?(%HTMLNode{attributes: attributes}, id) when is_map(attributes) do
+    id_attr_value = attributes["id"]
+    id_attr_value == id
   end
 
   defp namespace_match?(_node, namespace) when is_wildcard(namespace), do: true
