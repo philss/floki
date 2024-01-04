@@ -108,10 +108,11 @@ defmodule Floki.Selector do
     id_attr_value == id
   end
 
-  defp id_match?(%HTMLNode{attributes: attributes}, id) when is_map(attributes) do
-    id_attr_value = attributes["id"]
+  defp id_match?(%HTMLNode{attributes: %{"id" => id_attr_value}}, id) do
     id_attr_value == id
   end
+
+  defp id_match?(_node, _id), do: false
 
   defp namespace_match?(_node, namespace) when is_wildcard(namespace), do: true
   defp namespace_match?(%HTMLNode{type: :pi}, _type), do: false
