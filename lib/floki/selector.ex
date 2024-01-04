@@ -108,9 +108,7 @@ defmodule Floki.Selector do
     id_attr_value == id
   end
 
-  defp id_match?(%HTMLNode{attributes: %{"id" => id_attr_value}}, id) do
-    id_attr_value == id
-  end
+  defp id_match?(%HTMLNode{attributes: %{"id" => id}}, id), do: true
 
   defp id_match?(_node, _id), do: false
 
