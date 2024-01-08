@@ -103,10 +103,9 @@ defmodule Floki.Selector do
   defp id_match?(node, id), do: attribute_value(node, "id") == id
 
   defp namespace_match?(_node, namespace) when is_wildcard(namespace), do: true
-  defp namespace_match?(%HTMLNode{type: :pi}, _type), do: false
 
-  defp namespace_match?(%HTMLNode{type: type_maybe_with_namespace}, namespace) do
-    case String.split(type_maybe_with_namespace, ":") do
+  defp namespace_match?(node, namespace) do
+    case String.split(type_maybe_with_namespace(node), ":") do
       [^namespace, _type] ->
         true
 
@@ -116,10 +115,9 @@ defmodule Floki.Selector do
   end
 
   defp type_match?(_node, type) when is_wildcard(type), do: true
-  defp type_match?(%HTMLNode{type: :pi}, _type), do: false
 
-  defp type_match?(%HTMLNode{type: type_maybe_with_namespace}, type) do
-    case String.split(type_maybe_with_namespace, ":") do
+  defp type_match?(node, type) do
+    case String.split(type_maybe_with_namespace(node), ":") do
       [_ns, ^type] ->
         true
 
@@ -130,8 +128,6 @@ defmodule Floki.Selector do
         false
     end
   end
-
-  defp type_match?(_, _), do: false
 
   defp classes_matches?(_node, []), do: true
 
@@ -254,6 +250,9 @@ defmodule Floki.Selector do
 
     false
   end
+
+  defp type_maybe_with_namespace(%HTMLNode{type: type}) when is_binary(type), do: type
+  defp type_maybe_with_namespace(_), do: ""
 
   defp attribute_value(node, attribute_name) do
     attributes = attributes(node)
