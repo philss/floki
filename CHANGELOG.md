@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased][unreleased]
 
+## [0.35.3] - 2024-01-xx
+
+### Added
+
+- TODO: add performance details
+
+### Fixed
+
+- Add `:leex` to Mix compilers. Fixes the build when running with dev version of Elixir.
+  Thanks [@wojtekmach](https://github.com/wojtekmach).
+
+- Fix `Floki.raw_html/1` when a tree using attributes as maps is given.
+  Thanks [@SupaMic](https://github.com/SupaMic).
+
+- Add a guard to `Floki.find/2` so people can have a better error message when an
+  invalid input is given. Thanks [@Hajto](https://github.com/Hajto).
+
+- Fix parsers to consider IO data as inputs. This may change in the next version
+  of Floki, as I plan to drop support for IO data.
+  Thanks [@ypconstante](https://github.com/ypconstante).
+
+### Removed
+
+- Remove outdated Gleam wrapper code. The external functions syntax in Gleam
+  has [changed](https://gleam.run/book/tour/external-functions.html). So now
+  the wrapper is not needed anymore.
+  Thanks [@michallepicki](https://github.com/michallepicki).
+
 ## [0.35.2] - 2023-10-25
 
 ### Fixed
