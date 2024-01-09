@@ -6,14 +6,16 @@ defmodule Floki.Finder do
 
   alias Floki.{HTMLTree, Selector}
   alias HTMLTree.HTMLNode
+  import Floki, only: [is_html_node: 1]
 
   # Find elements inside a HTML tree.
   # Second argument can be either a selector string, a selector struct or a list of selector structs.
 
-  @spec find(Floki.html_tree(), Floki.css_selector()) :: {HTMLTree.t(), [HTMLTree.HTMLNode.t()]}
+  @spec find(HTMLTree.t(), Floki.css_selector()) :: [HTMLTree.HTMLNode.t()]
+  @spec find(Floki.html_tree() | Floki.html_node(), Floki.css_selector()) :: [Floki.html_node()]
 
-  def find([], _), do: {%HTMLTree{}, []}
-  def find(html_as_string, _) when is_binary(html_as_string), do: {%HTMLTree{}, []}
+  def find([], _), do: []
+  def find(html_as_string, _) when is_binary(html_as_string), do: []
 
   def find(html_tree, selector_as_string) when is_binary(selector_as_string) do
     selectors = Selector.Parser.parse(selector_as_string)
@@ -24,18 +26,21 @@ defmodule Floki.Finder do
     find(html_tree, [selector])
   end
 
-  def find(html_tree, selectors) when is_list(selectors) do
-    tree = HTMLTree.build(html_tree)
+  def find(html_tree_as_tuple, selectors)
+      when (is_list(html_tree_as_tuple) or is_html_node(html_tree_as_tuple)) and
+             is_list(selectors) do
+    tree = HTMLTree.build(html_tree_as_tuple)
+    results = find(tree, selectors)
+    Enum.map(results, fn html_node -> HTMLTree.to_tuple(tree, html_node) end)
+  end
 
+  def find(%HTMLTree{} = tree, selectors) when is_list(selectors) do
     node_ids = Enum.reverse(tree.node_ids)
     stack = Enum.map(selectors, fn s -> {s, node_ids} end)
 
-    results =
-      traverse_with(:cont, tree, [], stack)
-      |> Enum.reverse()
-      |> Enum.uniq()
-
-    {tree, results}
+    traverse_with(:cont, tree, [], stack)
+    |> Enum.reverse()
+    |> Enum.uniq()
   end
 
   # The stack serves as accumulator when there is another combinator to traverse.

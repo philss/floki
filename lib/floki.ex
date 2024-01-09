@@ -280,17 +280,13 @@ defmodule Floki do
     )
 
     with {:ok, document} <- Floki.parse_document(html) do
-      {tree, results} = Finder.find(document, selector)
-
-      Enum.map(results, fn html_node -> HTMLTree.to_tuple(tree, html_node) end)
+      Finder.find(document, selector)
     end
   end
 
   def find(html_tree_as_tuple, selector)
       when is_list(html_tree_as_tuple) or is_html_node(html_tree_as_tuple) do
-    {tree, results} = Finder.find(html_tree_as_tuple, selector)
-
-    Enum.map(results, fn html_node -> HTMLTree.to_tuple(tree, html_node) end)
+    Finder.find(html_tree_as_tuple, selector)
   end
 
   @doc """
@@ -385,7 +381,8 @@ defmodule Floki do
           ({String.t(), html_attributes()} -> {String.t(), html_attributes()} | :delete)
         ) :: html_tree()
   def find_and_update(html_tree, selector, fun) do
-    {tree, results} = Finder.find(html_tree, selector)
+    tree = HTMLTree.build(html_tree)
+    results = Finder.find(tree, selector)
 
     operations_with_nodes =
       Enum.map(results, fn
