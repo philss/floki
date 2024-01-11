@@ -213,10 +213,13 @@ defmodule Floki.RawHTML do
   defp leftpad(:noop), do: ""
   defp leftpad(%{pad: pad, depth: depth}), do: String.duplicate(pad, depth)
 
-  defp leftpad_content(:noop, string), do: string
+  defp leftpad_content(:noop, content), do: content
 
-  defp leftpad_content(padding, string) do
-    trimmed = String.trim(string)
+  defp leftpad_content(padding, content) do
+    trimmed =
+      content
+      |> IO.iodata_to_binary()
+      |> String.trim()
 
     if trimmed == "" do
       ""
