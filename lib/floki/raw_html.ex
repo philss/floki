@@ -178,10 +178,11 @@ defmodule Floki.RawHTML do
         _ -> encoder
       end
 
-    children_content = case children do
-      [] -> ""
-      _ -> build_raw_html(children, "", encoder, pad_increase(padding), self_closing_tags)
-    end
+    children_content =
+      case children do
+        [] -> ""
+        _ -> build_raw_html(children, "", encoder, pad_increase(padding), self_closing_tags)
+      end
 
     [
       tag_with_attrs(type, attrs, children, padding, encoder, self_closing_tags),
