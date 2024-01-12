@@ -484,6 +484,10 @@ defmodule FlokiTest do
         <div class="content">
           <span>
             <div>
+              encoded content
+              &
+              '
+              "
 
       <span>
                 <small>
@@ -517,6 +521,10 @@ defmodule FlokiTest do
                <div class="content">
                  <span>
                    <div>
+                     encoded content
+                     &amp;
+                     &#39;
+                     &quot;
                      <span>
                        <small>
                          very deep content
