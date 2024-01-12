@@ -43,7 +43,7 @@ defmodule Floki.RawHTML do
 
     padding =
       case Keyword.fetch(options, :pretty) do
-        {:ok, true} -> %{pad: "  ", line_ending: "\n", depth: 0}
+        {:ok, true} -> %{pad: "", pad_increase: "  ", line_ending: "\n", depth: 0}
         _ -> :noop
       end
 
@@ -178,10 +178,16 @@ defmodule Floki.RawHTML do
         _ -> encoder
       end
 
+    children_content =
+      case children do
+        [] -> ""
+        _ -> build_raw_html(children, "", encoder, pad_increase(padding), self_closing_tags)
+      end
+
     [
       tag_with_attrs(type, attrs, children, padding, encoder, self_closing_tags),
       line_ending(padding),
-      build_raw_html(children, "", encoder, pad_increase(padding), self_closing_tags),
+      children_content,
       close_end_tag(type, children, padding, self_closing_tags)
     ]
   end
@@ -211,7 +217,7 @@ defmodule Floki.RawHTML do
     do: map_intersperse(Map.to_list(attrs), separator, mapper)
 
   defp leftpad(:noop), do: ""
-  defp leftpad(%{pad: pad, depth: depth}), do: String.duplicate(pad, depth)
+  defp leftpad(%{pad: pad}), do: pad
 
   defp leftpad_content(:noop, string), do: string
 
@@ -226,7 +232,11 @@ defmodule Floki.RawHTML do
   end
 
   defp pad_increase(:noop), do: :noop
-  defp pad_increase(padder = %{depth: depth}), do: %{padder | depth: depth + 1}
+
+  defp pad_increase(padder = %{depth: depth, pad_increase: pad_increase}) do
+    depth = depth + 1
+    %{padder | depth: depth, pad: String.duplicate(pad_increase, depth)}
+  end
 
   defp line_ending(:noop), do: ""
   defp line_ending(%{line_ending: line_ending}), do: line_ending
