@@ -100,23 +100,12 @@ defmodule Floki.Selector do
   defp can_match_combinator?(_node, _combinator), do: true
 
   defp id_match?(_node, nil), do: true
-  defp id_match?(%HTMLNode{attributes: []}, _), do: false
-  defp id_match?(%HTMLNode{type: :pi}, _), do: false
-
-  defp id_match?(%HTMLNode{attributes: attributes}, id) when is_list(attributes) do
-    id_attr_value = :proplists.get_value("id", attributes, nil)
-    id_attr_value == id
-  end
-
-  defp id_match?(%HTMLNode{attributes: %{"id" => id}}, id), do: true
-
-  defp id_match?(_node, _id), do: false
+  defp id_match?(node, id), do: attribute_value(node, "id") == id
 
   defp namespace_match?(_node, namespace) when is_wildcard(namespace), do: true
-  defp namespace_match?(%HTMLNode{type: :pi}, _type), do: false
 
-  defp namespace_match?(%HTMLNode{type: type_maybe_with_namespace}, namespace) do
-    case String.split(type_maybe_with_namespace, ":") do
+  defp namespace_match?(node, namespace) do
+    case type_maybe_with_namespace(node) do
       [^namespace, _type] ->
         true
 
@@ -126,10 +115,9 @@ defmodule Floki.Selector do
   end
 
   defp type_match?(_node, type) when is_wildcard(type), do: true
-  defp type_match?(%HTMLNode{type: :pi}, _type), do: false
 
-  defp type_match?(%HTMLNode{type: type_maybe_with_namespace}, type) do
-    case String.split(type_maybe_with_namespace, ":") do
+  defp type_match?(node, type) do
+    case type_maybe_with_namespace(node) do
       [_ns, ^type] ->
         true
 
@@ -141,19 +129,11 @@ defmodule Floki.Selector do
     end
   end
 
-  defp type_match?(_, _), do: false
-
   defp classes_matches?(_node, []), do: true
-  defp classes_matches?(%HTMLNode{attributes: []}, _), do: false
 
-  defp classes_matches?(%HTMLNode{attributes: attributes}, classes) when is_list(attributes) do
-    class_attr_value = :proplists.get_value("class", attributes, nil)
-
+  defp classes_matches?(node, classes) do
+    class_attr_value = attribute_value(node, "class")
     do_classes_matches?(class_attr_value, classes)
-  end
-
-  defp classes_matches?(%HTMLNode{attributes: attributes}, classes) when is_map(attributes) do
-    do_classes_matches?(attributes["class"], classes)
   end
 
   defp do_classes_matches?(nil, _classes), do: false
@@ -181,12 +161,14 @@ defmodule Floki.Selector do
   end
 
   defp attributes_matches?(_node, []), do: true
-  defp attributes_matches?(%HTMLNode{attributes: []}, _), do: false
 
-  defp attributes_matches?(%HTMLNode{attributes: attributes}, attributes_selectors) do
-    Enum.all?(attributes_selectors, fn attribute_selector ->
-      AttributeSelector.match?(attributes, attribute_selector)
-    end)
+  defp attributes_matches?(node, attributes_selectors) do
+    attributes = attributes(node)
+
+    not Enum.empty?(attributes) and
+      Enum.all?(attributes_selectors, fn attribute_selector ->
+        AttributeSelector.match?(attributes, attribute_selector)
+      end)
   end
 
   defp pseudo_classes_match?(_html_node, [], _tree), do: true
@@ -267,5 +249,32 @@ defmodule Floki.Selector do
     end)
 
     false
+  end
+
+  defp type_maybe_with_namespace(%HTMLNode{type: type}) when is_binary(type) do
+    type_maybe_with_namespace(type)
+  end
+
+  defp type_maybe_with_namespace(type_maybe_with_namespace)
+       when is_binary(type_maybe_with_namespace) do
+    String.split(type_maybe_with_namespace, ":", parts: 2)
+  end
+
+  defp type_maybe_with_namespace(_), do: []
+
+  defp attribute_value(node, attribute_name) do
+    attributes = attributes(node)
+    get_attribute_value(attributes, attribute_name)
+  end
+
+  defp attributes(%HTMLNode{type: :pi}), do: []
+  defp attributes(%HTMLNode{attributes: attributes}), do: attributes
+
+  defp get_attribute_value(attributes, attribute_name) when is_list(attributes) do
+    :proplists.get_value(attribute_name, attributes, nil)
+  end
+
+  defp get_attribute_value(attributes, attribute_name) when is_map(attributes) do
+    Map.get(attributes, attribute_name)
   end
 end
