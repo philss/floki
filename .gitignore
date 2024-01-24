@@ -10,3 +10,5 @@ erl_crash.dump
 /priv/plts/*.plt
 /priv/plts/*.plt.hash
 /benchs/*.html
+/benchs/assets
+/benchs/results
