@@ -36,7 +36,7 @@ Benchee.run(
 
 results = Path.wildcard("benchs/results/raw-html-*.benchee")
 
-if Enum.count(results) > 1 do
+if Enum.count(results) > 1 and function_exported?(Benchee, :report, 1) do
   html_path = "benchs/results/raw-html.html"
 
   Benchee.report(

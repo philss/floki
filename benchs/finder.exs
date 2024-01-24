@@ -15,6 +15,7 @@ read_file = fn name ->
   |> Path.dirname()
   |> Path.join(name)
   |> File.read!()
+  |> Floki.parse_document!()
 end
 
 inputs = %{
@@ -23,28 +24,23 @@ inputs = %{
   "small" => read_file.("small.html")
 }
 
-Application.ensure_all_started(:fast_html)
-
 Benchee.run(
   %{
-    "mochiweb" => fn input -> Floki.parse_document!(input) end,
-    "html5ever" => fn input ->
-      Floki.parse_document!(input, html_parser: Floki.HTMLParser.Html5ever)
-    end,
-    "fast_html" => fn input ->
-      Floki.parse_document!(input, html_parser: Floki.HTMLParser.FastHtml)
-    end
+    "class" => fn doc -> Floki.find(doc, ".class-mw-redirect") end,
+    "class multiple" => fn doc -> Floki.find(doc, ".class-mw-redirect, .reference") end,
+    "tag name (type)" => fn doc -> Floki.find(doc, "a") end,
+    "id" => fn doc -> Floki.find(doc, "#cite_note-15") end
   },
   time: 10,
   inputs: inputs,
-  save: [path: "benchs/results/parse-document-#{tag}.benchee", tag: tag],
+  save: [path: "benchs/results/finder-#{tag}.benchee", tag: tag],
   memory_time: 2
 )
 
-results = Path.wildcard("benchs/results/parse-document-*.benchee")
+results = Path.wildcard("benchs/results/finder-*.benchee")
 
 if Enum.count(results) > 1 and function_exported?(Benchee, :report, 1) do
-  html_path = "benchs/results/parse-document.html"
+  html_path = "benchs/results/finder.html"
 
   Benchee.report(
     load: results,
