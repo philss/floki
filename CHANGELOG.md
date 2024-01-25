@@ -7,6 +7,37 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased][unreleased]
 
+## [0.35.3] - 2024-01-25
+
+This release has great performance improvements, thanks to the PRs
+from [@ypconstante](https://github.com/ypconstante)!
+
+Most of the main functions, such as `Floki.raw_html/2` and `Floki.find/2` are
+faster and are using less memory. It's something like twice as fast, and half
+usage of memory for `find/2`, for example.
+
+### Fixed
+
+- Add `:leex` to Mix compilers. Fixes the build when running with dev version of Elixir.
+  Thanks [@wojtekmach](https://github.com/wojtekmach).
+
+- Fix `Floki.raw_html/2` when a tree using attributes as maps is given.
+  Thanks [@SupaMic](https://github.com/SupaMic).
+
+- Add a guard to `Floki.find/2` so people can have a better error message when an
+  invalid input is given. Thanks [@Hajto](https://github.com/Hajto).
+
+- Fix parsers to consider IO data as inputs. This may change in the next version
+  of Floki, as I plan to drop support for IO data.
+  Thanks [@ypconstante](https://github.com/ypconstante).
+
+### Removed
+
+- Remove outdated Gleam wrapper code. The external functions syntax in Gleam
+  has [changed](https://gleam.run/book/tour/external-functions.html). So now
+  the wrapper is not needed anymore.
+  Thanks [@michallepicki](https://github.com/michallepicki).
+
 ## [0.35.2] - 2023-10-25
 
 ### Fixed
@@ -705,7 +736,8 @@ of the parent element inside HTML.
 
 - Elixir version requirement from "~> 1.0.0" to ">= 1.0.0".
 
-[unreleased]: https://github.com/philss/floki/compare/v0.35.2...HEAD
+[unreleased]: https://github.com/philss/floki/compare/v0.35.3...HEAD
+[0.35.3]: https://github.com/philss/floki/compare/v0.35.2...v0.35.3
 [0.35.2]: https://github.com/philss/floki/compare/v0.35.1...v0.35.2
 [0.35.1]: https://github.com/philss/floki/compare/v0.35.0...v0.35.1
 [0.35.0]: https://github.com/philss/floki/compare/v0.34.3...v0.35.0
