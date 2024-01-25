@@ -98,7 +98,6 @@ defmodule Floki.Mixfile do
         "lib/floki.ex",
         "src/*.xrl",
         "src/floki_mochi_html.erl",
-        "src/floki.gleam",
         "mix.exs",
         "README.md",
         "LICENSE",
