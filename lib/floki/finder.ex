@@ -29,23 +29,39 @@ defmodule Floki.Finder do
   def find(html_tree_as_tuple, selectors)
       when (is_list(html_tree_as_tuple) or is_html_node(html_tree_as_tuple)) and
              is_list(selectors) do
-    tree = HTMLTree.build(html_tree_as_tuple)
-    results = find(tree, selectors)
-    Enum.map(results, fn html_node -> HTMLTree.to_tuple(tree, html_node) end)
+    if traverse_html_tuples?(selectors) do
+      html_tree_as_tuple = List.wrap(html_tree_as_tuple)
+      stack = Enum.map(selectors, fn s -> {s, html_tree_as_tuple} end)
+
+      results = traverse_html_tuples(stack, [])
+      Enum.reverse(results)
+    else
+      tree = HTMLTree.build(html_tree_as_tuple)
+      results = find(tree, selectors)
+      Enum.map(results, fn html_node -> HTMLTree.to_tuple(tree, html_node) end)
+    end
   end
 
   def find(%HTMLTree{} = tree, selectors) when is_list(selectors) do
     node_ids = Enum.reverse(tree.node_ids)
     stack = Enum.map(selectors, fn s -> {s, node_ids} end)
 
-    traverse_with(stack, tree, [])
+    traverse_html_tree(stack, tree, [])
     |> Enum.reverse()
     |> Enum.uniq()
   end
 
+  # some selectors can be applied with the raw html tree tuples instead of
+  # using an intermediate HTMLTree:
+  # - single selector
+  # - no composite selector
+  # - no pseudo classes
+  defp traverse_html_tuples?([%Selector{combinator: nil, pseudo_classes: []}]), do: true
+  defp traverse_html_tuples?(_), do: false
+
   # The stack serves as accumulator when there is another combinator to traverse.
   # So the scope of one combinator is the stack (or acc) or the parent one.
-  defp traverse_with(
+  defp traverse_html_tree(
          [{%Selector{combinator: nil} = selector, [node_id | selector_rest]} | stack],
          tree,
          acc
@@ -60,10 +76,10 @@ defmodule Floki.Finder do
         acc
       end
 
-    traverse_with(stack, tree, acc)
+    traverse_html_tree(stack, tree, acc)
   end
 
-  defp traverse_with(
+  defp traverse_html_tree(
          [{%Selector{combinator: combinator} = selector, [node_id | selector_rest]} | stack],
          tree,
          acc
@@ -79,14 +95,58 @@ defmodule Floki.Finder do
         stack
       end
 
-    traverse_with(stack, tree, acc)
+    traverse_html_tree(stack, tree, acc)
   end
 
-  defp traverse_with([{_selector, []} | rest], tree, acc) do
-    traverse_with(rest, tree, acc)
+  defp traverse_html_tree([{_selector, []} | rest], tree, acc) do
+    traverse_html_tree(rest, tree, acc)
   end
 
-  defp traverse_with([], _, acc) do
+  defp traverse_html_tree([], _, acc) do
+    acc
+  end
+
+  defp traverse_html_tuples(
+         [
+           {
+             %Selector{combinator: nil} = selector,
+             [{_type, _attributes, children} = html_tuple | selector_rest]
+           }
+           | stack
+         ],
+         acc
+       ) do
+    stack = [{selector, children}, {selector, selector_rest} | stack]
+
+    acc =
+      if Selector.match?(html_tuple, selector, nil) do
+        [html_tuple | acc]
+      else
+        acc
+      end
+
+    traverse_html_tuples(stack, acc)
+  end
+
+  defp traverse_html_tuples(
+         [
+           {
+             %Selector{combinator: nil} = selector,
+             [_ | selector_rest]
+           }
+           | stack
+         ],
+         acc
+       ) do
+    stack = [{selector, selector_rest} | stack]
+    traverse_html_tuples(stack, acc)
+  end
+
+  defp traverse_html_tuples([{_selector, []} | rest], acc) do
+    traverse_html_tuples(rest, acc)
+  end
+
+  defp traverse_html_tuples([], acc) do
     acc
   end
 
