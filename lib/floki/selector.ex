@@ -105,12 +105,11 @@ defmodule Floki.Selector do
   defp namespace_match?(_node, namespace) when is_wildcard(namespace), do: true
 
   defp namespace_match?(node, namespace) do
-    case type_maybe_with_namespace(node) do
-      [^namespace, _type] ->
-        true
+    namespace_size = byte_size(namespace)
 
-      _ ->
-        false
+    case type_maybe_with_namespace(node) do
+      <<^namespace::binary-size(namespace_size), ":", _::binary>> -> true
+      _ -> false
     end
   end
 
@@ -118,11 +117,20 @@ defmodule Floki.Selector do
 
   defp type_match?(node, type) do
     case type_maybe_with_namespace(node) do
-      [_ns, ^type] ->
+      ^type ->
         true
 
-      [^type] ->
-        true
+      type_maybe_with_namespace when byte_size(type_maybe_with_namespace) > byte_size(type) ->
+        expected_namespace_size = byte_size(type_maybe_with_namespace) - byte_size(type) - 1
+
+        Kernel.match?(
+          <<
+            _ns::binary-size(expected_namespace_size),
+            ":",
+            ^type::binary
+          >>,
+          type_maybe_with_namespace
+        )
 
       _ ->
         false
@@ -251,20 +259,9 @@ defmodule Floki.Selector do
     false
   end
 
-  defp type_maybe_with_namespace({type, _attributes, _children}) when is_binary(type) do
-    type_maybe_with_namespace(type)
-  end
-
-  defp type_maybe_with_namespace(%HTMLNode{type: type}) when is_binary(type) do
-    type_maybe_with_namespace(type)
-  end
-
-  defp type_maybe_with_namespace(type_maybe_with_namespace)
-       when is_binary(type_maybe_with_namespace) do
-    String.split(type_maybe_with_namespace, ":", parts: 2)
-  end
-
-  defp type_maybe_with_namespace(_), do: []
+  defp type_maybe_with_namespace({type, _attributes, _children}) when is_binary(type), do: type
+  defp type_maybe_with_namespace(%HTMLNode{type: type}) when is_binary(type), do: type
+  defp type_maybe_with_namespace(_), do: nil
 
   defp attribute_value(node, attribute_name) do
     attributes = attributes(node)
