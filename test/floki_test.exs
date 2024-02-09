@@ -1587,10 +1587,17 @@ defmodule FlokiTest do
   # Floki.children/2
 
   test "returns the children elements of an element including the text" do
-    assert Floki.children({"div", [], ["a parent", {"span", [], ["a child"]}]}) == [
-             "a parent",
-             {"span", [], ["a child"]}
-           ]
+    html_node = {"div", [], ["a parent", {"span", [], ["a child"]}]}
+
+    expected = [
+      "a parent",
+      {"span", [], ["a child"]}
+    ]
+
+    assert Floki.children(html_node) == expected
+    assert Floki.children(html_node, include_text: true) == expected
+    assert Floki.children(html_node, include_text: true, unknown_option: true) == expected
+    assert Floki.children(html_node, unknown_option: true) == expected
   end
 
   test "returns the children elements of an element without the text" do
@@ -1599,14 +1606,19 @@ defmodule FlokiTest do
 
     [elements | _] = Floki.find(html, "body > div")
 
-    assert [
-             {"span", [], ["child 1"]},
-             {"span", [], ["child 2"]}
-           ] = Floki.children(elements, include_text: false)
+    expected = [
+      {"span", [], ["child 1"]},
+      {"span", [], ["child 2"]}
+    ]
+
+    assert Floki.children(elements, include_text: false) == expected
+    assert Floki.children(elements, include_text: false, unknown_option: true) == expected
   end
 
   test "returns nil if the given html is not a valid tuple" do
     assert Floki.children([]) == nil
+    assert Floki.children([], include_text: true) == nil
+    assert Floki.children([], include_text: false) == nil
   end
 
   # Floki.attribute/3
