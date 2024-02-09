@@ -609,19 +609,21 @@ defmodule Floki do
   """
 
   @spec children(html_node(), Keyword.t()) :: html_tree() | nil
+  def children(html_node, opts \\ [include_text: true])
 
-  def children(html_node, opts \\ [include_text: true]) do
-    case html_node do
-      {_, _, subtree} ->
-        filter_children(subtree, opts[:include_text])
-
-      _ ->
-        nil
-    end
+  def children({_, _, subtree}, include_text: false) do
+    Enum.filter(subtree, &is_tuple/1)
   end
 
-  defp filter_children(children, false), do: Enum.filter(children, &is_tuple(&1))
-  defp filter_children(children, _), do: children
+  def children({_, _, subtree}, include_text: _) do
+    subtree
+  end
+
+  def children({_, _, _} = html_node, opts) do
+    children(html_node, include_text: opts[:include_text])
+  end
+
+  def children(_html_node, _opts), do: nil
 
   @doc """
   Returns a list with attribute values for a given selector.
