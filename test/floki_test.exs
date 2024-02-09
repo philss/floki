@@ -5,6 +5,7 @@ defmodule FlokiTest do
 
   require Floki
   alias Floki.HTMLParser.{Html5ever, Mochiweb, FastHtml}
+  alias Floki.HTMLTree
 
   @plain_text_tags [
     "script",
@@ -565,52 +566,52 @@ defmodule FlokiTest do
   # Floki.find/2 - Classes
 
   test "find elements with a given class" do
-    assert Floki.find(document!(@html), ".js-cool") == [
-             {
-               "a",
-               [
-                 {"href", "http://google.com"},
-                 {"class", "js-google js-cool"}
-               ],
-               ["Google"]
-             },
-             {
-               "a",
-               [{"href", "http://elixir-lang.org"}, {"class", "js-elixir js-cool"}],
-               ["Elixir lang"]
-             }
-           ]
+    assert_find(document!(@html), ".js-cool", [
+      {
+        "a",
+        [
+          {"href", "http://google.com"},
+          {"class", "js-google js-cool"}
+        ],
+        ["Google"]
+      },
+      {
+        "a",
+        [{"href", "http://elixir-lang.org"}, {"class", "js-elixir js-cool"}],
+        ["Elixir lang"]
+      }
+    ])
   end
 
   @tag except_parser: FastHtml
   test "find elements with a given class and attributes as maps" do
-    assert Floki.find(document!(@html, attributes_as_maps: true), ".js-cool") == [
-             {
-               "a",
-               %{
-                 "href" => "http://google.com",
-                 "class" => "js-google js-cool"
-               },
-               ["Google"]
-             },
-             {
-               "a",
-               %{"href" => "http://elixir-lang.org", "class" => "js-elixir js-cool"},
-               ["Elixir lang"]
-             }
-           ]
+    assert_find(document!(@html, attributes_as_maps: true), ".js-cool", [
+      {
+        "a",
+        %{
+          "href" => "http://google.com",
+          "class" => "js-google js-cool"
+        },
+        ["Google"]
+      },
+      {
+        "a",
+        %{"href" => "http://elixir-lang.org", "class" => "js-elixir js-cool"},
+        ["Elixir lang"]
+      }
+    ])
   end
 
   test "find elements with two classes combined" do
     class_selector = ".js-cool.js-elixir"
 
-    assert Floki.find(document!(@html), class_selector) == [
-             {
-               "a",
-               [{"href", "http://elixir-lang.org"}, {"class", "js-elixir js-cool"}],
-               ["Elixir lang"]
-             }
-           ]
+    assert_find(document!(@html), class_selector, [
+      {
+        "a",
+        [{"href", "http://elixir-lang.org"}, {"class", "js-elixir js-cool"}],
+        ["Elixir lang"]
+      }
+    ])
   end
 
   test "find elements with anormal class spacing" do
@@ -623,13 +624,13 @@ defmodule FlokiTest do
 
     class_selector = ".js-cool.js-elixir"
 
-    assert Floki.find(html, class_selector) == [
-             {
-               "div",
-               [{"class", "js-cool\t\t  js-elixir"}],
-               []
-             }
-           ]
+    assert_find(html, class_selector, [
+      {
+        "div",
+        [{"class", "js-cool\t\t  js-elixir"}],
+        []
+      }
+    ])
   end
 
   test "find elements with a given class in html_without_html_tag" do
@@ -641,42 +642,40 @@ defmodule FlokiTest do
 
     {:ok, html} = Floki.parse_fragment(html_without_html_tag)
 
-    assert Floki.find(html, ".js-cool") == [
-             {"h2", [{"class", "js-cool"}], ["One"]}
-           ]
+    assert_find(html, ".js-cool", [{"h2", [{"class", "js-cool"}], ["One"]}])
   end
 
   test "find element that does not have child node" do
     class_selector = ".js-twitter-logo"
 
-    assert Floki.find(document!(@html_with_img), class_selector) == [
-             {
-               "img",
-               [{"src", "http://twitter.com/logo.png"}, {"class", "js-twitter-logo"}],
-               []
-             }
-           ]
+    assert_find(document!(@html_with_img), class_selector, [
+      {
+        "img",
+        [{"src", "http://twitter.com/logo.png"}, {"class", "js-twitter-logo"}],
+        []
+      }
+    ])
   end
 
   test "find element that does not close the tag" do
     class_selector = ".img-without-closing-tag"
 
-    assert Floki.find(document!(@html_with_img), class_selector) == [
-             {
-               "img",
-               [
-                 {"src", "http://twitter.com/logo.png"},
-                 {"class", "img-without-closing-tag"}
-               ],
-               []
-             }
-           ]
+    assert_find(document!(@html_with_img), class_selector, [
+      {
+        "img",
+        [
+          {"src", "http://twitter.com/logo.png"},
+          {"class", "img-without-closing-tag"}
+        ],
+        []
+      }
+    ])
   end
 
   test "does not find elements" do
     class_selector = ".nothing"
 
-    assert Floki.find(document!(@html), class_selector) == []
+    assert_find(document!(@html), class_selector, [])
   end
 
   test "find elements with colon in class names" do
@@ -690,18 +689,18 @@ defmodule FlokiTest do
         """)
       )
 
-    assert Floki.find(html, ".xl\\:flex-row.md\\:space-y-20") == [
-             {
-               "div",
-               [
-                 {
-                   "class",
-                   "m-auto max-w-7xl px-4 pt-12 pb-20 flex flex-col xl:flex-row space-y-16\nmd:space-y-20 xl:space-y-0"
-                 }
-               ],
-               []
-             }
-           ]
+    assert_find(html, ".xl\\:flex-row.md\\:space-y-20", [
+      {
+        "div",
+        [
+          {
+            "class",
+            "m-auto max-w-7xl px-4 pt-12 pb-20 flex flex-col xl:flex-row space-y-16\nmd:space-y-20 xl:space-y-0"
+          }
+        ],
+        []
+      }
+    ])
   end
 
   # Floki.find/2 - Tag name
@@ -709,30 +708,30 @@ defmodule FlokiTest do
   test "select elements by tag name" do
     html = document!(html_body(~s(<strong>Name</strong><a href="profile">Julius</a>)))
 
-    assert [{"a", [{"href", "profile"}], ["Julius"]}] = Floki.find(html, "a")
+    assert_find(html, "a", [{"a", [{"href", "profile"}], ["Julius"]}])
   end
 
   # Floki.find/2 - ID
 
   test "find element by id" do
-    assert Floki.find(document!(@html_with_img), "#logo") == [
-             {
-               "img",
-               [{"src", "logo.png"}, {"id", "logo"}],
-               []
-             }
-           ]
+    assert_find(document!(@html_with_img), "#logo", [
+      {
+        "img",
+        [{"src", "logo.png"}, {"id", "logo"}],
+        []
+      }
+    ])
   end
 
   @tag only_parser: Mochiweb
   test "find element by id when tree has attributes as maps" do
-    assert Floki.find(document!(@html_with_img, attributes_as_maps: true), "#logo") == [
-             {
-               "img",
-               %{"src" => "logo.png", "id" => "logo"},
-               []
-             }
-           ]
+    assert_find(document!(@html_with_img, attributes_as_maps: true), "#logo", [
+      {
+        "img",
+        %{"src" => "logo.png", "id" => "logo"},
+        []
+      }
+    ])
   end
 
   ## Floki.find/2 - Attributes
@@ -740,178 +739,179 @@ defmodule FlokiTest do
   test "find elements with a tag and a given attribute value with shorthand syntax" do
     attribute_selector = "a[data-action=lolcats]"
 
-    assert Floki.find(document!(@html_with_data_attributes), attribute_selector) == [
-             {
-               "a",
-               [
-                 {"href", "http://google.com"},
-                 {"class", "js-google js-cool"},
-                 {"data-action", "lolcats"}
-               ],
-               ["Google"]
-             }
-           ]
+    assert_find(document!(@html_with_data_attributes), attribute_selector, [
+      {
+        "a",
+        [
+          {"href", "http://google.com"},
+          {"class", "js-google js-cool"},
+          {"data-action", "lolcats"}
+        ],
+        ["Google"]
+      }
+    ])
   end
 
   @tag only_parser: Mochiweb
   test "find elements with a tag and a given attribute value with tree containing attributes as maps" do
     attribute_selector = "a[data-action=lolcats]"
 
-    assert Floki.find(
-             document!(@html_with_data_attributes, attributes_as_maps: true),
-             attribute_selector
-           ) == [
-             {
-               "a",
-               %{
-                 "class" => "js-google js-cool",
-                 "data-action" => "lolcats",
-                 "href" => "http://google.com"
-               },
-               ["Google"]
-             }
-           ]
+    assert_find(
+      document!(@html_with_data_attributes, attributes_as_maps: true),
+      attribute_selector,
+      [
+        {
+          "a",
+          %{
+            "class" => "js-google js-cool",
+            "data-action" => "lolcats",
+            "href" => "http://google.com"
+          },
+          ["Google"]
+        }
+      ]
+    )
   end
 
   test "find elements only by given attribute value with shorthand syntax" do
     attribute_selector = "[data-action=lolcats]"
 
-    assert Floki.find(document!(@html_with_data_attributes), attribute_selector) == [
-             {
-               "a",
-               [
-                 {"href", "http://google.com"},
-                 {"class", "js-google js-cool"},
-                 {"data-action", "lolcats"}
-               ],
-               ["Google"]
-             }
-           ]
+    assert_find(document!(@html_with_data_attributes), attribute_selector, [
+      {
+        "a",
+        [
+          {"href", "http://google.com"},
+          {"class", "js-google js-cool"},
+          {"data-action", "lolcats"}
+        ],
+        ["Google"]
+      }
+    ])
   end
 
   test "find elements by the attribute's |= selector" do
     attribute_selector = "a[href|='http://elixir']"
 
-    assert Floki.find(document!(@html), attribute_selector) == [
-             {
-               "a",
-               [{"href", "http://elixir-lang.org"}, {"class", "js-elixir js-cool"}],
-               ["Elixir lang"]
-             }
-           ]
+    assert_find(document!(@html), attribute_selector, [
+      {
+        "a",
+        [{"href", "http://elixir-lang.org"}, {"class", "js-elixir js-cool"}],
+        ["Elixir lang"]
+      }
+    ])
   end
 
   test "find elements by the attribute's ^= selector" do
     attribute_selector = "a[href^='http://g']"
 
-    assert Floki.find(document!(@html), attribute_selector) == [
-             {
-               "a",
-               [{"href", "http://google.com"}, {"class", "js-google js-cool"}],
-               ["Google"]
-             }
-           ]
+    assert_find(document!(@html), attribute_selector, [
+      {
+        "a",
+        [{"href", "http://google.com"}, {"class", "js-google js-cool"}],
+        ["Google"]
+      }
+    ])
   end
 
   @tag only_parser: Mochiweb
   test "find elements by the attribute's ^= selector against a tree with attributes as maps" do
     attribute_selector = "a[href^='http://g']"
 
-    assert Floki.find(document!(@html, attributes_as_maps: true), attribute_selector) == [
-             {
-               "a",
-               %{"href" => "http://google.com", "class" => "js-google js-cool"},
-               ["Google"]
-             }
-           ]
+    assert_find(document!(@html, attributes_as_maps: true), attribute_selector, [
+      {
+        "a",
+        %{"href" => "http://google.com", "class" => "js-google js-cool"},
+        ["Google"]
+      }
+    ])
   end
 
   test "find elements by the attribute's $= selector" do
     attribute_selector = "a[href$='.org']"
 
-    assert Floki.find(document!(@html), attribute_selector) == [
-             {
-               "a",
-               [{"href", "http://elixir-lang.org"}, {"class", "js-elixir js-cool"}],
-               ["Elixir lang"]
-             }
-           ]
+    assert_find(document!(@html), attribute_selector, [
+      {
+        "a",
+        [{"href", "http://elixir-lang.org"}, {"class", "js-elixir js-cool"}],
+        ["Elixir lang"]
+      }
+    ])
   end
 
   test "find elements by the attribute's *= selector" do
     attribute_selector = "a[class*='google']"
 
-    assert Floki.find(document!(@html), attribute_selector) == [
-             {
-               "a",
-               [{"href", "http://google.com"}, {"class", "js-google js-cool"}],
-               ["Google"]
-             }
-           ]
+    assert_find(document!(@html), attribute_selector, [
+      {
+        "a",
+        [{"href", "http://google.com"}, {"class", "js-google js-cool"}],
+        ["Google"]
+      }
+    ])
   end
 
   test "find elements only by given case-insensitive attribute value" do
     attribute_selector = "meta[name='robots' i]"
     html = document!(html_body(~s(<meta name="ROBOTS" content="INDEX, FOLLOW, NOIMAGEINDEX"/>)))
 
-    assert Floki.find(html, attribute_selector) == [
-             {
-               "meta",
-               [
-                 {"name", "ROBOTS"},
-                 {"content", "INDEX, FOLLOW, NOIMAGEINDEX"}
-               ],
-               []
-             }
-           ]
+    assert_find(html, attribute_selector, [
+      {
+        "meta",
+        [
+          {"name", "ROBOTS"},
+          {"content", "INDEX, FOLLOW, NOIMAGEINDEX"}
+        ],
+        []
+      }
+    ])
   end
 
   test "find elements by the attribute's |= selector with case-insensitive flag" do
     attribute_selector = "a[href|='HTTP://ELIXIR' i]"
 
-    assert Floki.find(document!(@html), attribute_selector) == [
-             {
-               "a",
-               [{"href", "http://elixir-lang.org"}, {"class", "js-elixir js-cool"}],
-               ["Elixir lang"]
-             }
-           ]
+    assert_find(document!(@html), attribute_selector, [
+      {
+        "a",
+        [{"href", "http://elixir-lang.org"}, {"class", "js-elixir js-cool"}],
+        ["Elixir lang"]
+      }
+    ])
   end
 
   test "find elements by the attribute's ^= selector with case-insensitive flag" do
     attribute_selector = "a[href^='HTTP://G' i]"
 
-    assert Floki.find(document!(@html), attribute_selector) == [
-             {
-               "a",
-               [{"href", "http://google.com"}, {"class", "js-google js-cool"}],
-               ["Google"]
-             }
-           ]
+    assert_find(document!(@html), attribute_selector, [
+      {
+        "a",
+        [{"href", "http://google.com"}, {"class", "js-google js-cool"}],
+        ["Google"]
+      }
+    ])
   end
 
   test "find elements by the attribute's $= selector with case-insensitive flag" do
     attribute_selector = "a[href$='.ORG' i]"
 
-    assert Floki.find(document!(@html), attribute_selector) == [
-             {
-               "a",
-               [{"href", "http://elixir-lang.org"}, {"class", "js-elixir js-cool"}],
-               ["Elixir lang"]
-             }
-           ]
+    assert_find(document!(@html), attribute_selector, [
+      {
+        "a",
+        [{"href", "http://elixir-lang.org"}, {"class", "js-elixir js-cool"}],
+        ["Elixir lang"]
+      }
+    ])
   end
 
   test "find elements by the attribute's *= selector with case-insensitive flag" do
     attribute_selector = "a[class*='GOOGLE' i]"
 
-    assert Floki.find(document!(@html), attribute_selector) == [
-             {
-               "a",
-               [{"href", "http://google.com"}, {"class", "js-google js-cool"}],
-               ["Google"]
-             }
-           ]
+    assert_find(document!(@html), attribute_selector, [
+      {
+        "a",
+        [{"href", "http://google.com"}, {"class", "js-google js-cool"}],
+        ["Google"]
+      }
+    ])
   end
 
   # Floki.find/2 - Selector with descendant combinator
@@ -925,7 +925,7 @@ defmodule FlokiTest do
       }
     ]
 
-    assert Floki.find(document!(@html_with_img), "a img") == expected
+    assert_find(document!(@html_with_img), "a img", expected)
   end
 
   # Floki.find/2 - Selector with child combinator
@@ -947,9 +947,9 @@ defmodule FlokiTest do
       }
     ]
 
-    assert Floki.find(document!(@html_with_img), "div.logo-container > img") == expected
-    assert Floki.find(document!(@html_with_img), "body > div.logo-container > img") == expected
-    assert Floki.find(document!(@html_with_img), "body > img") == []
+    assert_find(document!(@html_with_img), "div.logo-container > img", expected)
+    assert_find(document!(@html_with_img), "body > div.logo-container > img", expected)
+    assert_find(document!(@html_with_img), "body > img", [])
   end
 
   test "find only immediate children elements" do
@@ -970,8 +970,8 @@ defmodule FlokiTest do
         """)
       )
 
-    assert Floki.find(html, "div > p > img") == []
-    assert Floki.find(html, "div > p > span > img") == expected
+    assert_find(html, "div > p > img", [])
+    assert_find(html, "div > p > span > img", expected)
   end
 
   test "find a sibling after immediate child chain" do
@@ -997,7 +997,7 @@ defmodule FlokiTest do
         """)
       )
 
-    assert Floki.find(html, "div > p > span > img + img") == expected
+    assert_find(html, "div > p > span > img + img", expected)
   end
 
   # Floki.find/2 - Sibling combinator
@@ -1017,14 +1017,14 @@ defmodule FlokiTest do
        ]}
     ]
 
-    assert Floki.find(html, "a + div") == expected
-    assert Floki.find(html, "a + .l-c") == expected
+    assert_find(html, "a + div", expected)
+    assert_find(html, "a + .l-c", expected)
 
-    assert Floki.find(html, "a + div #lg") == [
-             {"img", [{"src", "l.png"}, {"id", "lg"}], []}
-           ]
+    assert_find(html, "a + div #lg", [
+      {"img", [{"src", "l.png"}, {"id", "lg"}], []}
+    ])
 
-    assert Floki.find(html, "a + #lg") == []
+    assert_find(html, "a + #lg", [])
   end
 
   # Floki.find/2 - General sibling combinator
@@ -1036,10 +1036,10 @@ defmodule FlokiTest do
       {"a", [{"href", "http://java.com"}, {"class", "js-java"}], ["Java"]}
     ]
 
-    assert Floki.find(document!(@html), "a.js-google ~ a") == expected
-    assert Floki.find(document!(@html), "body > div > a.js-google ~ a") == expected
-    assert Floki.find(document!(@html), "body > div ~ a") == []
-    assert Floki.find(document!(@html), "a.js-java ~ a") == []
+    assert_find(document!(@html), "a.js-google ~ a", expected)
+    assert_find(document!(@html), "body > div > a.js-google ~ a", expected)
+    assert_find(document!(@html), "body > div ~ a", [])
+    assert_find(document!(@html), "a.js-java ~ a", [])
   end
 
   # Floki.find/2 - Using groups with comma
@@ -1050,13 +1050,13 @@ defmodule FlokiTest do
       {"img", [{"src", "logo.png"}, {"id", "logo"}], []}
     ]
 
-    assert Floki.find(document!(@html_with_img), ".js-twitter-logo, #logo") == expected
+    assert_find(document!(@html_with_img), ".js-twitter-logo, #logo", expected)
   end
 
   test "get one element when search for multiple and just one exist" do
     expected = [{"img", [{"src", "logo.png"}, {"id", "logo"}], []}]
 
-    assert Floki.find(document!(@html_with_img), ".js-x-logo, #logo") == expected
+    assert_find(document!(@html_with_img), ".js-x-logo, #logo", expected)
   end
 
   # Floki.find/2 - Pseudo-class
@@ -1077,45 +1077,45 @@ defmodule FlokiTest do
     </html>
     """
 
-    assert Floki.find(document!(html), "a:nth-child(2)") == [
-             {"a", [{"href", "/b"}], ["2"]}
-           ]
+    assert_find(document!(html), "a:nth-child(2)", [
+      {"a", [{"href", "/b"}], ["2"]}
+    ])
 
-    assert Floki.find(document!(html), "a:nth-child(even)") == [
-             {"a", [{"href", "/b"}], ["2"]},
-             {"a", [{"href", "/d"}], ["4"]},
-             {"a", [{"href", "/f"}], ["6"]}
-           ]
+    assert_find(document!(html), "a:nth-child(even)", [
+      {"a", [{"href", "/b"}], ["2"]},
+      {"a", [{"href", "/d"}], ["4"]},
+      {"a", [{"href", "/f"}], ["6"]}
+    ])
 
-    assert Floki.find(document!(html), "a:nth-child(odd)") == [
-             {"a", [{"href", "/a"}], ["1"]},
-             {"a", [{"href", "/c"}], ["3"]},
-             {"a", [{"href", "/e"}], ["5"]},
-             {"a", [{"href", "/g"}], ["7"]}
-           ]
+    assert_find(document!(html), "a:nth-child(odd)", [
+      {"a", [{"href", "/a"}], ["1"]},
+      {"a", [{"href", "/c"}], ["3"]},
+      {"a", [{"href", "/e"}], ["5"]},
+      {"a", [{"href", "/g"}], ["7"]}
+    ])
 
-    assert Floki.find(document!(html), "a:first-child") == [
-             {"a", [{"href", "/a"}], ["1"]}
-           ]
+    assert_find(document!(html), "a:first-child", [
+      {"a", [{"href", "/a"}], ["1"]}
+    ])
 
     # same as first-child
-    assert Floki.find(document!(html), "a:nth-child(0n+1)") == [
-             {"a", [{"href", "/a"}], ["1"]}
-           ]
+    assert_find(document!(html), "a:nth-child(0n+1)", [
+      {"a", [{"href", "/a"}], ["1"]}
+    ])
 
-    assert Floki.find(document!(html), "a:nth-child(3n+4)") == [
-             {"a", [{"href", "/d"}], ["4"]},
-             {"a", [{"href", "/g"}], ["7"]}
-           ]
+    assert_find(document!(html), "a:nth-child(3n+4)", [
+      {"a", [{"href", "/d"}], ["4"]},
+      {"a", [{"href", "/g"}], ["7"]}
+    ])
   end
 
   @tag except_parser: Html5ever
   test "get root elements by nth-child and first-child pseudo-classes" do
     tree = Floki.parse_fragment!("<p>A</p><p>B</p>")
 
-    assert Floki.find(tree, "p:nth-child(1)") == [{"p", [], ["A"]}]
-    assert Floki.find(tree, "p:nth-child(2)") == [{"p", [], ["B"]}]
-    assert Floki.find(tree, "p:first-child") == [{"p", [], ["A"]}]
+    assert_find(tree, "p:nth-child(1)", [{"p", [], ["A"]}])
+    assert_find(tree, "p:nth-child(2)", [{"p", [], ["B"]}])
+    assert_find(tree, "p:first-child", [{"p", [], ["A"]}])
   end
 
   test "get elements by nth-last-child pseudo-class" do
@@ -1134,31 +1134,31 @@ defmodule FlokiTest do
     </html>
     """
 
-    assert Floki.find(document!(html), "a:nth-last-child(2)") == [
-             {"a", [{"href", "/f"}], ["6"]}
-           ]
+    assert_find(document!(html), "a:nth-last-child(2)", [
+      {"a", [{"href", "/f"}], ["6"]}
+    ])
 
-    assert Floki.find(document!(html), "a:nth-last-child(even)") == [
-             {"a", [{"href", "/b"}], ["2"]},
-             {"a", [{"href", "/d"}], ["4"]},
-             {"a", [{"href", "/f"}], ["6"]}
-           ]
+    assert_find(document!(html), "a:nth-last-child(even)", [
+      {"a", [{"href", "/b"}], ["2"]},
+      {"a", [{"href", "/d"}], ["4"]},
+      {"a", [{"href", "/f"}], ["6"]}
+    ])
 
-    assert Floki.find(document!(html), "a:nth-last-child(odd)") == [
-             {"a", [{"href", "/a"}], ["1"]},
-             {"a", [{"href", "/c"}], ["3"]},
-             {"a", [{"href", "/e"}], ["5"]},
-             {"a", [{"href", "/g"}], ["7"]}
-           ]
+    assert_find(document!(html), "a:nth-last-child(odd)", [
+      {"a", [{"href", "/a"}], ["1"]},
+      {"a", [{"href", "/c"}], ["3"]},
+      {"a", [{"href", "/e"}], ["5"]},
+      {"a", [{"href", "/g"}], ["7"]}
+    ])
 
-    assert Floki.find(document!(html), "a:nth-last-child(0n+1)") == [
-             {"a", [{"href", "/g"}], ["7"]}
-           ]
+    assert_find(document!(html), "a:nth-last-child(0n+1)", [
+      {"a", [{"href", "/g"}], ["7"]}
+    ])
 
-    assert Floki.find(document!(html), "a:nth-last-child(3n+4)") == [
-             {"a", [{"href", "/a"}], ["1"]},
-             {"a", [{"href", "/d"}], ["4"]}
-           ]
+    assert_find(document!(html), "a:nth-last-child(3n+4)", [
+      {"a", [{"href", "/a"}], ["1"]},
+      {"a", [{"href", "/d"}], ["4"]}
+    ])
   end
 
   test "get elements by last-child pseudo-class" do
@@ -1180,21 +1180,21 @@ defmodule FlokiTest do
     </html>
     """
 
-    assert Floki.find(document!(html), "p:last-child") == [
-             {"p", [], ["2"]}
-           ]
+    assert_find(document!(html), "p:last-child", [
+      {"p", [], ["2"]}
+    ])
 
-    assert Floki.find(document!(html), "div :last-child") == [
-             {"p", [], ["2"]},
-             {"h2", [], ["4"]}
-           ]
+    assert_find(document!(html), "div :last-child", [
+      {"p", [], ["2"]},
+      {"h2", [], ["4"]}
+    ])
   end
 
   @tag except_parser: Html5ever
   test "get root elements by last-child pseudo-class" do
     tree = Floki.parse_fragment!("<p>A</p><p>B</p>")
 
-    assert Floki.find(tree, "p:last-child") == [{"p", [], ["B"]}]
+    assert_find(tree, "p:last-child", [{"p", [], ["B"]}])
   end
 
   test "get elements by nth-of-type, first-of-type, and last-of-type pseudo-classes" do
@@ -1219,73 +1219,73 @@ defmodule FlokiTest do
       </html>
       """)
 
-    assert Floki.find(html, "a:nth-of-type(2)") == [
-             {"a", [{"href", "/b"}], ["2"]}
-           ]
+    assert_find(html, "a:nth-of-type(2)", [
+      {"a", [{"href", "/b"}], ["2"]}
+    ])
 
-    assert Floki.find(html, "a:nth-of-type(even)") == [
-             {"a", [{"href", "/b"}], ["2"]},
-             {"a", [{"href", "/d"}], ["4"]}
-           ]
+    assert_find(html, "a:nth-of-type(even)", [
+      {"a", [{"href", "/b"}], ["2"]},
+      {"a", [{"href", "/d"}], ["4"]}
+    ])
 
-    assert Floki.find(html, "a:nth-of-type(odd)") == [
-             {"a", [{"href", "/a"}], ["1"]},
-             {"a", [{"href", "/c"}], ["3"]},
-             {"a", [{"href", "/e"}], ["5"]}
-           ]
+    assert_find(html, "a:nth-of-type(odd)", [
+      {"a", [{"href", "/a"}], ["1"]},
+      {"a", [{"href", "/c"}], ["3"]},
+      {"a", [{"href", "/e"}], ["5"]}
+    ])
 
     # same as nth-of-type(odd)
-    assert Floki.find(html, "a:nth-of-type(2n+1)") == [
-             {"a", [{"href", "/a"}], ["1"]},
-             {"a", [{"href", "/c"}], ["3"]},
-             {"a", [{"href", "/e"}], ["5"]}
-           ]
+    assert_find(html, "a:nth-of-type(2n+1)", [
+      {"a", [{"href", "/a"}], ["1"]},
+      {"a", [{"href", "/c"}], ["3"]},
+      {"a", [{"href", "/e"}], ["5"]}
+    ])
 
     # same as first-of-type
-    assert Floki.find(html, "a:nth-of-type(0n+1)") == [
-             {"a", [{"href", "/a"}], ["1"]}
-           ]
+    assert_find(html, "a:nth-of-type(0n+1)", [
+      {"a", [{"href", "/a"}], ["1"]}
+    ])
 
-    assert Floki.find(html, "a:first-of-type") == [
-             {"a", [{"href", "/a"}], ["1"]}
-           ]
+    assert_find(html, "a:first-of-type", [
+      {"a", [{"href", "/a"}], ["1"]}
+    ])
 
-    assert Floki.find(html, "body :first-of-type") == [
-             {"h1", [], ["Child 1"]},
-             {"div", [], ["Child 2"]},
-             {"a", [{"href", "/a"}], ["1"]}
-           ]
+    assert_find(html, "body :first-of-type", [
+      {"h1", [], ["Child 1"]},
+      {"div", [], ["Child 2"]},
+      {"a", [{"href", "/a"}], ["1"]}
+    ])
 
-    assert Floki.find(html, "body :last-of-type") == [
-             {"h1", [], ["Child 1"]},
-             {"div", [], ["Child 4"]},
-             {"a", [{"href", "/e"}], ["5"]}
-           ]
+    assert_find(html, "body :last-of-type", [
+      {"h1", [], ["Child 1"]},
+      {"div", [], ["Child 4"]},
+      {"a", [{"href", "/e"}], ["5"]}
+    ])
   end
 
   @tag except_parser: Html5ever
   test "get root elements by nth-of-type, first-of-type, and last-of-type pseudo-classes" do
     tree = Floki.parse_fragment!("<p>A</p><div>B</div><p>C</p><div>D</div>")
 
-    assert Floki.find(tree, ":nth-of-type(1)") == [
-             {"p", [], ["A"]},
-             {"div", [], ["B"]}
-           ]
+    assert_find(tree, ":nth-of-type(1)", [
+      {"p", [], ["A"]},
+      {"div", [], ["B"]}
+    ])
 
-    assert Floki.find(tree, ":first-of-type") == [
-             {"p", [], ["A"]},
-             {"div", [], ["B"]}
-           ]
+    assert_find(tree, ":first-of-type", [
+      {"p", [], ["A"]},
+      {"div", [], ["B"]}
+    ])
 
-    assert Floki.find(tree, ":nth-of-type(2)") == [
-             {"p", [], ["C"]},
-             {"div", [], ["D"]}
-           ]
+    assert_find(tree, ":nth-of-type(2)", [
+      {"p", [], ["C"]},
+      {"div", [], ["D"]}
+    ])
 
-    assert Floki.find(tree, ":last-of-type") == [
-             {"p", [], ["C"]},
-             {"div", [], ["D"]}
-           ]
+    assert_find(tree, ":last-of-type", [
+      {"p", [], ["C"]},
+      {"div", [], ["D"]}
+    ])
   end
 
   test "get elements by nth-last-of-type pseudo-classes" do
@@ -1309,44 +1309,44 @@ defmodule FlokiTest do
       </html>
       """)
 
-    assert Floki.find(html, "a:nth-last-of-type(2)") == [
-             {"a", [{"href", "/d"}], ["4"]}
-           ]
+    assert_find(html, "a:nth-last-of-type(2)", [
+      {"a", [{"href", "/d"}], ["4"]}
+    ])
 
-    assert Floki.find(html, "div:nth-last-of-type(even)") == [
-             {"div", [], ["Child 3"]}
-           ]
+    assert_find(html, "div:nth-last-of-type(even)", [
+      {"div", [], ["Child 3"]}
+    ])
 
-    assert Floki.find(html, "a:nth-last-of-type(odd)") == [
-             {"a", [{"href", "/a"}], ["1"]},
-             {"a", [{"href", "/c"}], ["3"]},
-             {"a", [{"href", "/e"}], ["5"]}
-           ]
+    assert_find(html, "a:nth-last-of-type(odd)", [
+      {"a", [{"href", "/a"}], ["1"]},
+      {"a", [{"href", "/c"}], ["3"]},
+      {"a", [{"href", "/e"}], ["5"]}
+    ])
 
-    assert Floki.find(html, "a:nth-last-of-type(2n+1)") == [
-             {"a", [{"href", "/a"}], ["1"]},
-             {"a", [{"href", "/c"}], ["3"]},
-             {"a", [{"href", "/e"}], ["5"]}
-           ]
+    assert_find(html, "a:nth-last-of-type(2n+1)", [
+      {"a", [{"href", "/a"}], ["1"]},
+      {"a", [{"href", "/c"}], ["3"]},
+      {"a", [{"href", "/e"}], ["5"]}
+    ])
 
-    assert Floki.find(html, "a:nth-last-of-type(0n+1)") == [
-             {"a", [{"href", "/e"}], ["5"]}
-           ]
+    assert_find(html, "a:nth-last-of-type(0n+1)", [
+      {"a", [{"href", "/e"}], ["5"]}
+    ])
   end
 
   @tag except_parser: Html5ever
   test "get root elements by nth-last-of-type pseudo-classes" do
     tree = Floki.parse_fragment!("<p>A</p><div>B</div><p>C</p><div>D</div>")
 
-    assert Floki.find(tree, ":nth-last-of-type(1)") == [
-             {"p", [], ["C"]},
-             {"div", [], ["D"]}
-           ]
+    assert_find(tree, ":nth-last-of-type(1)", [
+      {"p", [], ["C"]},
+      {"div", [], ["D"]}
+    ])
 
-    assert Floki.find(tree, ":nth-last-of-type(2)") == [
-             {"p", [], ["A"]},
-             {"div", [], ["B"]}
-           ]
+    assert_find(tree, ":nth-last-of-type(2)", [
+      {"p", [], ["A"]},
+      {"div", [], ["B"]}
+    ])
   end
 
   test "not pseudo-class" do
@@ -1363,20 +1363,15 @@ defmodule FlokiTest do
       </html>
       """)
 
-    first_result = Floki.find(html, "a.link:not(.bar)")
-    second_result = Floki.find(html, "div#links > a.link:not(.bar)")
-    third_result = Floki.find(html, "a.link:not(:nth-child(2))")
-    fourth_result = Floki.find(html, "a.link:not([style*=crazy])")
-
     expected_result = [
       {"a", [{"class", "link foo"}], ["A foo"]},
       {"a", [{"class", "link baz"}], ["A baz"]}
     ]
 
-    assert first_result == expected_result
-    assert first_result == second_result
-    assert third_result == expected_result
-    assert fourth_result == expected_result
+    assert_find(html, "a.link:not(.bar)", expected_result)
+    assert_find(html, "div#links > a.link:not(.bar)", expected_result)
+    assert_find(html, "a.link:not(:nth-child(2))", expected_result)
+    assert_find(html, "a.link:not([style*=crazy])", expected_result)
   end
 
   test "not pseudo-class with multiple selectors" do
@@ -1394,36 +1389,30 @@ defmodule FlokiTest do
       </html>
       """)
 
-    first_result = Floki.find(html, "a.link:not(.bar, .baz)")
-    second_result = Floki.find(html, "a.link:not(.bar,.baz)")
-    third_result = Floki.find(html, "a.link:not(.bar):not(.baz)")
-    fourth_result = Floki.find(html, "a.link:not(.bar, .bin):not(.baz)")
-    fifth_result = Floki.find(html, "a.link:not([style*=crazy], .bin):not(.baz)")
-
     foo_match = {"a", [{"class", "link foo"}], ["A foo"]}
     bin_match = {"a", [{"class", "link bin"}], ["A bin"]}
 
-    assert first_result == [foo_match, bin_match]
-    assert second_result == [foo_match, bin_match]
-    assert third_result == [foo_match, bin_match]
-    assert fourth_result == [foo_match]
-    assert fifth_result == [foo_match]
+    assert_find(html, "a.link:not(.bar, .baz)", [foo_match, bin_match])
+    assert_find(html, "a.link:not(.bar,.baz)", [foo_match, bin_match])
+    assert_find(html, "a.link:not(.bar):not(.baz)", [foo_match, bin_match])
+    assert_find(html, "a.link:not(.bar, .bin):not(.baz)", [foo_match])
+    assert_find(html, "a.link:not([style*=crazy], .bin):not(.baz)", [foo_match])
   end
 
   test "contains pseudo-class" do
     doc = document!(html_body(~s(<p>One</p><p>Two</p><div>nothing<b>42</b></div>)))
 
-    assert Floki.find(doc, "p:fl-contains('Two')") == [
-             {"p", [], ["Two"]}
-           ]
+    assert_find(doc, "p:fl-contains('Two')", [
+      {"p", [], ["Two"]}
+    ])
   end
 
   test "icontains pseudo-class" do
     doc = document!(html_body(~s(<p>One</p><p>Two</p><div>nothing<b>42</b></div>)))
 
-    assert Floki.find(doc, "p:fl-icontains('two')") == [
-             {"p", [], ["Two"]}
-           ]
+    assert_find(doc, "p:fl-icontains('two')", [
+      {"p", [], ["Two"]}
+    ])
   end
 
   test "contains psuedo-class with substring" do
@@ -1437,11 +1426,11 @@ defmodule FlokiTest do
       {"li", [], ["Another podcast"]}
     ]
 
-    assert Floki.find(html, ":fl-contains(' podcast')") == expected
+    assert_find(html, ":fl-contains(' podcast')", expected)
   end
 
   test "checked pseudo-class" do
-    doc =
+    html =
       document!(
         html_body(~s"""
         <input type="checkbox" name="1" checked>
@@ -1450,27 +1439,39 @@ defmodule FlokiTest do
         <input type="radio" name="4" checked>
         <input type="radio" name="5">
         <select>
-          <option selected>6</option>
+          <option id="option-6" selected>6</option>
           <option>7</option>
         </select>
         """)
+      )
+
+    html_tree = HTMLTree.build(html)
+
+    results = Floki.find(html, ":checked")
+
+    html_tree_results =
+      Enum.map(
+        Floki.Finder.find(html_tree, ":checked"),
+        fn html_node -> HTMLTree.to_tuple(html_tree, html_node) end
       )
 
     assert [
              {"input", [{"type", "checkbox"}, {"name", "1"}, {"checked", _}], []},
              {"input", [{"type", "checkbox"}, {"name", "2"}, {"checked", _}], []},
              {"input", [{"type", "radio"}, {"name", "4"}, {"checked", _}], []},
-             {"option", [{"selected", _}], ["6"]}
-           ] = Floki.find(doc, ":checked")
+             {"option", [{"id", "option-6"}, {"selected", _}], ["6"]}
+           ] = results
+
+    assert html_tree_results == results
   end
 
   test "disabled pseudo-class" do
-    doc =
+    html =
       document!(
         html_body(~s"""
-        <button disabled="disabled">button 1</button>
-        <button disabled>button 2</button>
-        <button>button 3</button>
+        <button id="button-1" disabled="disabled">button 1</button>
+        <button id="button-2" disabled>button 2</button>
+        <button id="button-3">button 3</button>
 
         <input type="text" name="text 1" disabled="disabled">
         <input type="text" name="text 2" disabled>
@@ -1490,9 +1491,19 @@ defmodule FlokiTest do
         """)
       )
 
+    html_tree = HTMLTree.build(html)
+
+    results = Floki.find(html, ":disabled")
+
+    html_tree_results =
+      Enum.map(
+        Floki.Finder.find(html_tree, ":disabled"),
+        fn html_node -> HTMLTree.to_tuple(html_tree, html_node) end
+      )
+
     assert [
-             {"button", [{"disabled", _}], ["button 1"]},
-             {"button", [{"disabled", _}], ["button 2"]},
+             {"button", [{"id", "button-1"}, {"disabled", _}], ["button 1"]},
+             {"button", [{"id", "button-2"}, {"disabled", _}], ["button 2"]},
              {"input", [{"type", "text"}, {"name", "text 1"}, {"disabled", _}], []},
              {"input", [{"type", "text"}, {"name", "text 2"}, {"disabled", _}], []},
              {"select", [{"name", "select 1"}, {"disabled", _}],
@@ -1503,16 +1514,18 @@ defmodule FlokiTest do
              {"option", [{"value", "option 5"}, {"disabled", _}], ["Option 5"]},
              {"textarea", [{"name", "text area 1"}, {"disabled", _}], ["Text Area 1"]},
              {"textarea", [{"name", "text area 2"}, {"disabled", _}], ["Text Area 2"]}
-           ] = Floki.find(doc, ":disabled")
+           ] = results
+
+    assert html_tree_results == results
   end
 
   test "root pseudo-class" do
     doc = document!(html_body("<div><div>a</div><div>b</div></div>"))
 
-    assert [
-             {"div", [], ["a"]},
-             {"div", [], ["b"]}
-           ] = Floki.find(doc, ":root>body>div>div")
+    assert_find(doc, ":root>body>div>div", [
+      {"div", [], ["a"]},
+      {"div", [], ["b"]}
+    ])
   end
 
   # Floki.find/2 - XML and invalid HTML
@@ -1527,38 +1540,48 @@ defmodule FlokiTest do
        ]}
     ]
 
-    assert Floki.find(xml, "title") == [
-             {"title", [], ["A podcast"]},
-             {"title", [], ["Another podcast"]}
-           ]
+    assert_find(xml, "title", [
+      {"title", [], ["A podcast"]},
+      {"title", [], ["Another podcast"]}
+    ])
   end
 
   test "find elements inside namespaces" do
     {:ok, xml} = Floki.parse_fragment("<x:foo><x:bar>42</x:bar></x:foo>")
 
-    assert Floki.find(xml, "x | bar") == [{"x:bar", [], ["42"]}]
+    assert_find(xml, "x | bar", [{"x:bar", [], ["42"]}])
   end
 
   @tag timeout: 100
   test "find an inexistent element inside a invalid HTML" do
     {:ok, doc} = Floki.parse_fragment("foobar<a")
 
-    assert Floki.find(doc, "a") == []
+    assert_find(doc, "a", [])
   end
 
   # Floki.find/2 - Raw selector structs
 
   test "find single selector structs" do
+    html = document!(@html)
+    html_tree = HTMLTree.build(html)
+
     selector_struct = %Floki.Selector{type: "a"}
-    assert Floki.find(document!(@html), "a") == Floki.find(document!(@html), selector_struct)
+
+    assert Floki.find(html, "a") == Floki.find(html, selector_struct)
+    assert Floki.Finder.find(html_tree, "a") == Floki.Finder.find(html_tree, selector_struct)
   end
 
   test "find multiple selector structs" do
+    html = document!(@html)
+    html_tree = HTMLTree.build(html)
+
     selector_struct_1 = %Floki.Selector{type: "a"}
     selector_struct_2 = %Floki.Selector{type: "div"}
 
-    assert Floki.find(document!(@html), "a,div") ==
-             Floki.find(document!(@html), [selector_struct_1, selector_struct_2])
+    assert Floki.find(html, "a,div") == Floki.find(html, [selector_struct_1, selector_struct_2])
+
+    assert Floki.Finder.find(html_tree, "a,div") ==
+             Floki.Finder.find(html_tree, [selector_struct_1, selector_struct_2])
   end
 
   # Floki.children/2
@@ -1715,9 +1738,9 @@ defmodule FlokiTest do
     </html>
     """
 
-    assert Floki.find(document!(html), ".messageBox p") == [
-             {"p", [], ["There has been an error in your account."]}
-           ]
+    assert_find(document!(html), ".messageBox p", [
+      {"p", [], ["There has been an error in your account."]}
+    ])
   end
 
   test "descendant matches are returned in order and without duplicates" do
@@ -1769,7 +1792,7 @@ defmodule FlokiTest do
       {"td", [{"class", "data-view"}], ["06/30/2017"]}
     ]
 
-    assert Floki.find(html, "table[summary='license-detail'] td.data-view") == expected
+    assert_find(html, "table[summary='license-detail'] td.data-view", expected)
   end
 
   test "finding doesn't fail when body includes unencoded angles" do
@@ -1778,8 +1801,9 @@ defmodule FlokiTest do
         html_body(~s(<span class="method-callseq">mark # => #<Psych::Parser::Mark></span>))
       )
 
-    [{tag_name, _, _}] = Floki.find(html_with_wrong_angles_encoding, "span")
-    assert tag_name == "span"
+    assert_find(html_with_wrong_angles_encoding, "span", [
+      {"span", [{"class", "method-callseq"}], ["mark # => #", {"psych::parser::mark", [], []}]}
+    ])
   end
 
   test "html with xml definition tag in it" do
@@ -1796,7 +1820,7 @@ defmodule FlokiTest do
       </html>
     """
 
-    assert Floki.find(document!(html), ".text") == [{"div", [{"class", "text"}], ["test"]}]
+    assert_find(document!(html), ".text", [{"div", [{"class", "text"}], ["test"]}])
   end
 
   test "finding doesn't fail when body includes xml version prefix" do
@@ -1814,7 +1838,7 @@ defmodule FlokiTest do
 
     {:ok, html} = Floki.parse_document(html_with_xml_prefix)
 
-    assert [{"a", _, _}] = Floki.find(html, "#anchor")
+    assert_find(html, "#anchor", [{"a", [{"id", "anchor"}, {"href", ""}], ["useless link"]}])
   end
 
   test "we can produce raw_html if it has an xml version prefix" do
@@ -2011,5 +2035,19 @@ defmodule FlokiTest do
     html_body(
       "<#{tag}>this is not a <tag>\nthis is also </not> a tag\n and this is also not <a></a> tag</#{tag}>"
     )
+  end
+
+  defp assert_find(document, selector, expected) do
+    assert Floki.find(document, selector) == expected
+
+    tree = HTMLTree.build(document)
+
+    html_tree_results =
+      Enum.map(
+        Floki.Finder.find(tree, selector),
+        fn html_node -> HTMLTree.to_tuple(tree, html_node) end
+      )
+
+    assert html_tree_results == expected
   end
 end
