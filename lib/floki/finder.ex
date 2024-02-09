@@ -38,14 +38,14 @@ defmodule Floki.Finder do
     node_ids = Enum.reverse(tree.node_ids)
     stack = Enum.map(selectors, fn s -> {s, node_ids} end)
 
-    traverse_with(stack, tree, [])
+    traverse_html_tree(stack, tree, [])
     |> Enum.reverse()
     |> Enum.uniq()
   end
 
   # The stack serves as accumulator when there is another combinator to traverse.
   # So the scope of one combinator is the stack (or acc) or the parent one.
-  defp traverse_with(
+  defp traverse_html_tree(
          [{%Selector{combinator: nil} = selector, [node_id | selector_rest]} | stack],
          tree,
          acc
@@ -60,10 +60,10 @@ defmodule Floki.Finder do
         acc
       end
 
-    traverse_with(stack, tree, acc)
+    traverse_html_tree(stack, tree, acc)
   end
 
-  defp traverse_with(
+  defp traverse_html_tree(
          [{%Selector{combinator: combinator} = selector, [node_id | selector_rest]} | stack],
          tree,
          acc
@@ -79,14 +79,14 @@ defmodule Floki.Finder do
         stack
       end
 
-    traverse_with(stack, tree, acc)
+    traverse_html_tree(stack, tree, acc)
   end
 
-  defp traverse_with([{_selector, []} | rest], tree, acc) do
-    traverse_with(rest, tree, acc)
+  defp traverse_html_tree([{_selector, []} | rest], tree, acc) do
+    traverse_html_tree(rest, tree, acc)
   end
 
-  defp traverse_with([], _, acc) do
+  defp traverse_html_tree([], _, acc) do
     acc
   end
 
