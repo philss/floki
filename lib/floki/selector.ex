@@ -251,11 +251,11 @@ defmodule Floki.Selector do
     false
   end
 
-  defp type_maybe_with_namespace(%HTMLNode{type: type}) when is_binary(type) do
+  defp type_maybe_with_namespace({type, _attributes, _children}) when is_binary(type) do
     type_maybe_with_namespace(type)
   end
 
-  defp type_maybe_with_namespace({type, _attributes, _children}) when is_binary(type) do
+  defp type_maybe_with_namespace(%HTMLNode{type: type}) when is_binary(type) do
     type_maybe_with_namespace(type)
   end
 
@@ -271,9 +271,9 @@ defmodule Floki.Selector do
     get_attribute_value(attributes, attribute_name)
   end
 
+  defp attributes({_type, attributes, _children}), do: attributes
   defp attributes(%HTMLNode{type: :pi}), do: []
   defp attributes(%HTMLNode{attributes: attributes}), do: attributes
-  defp attributes({_type, attributes, _children}), do: attributes
 
   defp get_attribute_value(attributes, attribute_name) when is_list(attributes) do
     :proplists.get_value(attribute_name, attributes, nil)
