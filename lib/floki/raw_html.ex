@@ -32,12 +32,13 @@ defmodule Floki.RawHTML do
   end
 
   @encoder &Floki.Entities.encode/1
+  @no_encoder &Function.identity/1
 
   def raw_html(html_tree, options) do
     encoder =
       case Keyword.fetch(options, :encode) do
         {:ok, true} -> @encoder
-        {:ok, false} -> &Function.identity/1
+        {:ok, false} -> @no_encoder
         :error -> default_encoder()
       end
 
@@ -173,8 +174,8 @@ defmodule Floki.RawHTML do
   defp tag_for(type, attrs, children, encoder, padding, self_closing_tags) do
     encoder =
       case type do
-        "script" -> & &1
-        "style" -> & &1
+        "script" -> @no_encoder
+        "style" -> @no_encoder
         _ -> encoder
       end
 
@@ -196,7 +197,7 @@ defmodule Floki.RawHTML do
     if Application.get_env(:floki, :encode_raw_html, true) do
       @encoder
     else
-      & &1
+      @no_encoder
     end
   end
 
