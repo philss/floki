@@ -32,12 +32,13 @@ defmodule Floki.RawHTML do
   end
 
   @encoder &Floki.Entities.encode/1
+  @no_encoder &Function.identity/1
 
   def raw_html(html_tree, options) do
     encoder =
       case Keyword.fetch(options, :encode) do
         {:ok, true} -> @encoder
-        {:ok, false} -> &Function.identity/1
+        {:ok, false} -> @no_encoder
         :error -> default_encoder()
       end
 
@@ -127,7 +128,7 @@ defmodule Floki.RawHTML do
   end
 
   defp tag_attrs(attr_list, encoder) do
-    map_intersperse(attr_list, ?\s, &build_attrs(&1, encoder))
+    Enum.map_intersperse(attr_list, ?\s, &build_attrs(&1, encoder))
   end
 
   defp tag_with_attrs(type, [], children, padding, _encoder, self_closing_tags),
@@ -173,8 +174,8 @@ defmodule Floki.RawHTML do
   defp tag_for(type, attrs, children, encoder, padding, self_closing_tags) do
     encoder =
       case type do
-        "script" -> & &1
-        "style" -> & &1
+        "script" -> @no_encoder
+        "style" -> @no_encoder
         _ -> encoder
       end
 
@@ -196,26 +197,11 @@ defmodule Floki.RawHTML do
     if Application.get_env(:floki, :encode_raw_html, true) do
       @encoder
     else
-      & &1
+      @no_encoder
     end
   end
 
   # helpers
-
-  # TODO: Use Enum.map_intersperse/3 when we require Elixir v1.10+
-
-  defp map_intersperse([], _, _),
-    do: []
-
-  defp map_intersperse([last], _, mapper),
-    do: [mapper.(last)]
-
-  defp map_intersperse([head | rest], separator, mapper),
-    do: [mapper.(head), separator | map_intersperse(rest, separator, mapper)]
-
-  defp map_intersperse(%{} = attrs, separator, mapper),
-    do: map_intersperse(Map.to_list(attrs), separator, mapper)
-
   defp leftpad(:noop), do: ""
   defp leftpad(%{pad: pad}), do: pad
 
