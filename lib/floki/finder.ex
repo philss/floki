@@ -56,7 +56,17 @@ defmodule Floki.Finder do
   # - single selector
   # - no composite selector
   # - no pseudo classes
-  defp traverse_html_tuples?([%Selector{combinator: nil, pseudo_classes: []}]), do: true
+  defp traverse_html_tuples?([selector]), do: traverse_html_tuples?(selector)
+  defp traverse_html_tuples?(selectors) when is_list(selectors), do: false
+  defp traverse_html_tuples?(%Selector{pseudo_classes: [_ | _]}), do: false
+  defp traverse_html_tuples?(%Selector{combinator: nil}), do: true
+
+  defp traverse_html_tuples?(%Selector{combinator: combinator}),
+    do: traverse_html_tuples?(combinator)
+
+  defp traverse_html_tuples?(%Selector.Combinator{match_type: :descendant, selector: selector}),
+    do: traverse_html_tuples?(selector)
+
   defp traverse_html_tuples?(_), do: false
 
   # The stack serves as accumulator when there is another combinator to traverse.
@@ -131,7 +141,34 @@ defmodule Floki.Finder do
   defp traverse_html_tuples(
          [
            {
-             %Selector{combinator: nil} = selector,
+             %Selector{
+               combinator: %Selector.Combinator{
+                 match_type: :descendant,
+                 selector: combinator_selector
+               }
+             } = selector,
+             [{_type, _attributes, children} = html_tuple | selector_rest]
+           }
+           | stack
+         ],
+         acc
+       ) do
+    stack = [{selector, selector_rest} | stack]
+
+    stack =
+      if Selector.match?(html_tuple, selector, nil) do
+        [{combinator_selector, children} | stack]
+      else
+        [{selector, children} | stack]
+      end
+
+    traverse_html_tuples(stack, acc)
+  end
+
+  defp traverse_html_tuples(
+         [
+           {
+             selector,
              [_ | selector_rest]
            }
            | stack
