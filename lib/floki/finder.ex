@@ -47,7 +47,7 @@ defmodule Floki.Finder do
     stack = Enum.map(selectors, fn s -> {s, node_ids} end)
 
     traverse_html_tree(stack, tree, [])
-    |> Enum.reverse()
+    |> Enum.sort_by(& &1.node_id)
     |> Enum.uniq()
   end
 

@@ -917,15 +917,24 @@ defmodule FlokiTest do
   # Floki.find/2 - Selector with descendant combinator
 
   test "get elements descending the parent" do
+    doc =
+      document!(
+        html_body("""
+        <div id="first-div">
+          <div id="second-div">
+            <span id="first-span"></span>
+          </div>
+          <span id="second-span"></span>
+        </div>
+        """)
+      )
+
     expected = [
-      {
-        "img",
-        [{"src", "http://twitter.com/logo.png"}, {"class", "js-twitter-logo"}],
-        []
-      }
+      {"span", [{"id", "first-span"}], []},
+      {"span", [{"id", "second-span"}], []}
     ]
 
-    assert_find(document!(@html_with_img), "a img", expected)
+    assert_find(doc, "div span", expected)
   end
 
   # Floki.find/2 - Selector with child combinator
@@ -1051,6 +1060,7 @@ defmodule FlokiTest do
     ]
 
     assert_find(document!(@html_with_img), ".js-twitter-logo, #logo", expected)
+    assert_find(document!(@html_with_img), "#logo, .js-twitter-logo", expected)
   end
 
   test "get one element when search for multiple and just one exist" do
