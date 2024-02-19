@@ -34,17 +34,19 @@ defmodule Floki.RawHTML do
   @encoder &Floki.Entities.encode/1
   @no_encoder &Function.identity/1
 
-  def raw_html(html_tree, options) do
+  def raw_html(html_tree, opts) do
+    opts = Keyword.validate!(opts, encode: true, pretty: false)
+
     encoder =
-      case Keyword.fetch(options, :encode) do
-        {:ok, true} -> @encoder
-        {:ok, false} -> @no_encoder
+      case opts[:encode] do
+        true -> @encoder
+        false -> @no_encoder
         :error -> default_encoder()
       end
 
     padding =
-      case Keyword.fetch(options, :pretty) do
-        {:ok, true} -> %{pad: "", pad_increase: "  ", line_ending: "\n", depth: 0}
+      case opts[:pretty] do
+        true -> %{pad: "", pad_increase: "  ", line_ending: "\n", depth: 0}
         _ -> :noop
       end
 

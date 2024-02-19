@@ -1606,8 +1606,14 @@ defmodule FlokiTest do
 
     assert Floki.children(html_node) == expected
     assert Floki.children(html_node, include_text: true) == expected
-    assert Floki.children(html_node, include_text: true, unknown_option: true) == expected
-    assert Floki.children(html_node, unknown_option: true) == expected
+
+    assert_raise ArgumentError, fn ->
+      Floki.children(html_node, include_text: true, unknown_option: true)
+    end
+
+    assert_raise ArgumentError, fn ->
+      Floki.children(html_node, unknown_option: true)
+    end
   end
 
   test "returns the children elements of an element without the text" do
@@ -1622,7 +1628,10 @@ defmodule FlokiTest do
     ]
 
     assert Floki.children(elements, include_text: false) == expected
-    assert Floki.children(elements, include_text: false, unknown_option: true) == expected
+
+    assert_raise ArgumentError, fn ->
+      Floki.children(elements, include_text: false, unknown_option: true)
+    end
   end
 
   test "returns nil if the given html is not a valid tuple" do
