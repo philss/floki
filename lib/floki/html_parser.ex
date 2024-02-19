@@ -36,9 +36,12 @@ defmodule Floki.HTMLParser do
               result(Floki.html_tree())
 
   def parse_document(html, opts \\ []) do
-    {parser_args, opts} = Keyword.pop(opts, :parser_args, [])
+    opts =
+      Keyword.validate!(opts, attributes_as_maps: false, html_parser: parser(), parser_args: [])
 
-    parser = parser(opts)
+    parser_args = opts[:parser_args]
+
+    parser = opts[:html_parser]
 
     if opts[:attributes_as_maps] do
       parser.parse_document_with_attributes_as_maps(html, parser_args)
@@ -48,9 +51,12 @@ defmodule Floki.HTMLParser do
   end
 
   def parse_fragment(html, opts \\ []) do
-    {parser_args, opts} = Keyword.pop(opts, :parser_args, [])
+    opts =
+      Keyword.validate!(opts, attributes_as_maps: false, html_parser: parser(), parser_args: [])
 
-    parser = parser(opts)
+    parser_args = opts[:parser_args]
+
+    parser = opts[:html_parser]
 
     if opts[:attributes_as_maps] do
       parser.parse_fragment_with_attributes_as_maps(html, parser_args)
@@ -59,7 +65,7 @@ defmodule Floki.HTMLParser do
     end
   end
 
-  defp parser(opts) do
-    opts[:html_parser] || Application.get_env(:floki, :html_parser, @default_parser)
+  defp parser do
+    Application.get_env(:floki, :html_parser, @default_parser)
   end
 end
