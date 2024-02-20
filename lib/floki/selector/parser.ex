@@ -131,7 +131,7 @@ defmodule Floki.Selector.Parser do
   end
 
   defp do_parse([{:plus, _} | t], selector) do
-    {remaining_tokens, combinator} = consume_combinator(t, :sibling)
+    {remaining_tokens, combinator} = consume_combinator(t, :adjacent_sibling)
 
     {%{selector | combinator: combinator}, remaining_tokens}
   end
