@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased][unreleased]
 
+## [0.35.4] - 2024-02-19
+
+Besides the fix described below, this release also contains more performance
+improvements, thanks to [@ypconstante](https://github.com/ypconstante).
+
+### Fixed
+
+- Fix order of results for `Floki.find/2`. This was a regression from the
+  previous version - thanks [@ypconstante](https://github.com/ypconstante).
+
 ## [0.35.3] - 2024-01-25
 
 This release has great performance improvements, thanks to the PRs
@@ -736,7 +746,8 @@ of the parent element inside HTML.
 
 - Elixir version requirement from "~> 1.0.0" to ">= 1.0.0".
 
-[unreleased]: https://github.com/philss/floki/compare/v0.35.3...HEAD
+[unreleased]: https://github.com/philss/floki/compare/v0.35.4...HEAD
+[0.35.4]: https://github.com/philss/floki/compare/v0.35.3...v0.35.4
 [0.35.3]: https://github.com/philss/floki/compare/v0.35.2...v0.35.3
 [0.35.2]: https://github.com/philss/floki/compare/v0.35.1...v0.35.2
 [0.35.1]: https://github.com/philss/floki/compare/v0.35.0...v0.35.1
