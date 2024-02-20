@@ -1009,9 +1009,9 @@ defmodule FlokiTest do
     assert_find(html, "div > p > span > img + img", expected)
   end
 
-  # Floki.find/2 - Sibling combinator
+  # Floki.find/2 - Adjacent sibling combinator
 
-  test "find sibling element" do
+  test "find adjacent sibling element" do
     html = document!(html_body(~s(
               <a href="t"><img src="/l.png" class="js-l"></a>
               <!-- comment -->

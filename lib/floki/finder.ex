@@ -191,7 +191,7 @@ defmodule Floki.Finder do
     Enum.reverse(html_node.children_nodes_ids)
   end
 
-  defp get_selector_nodes(%Selector.Combinator{match_type: :sibling}, html_node, tree) do
+  defp get_selector_nodes(%Selector.Combinator{match_type: :adjacent_sibling}, html_node, tree) do
     case get_siblings(html_node, tree) do
       [sibling_id | _] -> [sibling_id]
       _ -> []
