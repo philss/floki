@@ -570,8 +570,7 @@ defmodule Floki do
   def text(html, opts \\ []) do
     defaults = [deep: true, js: false, style: true, sep: "", include_inputs: false]
 
-    # We can use `Keyword.validate!` when require Elixir 1.13
-    opts = Keyword.merge(defaults, opts)
+    opts = Keyword.validate!(opts, defaults)
 
     cleaned_html_tree =
       html
@@ -617,6 +616,8 @@ defmodule Floki do
   end
 
   def children({_, _, _} = html_node, opts) do
+    opts = Keyword.validate!(opts, include_text: true)
+
     children(html_node, include_text: opts[:include_text])
   end
 
