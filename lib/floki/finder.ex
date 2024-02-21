@@ -64,8 +64,9 @@ defmodule Floki.Finder do
   defp traverse_html_tuples?(%Selector{combinator: combinator}),
     do: traverse_html_tuples?(combinator)
 
-  defp traverse_html_tuples?(%Selector.Combinator{match_type: :descendant, selector: selector}),
-    do: traverse_html_tuples?(selector)
+  defp traverse_html_tuples?(%Selector.Combinator{match_type: match_type, selector: selector})
+       when match_type in [:descendant, :general_sibling],
+       do: traverse_html_tuples?(selector)
 
   defp traverse_html_tuples?(_), do: false
 
@@ -161,6 +162,33 @@ defmodule Floki.Finder do
       else
         [{selector, children} | stack]
       end
+
+    traverse_html_tuples(stack, acc)
+  end
+
+  defp traverse_html_tuples(
+         [
+           {
+             %Selector{
+               combinator: %Selector.Combinator{
+                 match_type: :general_sibling,
+                 selector: combinator_selector
+               }
+             } = selector,
+             [{_type, _attributes, children} = html_tuple | siblings]
+           }
+           | stack
+         ],
+         acc
+       ) do
+    stack =
+      if Selector.match?(html_tuple, selector, nil) do
+        [{combinator_selector, siblings} | stack]
+      else
+        [{selector, siblings} | stack]
+      end
+
+    stack = [{selector, children} | stack]
 
     traverse_html_tuples(stack, acc)
   end
