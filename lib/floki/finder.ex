@@ -54,7 +54,7 @@ defmodule Floki.Finder do
   # some selectors can be applied with the raw html tree tuples instead of
   # using an intermediate HTMLTree:
   # - single selector
-  # - no composite selector
+  # - single child or adjacent sibling combinator, and as the last combinator
   # - no pseudo classes
   defp traverse_html_tuples?([selector]), do: traverse_html_tuples?(selector)
   defp traverse_html_tuples?(selectors) when is_list(selectors), do: false
@@ -124,6 +124,15 @@ defmodule Floki.Finder do
     acc
   end
 
+  # `stack` is a list of tuples composed of a Selector or Selector.Combinator
+  # and html_node tuple.
+  # When a selector has a combinator with match type descendant or
+  # general_sibling we are able to use the combinator selector directly to add
+  # it's siblings or children to the stack when there's a match.
+  # For selectors with child and adjacent_sibling combinators we have to make
+  # sure we don't propagate the selector to more elements than the combinator
+  # specifies. For matches of these combinators we put the Selector.Combinator
+  # term to the stack to keep track of this information.
   defp traverse_html_tuples(
          [
            {
