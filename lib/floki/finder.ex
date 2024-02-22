@@ -121,13 +121,13 @@ defmodule Floki.Finder do
          [
            {
              %Selector{combinator: nil} = selector,
-             [{_type, _attributes, children} = html_tuple | selector_rest]
+             [{_type, _attributes, children} = html_tuple | siblings]
            }
            | stack
          ],
          acc
        ) do
-    stack = [{selector, children}, {selector, selector_rest} | stack]
+    stack = [{selector, children}, {selector, siblings} | stack]
 
     acc =
       if Selector.match?(html_tuple, selector, nil) do
@@ -148,13 +148,13 @@ defmodule Floki.Finder do
                  selector: combinator_selector
                }
              } = selector,
-             [{_type, _attributes, children} = html_tuple | selector_rest]
+             [{_type, _attributes, children} = html_tuple | siblings]
            }
            | stack
          ],
          acc
        ) do
-    stack = [{selector, selector_rest} | stack]
+    stack = [{selector, siblings} | stack]
 
     stack =
       if Selector.match?(html_tuple, selector, nil) do
@@ -197,13 +197,13 @@ defmodule Floki.Finder do
          [
            {
              selector,
-             [_ | selector_rest]
+             [_ | siblings]
            }
            | stack
          ],
          acc
        ) do
-    stack = [{selector, selector_rest} | stack]
+    stack = [{selector, siblings} | stack]
     traverse_html_tuples(stack, acc)
   end
 
