@@ -256,4 +256,18 @@ defmodule Floki.HTMLTreeTest do
     refute Enum.member?(html_tree, %{html_node3 | type: "marquee"})
     refute Enum.member?(html_tree, 42)
   end
+
+  test "Inspect works with HTMLTree" do
+    html_tree = %HTMLTree{
+      root_nodes_ids: [2, 1],
+      node_ids: [2, 1],
+      nodes: %{
+        1 => %Text{content: "hello", node_id: 1},
+        2 => %Text{content: " world", node_id: 2}
+      }
+    }
+
+    assert inspect(html_tree) ==
+             ~s|%HTMLTree{hello  world}|
+  end
 end

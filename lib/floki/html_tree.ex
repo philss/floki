@@ -328,4 +328,53 @@ defmodule Floki.HTMLTree do
       do_reduce(tree, fun.(head_node, acc), fun)
     end
   end
+
+  defimpl Inspect do
+    import Inspect.Algebra
+
+    def inspect(html_tree, opts) do
+      open = "%HTMLTree{"
+      close = "}"
+      container_opts = [separator: "", break: :flex]
+
+      container_doc(open, Floki.HTMLTree.to_tuple_list(html_tree), close, opts, &fun/2, container_opts)
+    end
+
+    defp fun({tag, attributes, content}, opts) do
+      tag_color = :map
+      attribute_color = :map
+
+      attributes =
+        for {name, value} <- attributes do
+          concat([
+            color(" #{name}=", attribute_color, opts),
+            color("\"#{value}\"", :string, opts)
+          ])
+        end
+        |> concat()
+
+      open =
+        concat([
+          color("<#{tag}", tag_color, opts),
+          attributes,
+          color(">", tag_color, opts)
+        ])
+
+      close = color("</#{tag}>", tag_color, opts)
+      container_opts = [separator: "", break: :strict]
+      container_doc(open, content, close, opts, &fun/2, container_opts)
+    end
+
+    defp fun({:comment, content}, opts) do
+      color("<!-- #{content} -->", :comment, opts)
+    end
+
+    defp fun(string, opts) when is_binary(string) do
+      color(string, :string, opts)
+    end
+
+    defp fun(other, _opts) do
+      raise inspect(other)
+    end
+  end
 end
