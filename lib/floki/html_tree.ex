@@ -337,7 +337,14 @@ defmodule Floki.HTMLTree do
       close = "}"
       container_opts = [separator: "", break: :flex]
 
-      container_doc(open, Floki.HTMLTree.to_tuple_list(html_tree), close, opts, &fun/2, container_opts)
+      container_doc(
+        open,
+        Floki.HTMLTree.to_tuple_list(html_tree),
+        close,
+        opts,
+        &fun/2,
+        container_opts
+      )
     end
 
     defp fun({tag, attributes, content}, opts) do
