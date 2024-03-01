@@ -54,7 +54,7 @@ defmodule Floki.Finder do
   # some selectors can be applied with the raw html tree tuples instead of
   # using an intermediate HTMLTree:
   # - single selector
-  # - no composite selector
+  # - single child or adjacent sibling combinator, and as the last combinator
   # - no pseudo classes
   defp traverse_html_tuples?([selector]), do: traverse_html_tuples?(selector)
   defp traverse_html_tuples?(selectors) when is_list(selectors), do: false
@@ -64,8 +64,16 @@ defmodule Floki.Finder do
   defp traverse_html_tuples?(%Selector{combinator: combinator}),
     do: traverse_html_tuples?(combinator)
 
-  defp traverse_html_tuples?(%Selector.Combinator{match_type: :descendant, selector: selector}),
-    do: traverse_html_tuples?(selector)
+  defp traverse_html_tuples?(%Selector.Combinator{match_type: match_type, selector: selector})
+       when match_type in [:descendant, :general_sibling],
+       do: traverse_html_tuples?(selector)
+
+  defp traverse_html_tuples?(%Selector.Combinator{
+         match_type: match_type,
+         selector: %Selector{combinator: nil} = selector
+       })
+       when match_type in [:child, :adjacent_sibling],
+       do: traverse_html_tuples?(selector)
 
   defp traverse_html_tuples?(_), do: false
 
@@ -116,17 +124,26 @@ defmodule Floki.Finder do
     acc
   end
 
+  # `stack` is a list of tuples composed of a Selector or Selector.Combinator
+  # and html_node tuple.
+  # When a selector has a combinator with match type descendant or
+  # general_sibling we are able to use the combinator selector directly to add
+  # it's siblings or children to the stack when there's a match.
+  # For selectors with child and adjacent_sibling combinators we have to make
+  # sure we don't propagate the selector to more elements than the combinator
+  # specifies. For matches of these combinators we put the Selector.Combinator
+  # term to the stack to keep track of this information.
   defp traverse_html_tuples(
          [
            {
              %Selector{combinator: nil} = selector,
-             [{_type, _attributes, children} = html_tuple | selector_rest]
+             [{_type, _attributes, children} = html_tuple | siblings]
            }
            | stack
          ],
          acc
        ) do
-    stack = [{selector, children}, {selector, selector_rest} | stack]
+    stack = [{selector, children}, {selector, siblings} | stack]
 
     acc =
       if Selector.match?(html_tuple, selector, nil) do
@@ -147,13 +164,13 @@ defmodule Floki.Finder do
                  selector: combinator_selector
                }
              } = selector,
-             [{_type, _attributes, children} = html_tuple | selector_rest]
+             [{_type, _attributes, children} = html_tuple | siblings]
            }
            | stack
          ],
          acc
        ) do
-    stack = [{selector, selector_rest} | stack]
+    stack = [{selector, siblings} | stack]
 
     stack =
       if Selector.match?(html_tuple, selector, nil) do
@@ -168,14 +185,133 @@ defmodule Floki.Finder do
   defp traverse_html_tuples(
          [
            {
-             selector,
-             [_ | selector_rest]
+             %Selector{
+               combinator: %Selector.Combinator{match_type: :child} = combinator
+             } = selector,
+             [{_type, _attributes, children} = html_tuple | siblings]
            }
            | stack
          ],
          acc
        ) do
-    stack = [{selector, selector_rest} | stack]
+    stack = [{selector, children}, {selector, siblings} | stack]
+
+    stack =
+      if Selector.match?(html_tuple, selector, nil) do
+        [{combinator, children} | stack]
+      else
+        stack
+      end
+
+    traverse_html_tuples(stack, acc)
+  end
+
+  defp traverse_html_tuples(
+         [
+           {
+             %Selector{
+               combinator: %Selector.Combinator{match_type: :adjacent_sibling} = combinator
+             } = selector,
+             [{_type, _attributes, children} = html_tuple | siblings]
+           }
+           | stack
+         ],
+         acc
+       ) do
+    stack =
+      if Selector.match?(html_tuple, selector, nil) do
+        [{combinator, siblings} | stack]
+      else
+        stack
+      end
+
+    stack = [{selector, children}, {selector, siblings} | stack]
+
+    traverse_html_tuples(stack, acc)
+  end
+
+  defp traverse_html_tuples(
+         [
+           {
+             %Selector{
+               combinator: %Selector.Combinator{
+                 match_type: :general_sibling,
+                 selector: combinator_selector
+               }
+             } = selector,
+             [{_type, _attributes, children} = html_tuple | siblings]
+           }
+           | stack
+         ],
+         acc
+       ) do
+    stack =
+      if Selector.match?(html_tuple, selector, nil) do
+        [{combinator_selector, siblings} | stack]
+      else
+        [{selector, siblings} | stack]
+      end
+
+    stack = [{selector, children} | stack]
+
+    traverse_html_tuples(stack, acc)
+  end
+
+  defp traverse_html_tuples(
+         [
+           {
+             %Selector.Combinator{match_type: :child, selector: selector} = combinator,
+             [{_type, _attributes, _children} = html_tuple | siblings]
+           }
+           | stack
+         ],
+         acc
+       ) do
+    stack = [{combinator, siblings} | stack]
+
+    acc =
+      if Selector.match?(html_tuple, selector, nil) do
+        [html_tuple | acc]
+      else
+        acc
+      end
+
+    traverse_html_tuples(stack, acc)
+  end
+
+  defp traverse_html_tuples(
+         [
+           {
+             %Selector.Combinator{match_type: :adjacent_sibling, selector: selector},
+             [{_type, _attributes, _children} = html_tuple | _siblings]
+           }
+           | stack
+         ],
+         acc
+       ) do
+    # adjacent_sibling combinator targets only the first html_tag, so we don't
+    # add the siblings back to the stack
+    acc =
+      if Selector.match?(html_tuple, selector, nil) do
+        [html_tuple | acc]
+      else
+        acc
+      end
+
+    traverse_html_tuples(stack, acc)
+  end
+
+  defp traverse_html_tuples(
+         [
+           {
+             selector,
+             [_ | siblings]
+           }
+           | stack
+         ],
+         acc
+       ) do
+    stack = [{selector, siblings} | stack]
     traverse_html_tuples(stack, acc)
   end
 
