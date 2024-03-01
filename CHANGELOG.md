@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased][unreleased]
 
+## [0.36.0] - 2024-03-01
+
+### Added
+
+- Add `Floki.get_by_id/1` that returns one element by ID or `nil`.
+  Thanks [@SteffenDE](https://github.com/SteffenDE).
+
+### Changed
+
+- Improve options validation with `Keyword.validate!/2`.
+  This is not a change in APIs, but the error messages and opts validation
+  should be standardized now.
+  Thanks [@vittoriabitton](https://github.com/vittoriabitton).
+
+### Removed
+
+- Drop support for Elixir v1.12.
+
 ## [0.35.4] - 2024-02-19
 
 Besides the fix described below, this release also contains more performance
@@ -746,7 +764,8 @@ of the parent element inside HTML.
 
 - Elixir version requirement from "~> 1.0.0" to ">= 1.0.0".
 
-[unreleased]: https://github.com/philss/floki/compare/v0.35.4...HEAD
+[unreleased]: https://github.com/philss/floki/compare/v0.36.0...HEAD
+[0.36.0]: https://github.com/philss/floki/compare/v0.35.4...v0.36.0
 [0.35.4]: https://github.com/philss/floki/compare/v0.35.3...v0.35.4
 [0.35.3]: https://github.com/philss/floki/compare/v0.35.2...v0.35.3
 [0.35.2]: https://github.com/philss/floki/compare/v0.35.1...v0.35.2

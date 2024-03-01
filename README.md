@@ -61,12 +61,20 @@ Add Floki to your `mix.exs`:
 ```elixir
 defp deps do
   [
-    {:floki, "~> 0.35.0"}
+    {:floki, "~> 0.36.0"}
   ]
 end
 ```
 
 After that, run `mix deps.get`.
+
+If you are running on [Livebook](https://livebook.dev) or a script, you can install with `Mix.install/2`:
+
+```elixir
+Mix.install([
+  {:floki, "~> 0.36.0"}
+])
+```
 
 You can check the [changelog](CHANGELOG.md) for changes.
 
@@ -118,7 +126,7 @@ you don't need to install anything to compile it thanks to [RustlerPrecompiled](
 ```elixir
 defp deps do
   [
-    {:floki, "~> 0.35.0"},
+    {:floki, "~> 0.36.0"},
     {:html5ever, "~> 0.15.0"}
   ]
 end
@@ -146,7 +154,7 @@ First, add `fast_html` to your dependencies:
 ```elixir
 defp deps do
   [
-    {:floki, "~> 0.35.0"},
+    {:floki, "~> 0.36.0"},
     {:fast_html, "~> 2.0"}
   ]
 end
