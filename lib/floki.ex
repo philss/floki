@@ -307,7 +307,7 @@ defmodule Floki do
       nil
 
   """
-  @spec get_by_id(html_tree() | html_node(), String.t()) :: html_tree
+  @spec get_by_id(html_tree() | html_node(), String.t()) :: html_node() | nil
   def get_by_id(html_tree_as_tuple, id)
       when is_list(html_tree_as_tuple) or is_html_node(html_tree_as_tuple) do
     html_tree_as_tuple
