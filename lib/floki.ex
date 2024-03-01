@@ -290,6 +290,32 @@ defmodule Floki do
   end
 
   @doc """
+  Finds the first element in an HTML tree by id.
+
+  Returns `nil` if no element is found.
+
+  This is useful when there are IDs that contain special characters that
+  are invalid when passed as is as a CSS selector.
+  It is similar to the `getElementById` method in the browser.
+
+  ## Examples
+
+      iex> {:ok, html} = Floki.parse_fragment(~s[<p><span class="hint" id="id?foo_special:chars">hello</span></p>])
+      iex> Floki.get_by_id(html, "id?foo_special:chars")
+      {"span", [{"class", "hint"}, {"id", "id?foo_special:chars"}], ["hello"]}
+      iex> Floki.get_by_id(html, "does-not-exist")
+      nil
+
+  """
+  @spec get_by_id(html_tree() | html_node(), String.t()) :: html_tree
+  def get_by_id(html_tree_as_tuple, id)
+      when is_list(html_tree_as_tuple) or is_html_node(html_tree_as_tuple) do
+    html_tree_as_tuple
+    |> Finder.find(%Floki.Selector{id: id})
+    |> List.first()
+  end
+
+  @doc """
   Changes the attribute values of the elements matched by `selector`
   with the function `mutation` and returns the whole element tree.
 
