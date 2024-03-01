@@ -1594,6 +1594,22 @@ defmodule FlokiTest do
              Floki.Finder.find(html_tree, [selector_struct_1, selector_struct_2])
   end
 
+  # Floki.get_by_id/2
+
+  test "get_by_id finds element with special characters" do
+    html =
+      document!(
+        html_body(~s"""
+        <div id="my-id?with_special!char:acters">Hello</div>
+        """)
+      )
+
+    assert {"div", [{"id", "my-id?with_special!char:acters"}], ["Hello"]} =
+             Floki.get_by_id(html, "my-id?with_special!char:acters")
+
+    refute Floki.get_by_id(html, "doesn't exist")
+  end
+
   # Floki.children/2
 
   test "returns the children elements of an element including the text" do
