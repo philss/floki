@@ -1,7 +1,7 @@
 Definitions.
 
-ESCAPED = \\[:.]
-IDENTIFIER = [-A-Za-z0-9_]+(({ESCAPED})?[-A-Za-z0-9_]+)*
+ESCAPED = \\[:.?]
+IDENTIFIER = [-A-Za-z0-9_]+(({ESCAPED})?[-A-Za-z0-9_]+)*({ESCAPED})?
 QUOTED = (\"[^"]*\"|\'[^']*\')
 PARENTESIS = \([^)]*\)
 INT = [0-9]+
@@ -56,4 +56,4 @@ unescape_inside_class_name(Chars) ->
   lists:flatten(string:replace(Chars, "\\:", ":", all)).
 
 unescape_inside_id_name(Chars) ->
-  lists:flatten(string:replace(Chars, "\\.", ".", all)).
+  lists:flatten(string:replace(string:replace(Chars, "\\.", ".", all), "\\?", "?", all)).

@@ -31,6 +31,14 @@ defmodule Floki.Selector.ParserTest do
            ]
   end
 
+  test "escaped question mark in id" do
+    tokens = tokenize("input#active\\?")
+
+    assert Parser.parse(tokens) == [
+             %Selector{type: "input", id: "active?"}
+           ]
+  end
+
   test "reorders classes in selector to improve matching performance" do
     tokens = tokenize(".small.longer.even-longer")
 
