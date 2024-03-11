@@ -339,37 +339,12 @@ defmodule Floki.HTMLTree do
 
       container_doc(
         open,
-        Floki.HTMLTree.to_tuple_list(html_tree),
+        html_tree,
         close,
         opts,
         &fun/2,
         container_opts
       )
-    end
-
-    defp fun({tag, attributes, content}, opts) do
-      tag_color = :map
-      attribute_color = :map
-
-      attributes =
-        for {name, value} <- attributes do
-          concat([
-            color(" #{name}=", attribute_color, opts),
-            color("\"#{value}\"", :string, opts)
-          ])
-        end
-        |> concat()
-
-      open =
-        concat([
-          color("<#{tag}", tag_color, opts),
-          attributes,
-          color(">", tag_color, opts)
-        ])
-
-      close = color("</#{tag}>", tag_color, opts)
-      container_opts = [separator: "", break: :strict]
-      container_doc(open, content, close, opts, &fun/2, container_opts)
     end
 
     defp fun({:comment, content}, opts) do
@@ -380,8 +355,41 @@ defmodule Floki.HTMLTree do
       color(string, :string, opts)
     end
 
-    defp fun(other, _opts) do
-      raise inspect(other)
+    defp fun(html_tree, opts) do
+      tag_color = :map
+      attribute_color = :map
+
+      html_tree.root_nodes_ids
+      |> Enum.reverse()
+      |> Enum.map(fn node_id ->
+        root = Map.get(html_tree.nodes, node_id)
+
+        case HTMLTree.to_tuple(html_tree, root) do
+          {type, attributes, children} ->
+            built_attributes =
+              for {name, value} <- attributes do
+                concat([
+                  color(" #{name}=", attribute_color, opts),
+                  color("\"#{value}\"", :string, opts)
+                ])
+              end
+              |> concat()
+
+            open =
+              concat([
+                color("<#{type}", tag_color, opts),
+                built_attributes,
+                color(">", tag_color, opts)
+              ])
+
+            close = color("</#{type}>", tag_color, opts)
+            container_opts = [separator: "", break: :strict]
+            container_doc(open, children, close, opts, &fun/2, container_opts)
+
+          result ->
+            result
+        end
+      end)
     end
   end
 end
