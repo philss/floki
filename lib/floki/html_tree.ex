@@ -339,7 +339,7 @@ defmodule Floki.HTMLTree do
 
       container_doc(
         open,
-        html_tree,
+        {html_tree, :root, html_tree.root_nodes_ids},
         close,
         opts,
         &fun/2,
@@ -347,49 +347,54 @@ defmodule Floki.HTMLTree do
       )
     end
 
-    defp fun({:comment, content}, opts) do
-      color("<!-- #{content} -->", :comment, opts)
-    end
-
-    defp fun(string, opts) when is_binary(string) do
-      color(string, :string, opts)
-    end
-
-    defp fun(html_tree, opts) do
-      tag_color = :map
-      attribute_color = :map
-
-      html_tree.root_nodes_ids
+    defp fun({html_tree, nodes_ids}, opts) do
+      nodes_ids
       |> Enum.reverse()
       |> Enum.map(fn node_id ->
         root = Map.get(html_tree.nodes, node_id)
 
-        case HTMLTree.to_tuple(html_tree, root) do
-          {type, attributes, children} ->
-            built_attributes =
-              for {name, value} <- attributes do
-                concat([
-                  color(" #{name}=", attribute_color, opts),
-                  color("\"#{value}\"", :string, opts)
-                ])
-              end
-              |> concat()
+        {open, close, container_opts} = build_tree(root, opts)
 
-            open =
-              concat([
-                color("<#{type}", tag_color, opts),
-                built_attributes,
-                color(">", tag_color, opts)
-              ])
-
-            close = color("</#{type}>", tag_color, opts)
-            container_opts = [separator: "", break: :strict]
-            container_doc(open, children, close, opts, &fun/2, container_opts)
-
-          result ->
-            result
-        end
+        container_doc(
+          open,
+          {html_tree, root.children_nodes_ids},
+          close,
+          opts,
+          &fun/2,
+          container_opts
+        )
       end)
+    end
+
+    defp build_tree(%Comment{content: comment}, _opts),
+      do: {comment, "", [separator: "", break: :strict]}
+
+    defp build_tree(%Text{content: text}, _opts), do: {text, "", [separator: "", break: :strict]}
+
+    defp build_tree(%HTMLNode{} = node, opts) do
+      tag_color = :map
+      attribute_color = :map
+
+      built_attributes =
+        for {name, value} <- node.attributes do
+          concat([
+            color(" #{name}=", attribute_color, opts),
+            color("\"#{value}\"", :string, opts)
+          ])
+        end
+        |> concat()
+
+      open =
+        concat([
+          color("<#{node.type}", tag_color, opts),
+          built_attributes,
+          color(">", tag_color, opts)
+        ])
+
+      close = color("</#{node.type}>", tag_color, opts)
+      container_opts = [separator: "", break: :strict]
+
+      {open, close, container_opts}
     end
   end
 end
