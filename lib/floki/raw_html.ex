@@ -178,6 +178,7 @@ defmodule Floki.RawHTML do
       case type do
         "script" -> @no_encoder
         "style" -> @no_encoder
+        "title" -> @no_encoder
         _ -> encoder
       end
 
