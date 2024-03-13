@@ -268,7 +268,7 @@ defmodule Floki.HTMLTreeTest do
     }
 
     assert inspect(html_tree) ==
-             ~s|%HTMLTree{hello  world}|
+             ~s|%HTMLTree{hello world}|
   end
 
   test "Inspect works with HTMLTree with nested nodes" do
@@ -291,7 +291,6 @@ defmodule Floki.HTMLTreeTest do
       }
     }
 
-    ## TO DO: add expected assertion.
-    assert inspect(html_tree)
+    assert inspect(html_tree) == ~s|%HTMLTree{<html>start of the stack<a class="link"><b>click me</b></a><span></span></html>}|
   end
 end

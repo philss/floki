@@ -339,7 +339,7 @@ defmodule Floki.HTMLTree do
 
       container_doc(
         open,
-        {html_tree, :root, html_tree.root_nodes_ids},
+        [{html_tree, html_tree.root_nodes_ids}],
         close,
         opts,
         &fun/2,
@@ -355,15 +355,20 @@ defmodule Floki.HTMLTree do
 
         {open, close, container_opts} = build_tree(root, opts)
 
-        container_doc(
+        if match?(%HTMLNode{}, root) do
+          container_doc(
           open,
-          {html_tree, root.children_nodes_ids},
+          [{html_tree, root.children_nodes_ids}],
           close,
           opts,
           &fun/2,
           container_opts
         )
+        else
+          open
+        end
       end)
+      |> concat()
     end
 
     defp build_tree(%Comment{content: comment}, _opts),
