@@ -357,13 +357,13 @@ defmodule Floki.HTMLTree do
 
         if match?(%HTMLNode{}, root) do
           container_doc(
-          open,
-          [{html_tree, root.children_nodes_ids}],
-          close,
-          opts,
-          &fun/2,
-          container_opts
-        )
+            open,
+            [{html_tree, root.children_nodes_ids}],
+            close,
+            opts,
+            &fun/2,
+            container_opts
+          )
         else
           open
         end

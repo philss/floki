@@ -291,6 +291,7 @@ defmodule Floki.HTMLTreeTest do
       }
     }
 
-    assert inspect(html_tree) == ~s|%HTMLTree{<html>start of the stack<a class="link"><b>click me</b></a><span></span></html>}|
+    assert inspect(html_tree) ==
+             ~s|%HTMLTree{<html>start of the stack<a class="link"><b>click me</b></a><span></span></html>}|
   end
 end
