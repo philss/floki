@@ -3,7 +3,7 @@ defmodule Floki.Mixfile do
 
   @description "Floki is a simple HTML parser that enables search for nodes using CSS selectors."
   @source_url "https://github.com/philss/floki"
-  @version "0.36.0"
+  @version "0.36.1"
 
   def project do
     [

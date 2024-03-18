@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased][unreleased]
 
+## [0.36.1] - 2024-03-18
+
+### Fixed
+
+- Fix typespec of `get_by_id/2`.
+
 ## [0.36.0] - 2024-03-01
 
 ### Added
@@ -764,7 +770,8 @@ of the parent element inside HTML.
 
 - Elixir version requirement from "~> 1.0.0" to ">= 1.0.0".
 
-[unreleased]: https://github.com/philss/floki/compare/v0.36.0...HEAD
+[unreleased]: https://github.com/philss/floki/compare/v0.36.1...HEAD
+[0.36.1]: https://github.com/philss/floki/compare/v0.36.0...v0.36.1
 [0.36.0]: https://github.com/philss/floki/compare/v0.35.4...v0.36.0
 [0.35.4]: https://github.com/philss/floki/compare/v0.35.3...v0.35.4
 [0.35.3]: https://github.com/philss/floki/compare/v0.35.2...v0.35.3
