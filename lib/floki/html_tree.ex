@@ -333,13 +333,13 @@ defmodule Floki.HTMLTree do
     import Inspect.Algebra
 
     def inspect(html_tree, opts) do
-      open = "%HTMLTree{"
-      close = "}"
+      open = "#Floki.HTMLTree["
+      close = "]"
       container_opts = [separator: "", break: :flex]
 
       container_doc(
         open,
-        [{html_tree, html_tree.root_nodes_ids}],
+        nodes_with_tree(html_tree, html_tree.root_nodes_ids),
         close,
         opts,
         &fun/2,
@@ -347,36 +347,35 @@ defmodule Floki.HTMLTree do
       )
     end
 
-    defp fun({html_tree, nodes_ids}, opts) do
+    defp fun({html_tree, %HTMLNode{} = html_node}, opts) do
+      {open, close, container_opts} = build_node(html_node, opts)
+
+      container_doc(
+        open,
+        nodes_with_tree(html_tree, html_node.children_nodes_ids),
+        close,
+        opts,
+        &fun/2,
+        container_opts
+      )
+    end
+
+    defp fun(%Comment{content: comment}, opts),
+      do: color(concat(["<!-- ", comment, " -->"]), :comment, opts)
+
+    defp fun(%Text{content: text}, opts), do: color(text, :string, opts)
+
+    defp nodes_with_tree(html_tree, nodes_ids) do
       nodes_ids
       |> Enum.reverse()
       |> Enum.map(fn node_id ->
-        root = Map.get(html_tree.nodes, node_id)
-
-        {open, close, container_opts} = build_tree(root, opts)
-
-        if match?(%HTMLNode{}, root) do
-          container_doc(
-            open,
-            [{html_tree, root.children_nodes_ids}],
-            close,
-            opts,
-            &fun/2,
-            container_opts
-          )
-        else
-          open
+        with %HTMLNode{} = html_node <- Map.get(html_tree.nodes, node_id) do
+          {html_tree, html_node}
         end
       end)
-      |> concat()
     end
 
-    defp build_tree(%Comment{content: comment}, _opts),
-      do: {comment, "", [separator: "", break: :strict]}
-
-    defp build_tree(%Text{content: text}, _opts), do: {text, "", [separator: "", break: :strict]}
-
-    defp build_tree(%HTMLNode{} = node, opts) do
+    defp build_node(%HTMLNode{} = node, opts) do
       tag_color = :map
       attribute_color = :map
 
