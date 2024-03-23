@@ -328,4 +328,77 @@ defmodule Floki.HTMLTree do
       do_reduce(tree, fun.(head_node, acc), fun)
     end
   end
+
+  defimpl Inspect do
+    import Inspect.Algebra
+
+    def inspect(html_tree, opts) do
+      open = "#Floki.HTMLTree["
+      close = "]"
+      container_opts = [separator: "", break: :flex]
+
+      container_doc(
+        open,
+        nodes_with_tree(html_tree, html_tree.root_nodes_ids),
+        close,
+        opts,
+        &fun/2,
+        container_opts
+      )
+    end
+
+    defp fun({html_tree, %HTMLNode{} = html_node}, opts) do
+      {open, close, container_opts} = build_node(html_node, opts)
+
+      container_doc(
+        open,
+        nodes_with_tree(html_tree, html_node.children_nodes_ids),
+        close,
+        opts,
+        &fun/2,
+        container_opts
+      )
+    end
+
+    defp fun(%Comment{content: comment}, opts),
+      do: color(concat(["<!-- ", comment, " -->"]), :comment, opts)
+
+    defp fun(%Text{content: text}, opts), do: color(text, :string, opts)
+
+    defp nodes_with_tree(html_tree, nodes_ids) do
+      nodes_ids
+      |> Enum.reverse()
+      |> Enum.map(fn node_id ->
+        with %HTMLNode{} = html_node <- Map.get(html_tree.nodes, node_id) do
+          {html_tree, html_node}
+        end
+      end)
+    end
+
+    defp build_node(%HTMLNode{} = node, opts) do
+      tag_color = :map
+      attribute_color = :map
+
+      built_attributes =
+        for {name, value} <- node.attributes do
+          concat([
+            color(" #{name}=", attribute_color, opts),
+            color("\"#{value}\"", :string, opts)
+          ])
+        end
+        |> concat()
+
+      open =
+        concat([
+          color("<#{node.type}", tag_color, opts),
+          built_attributes,
+          color(">", tag_color, opts)
+        ])
+
+      close = color("</#{node.type}>", tag_color, opts)
+      container_opts = [separator: "", break: :strict]
+
+      {open, close, container_opts}
+    end
+  end
 end
