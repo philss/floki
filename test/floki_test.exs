@@ -563,6 +563,12 @@ defmodule FlokiTest do
     assert recombined
   end
 
+  test "raw_html treats the contents of title tags as plain text" do
+    html_string = ~s(<html><head><title> <b> bold </b> text </title></head><body></body></html>)
+    parsed = Floki.parse_document!(html_string)
+    assert ^html_string = Floki.raw_html(parsed)
+  end
+
   # Floki.find/2 - Classes
 
   test "find elements with a given class" do
