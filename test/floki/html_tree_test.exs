@@ -257,7 +257,7 @@ defmodule Floki.HTMLTreeTest do
     refute Enum.member?(html_tree, 42)
   end
 
-  test "Inspect works with HTMLTree" do
+  test "inspect works with HTMLTree" do
     html_tree = %HTMLTree{
       root_nodes_ids: [1],
       node_ids: [1],
@@ -270,7 +270,7 @@ defmodule Floki.HTMLTreeTest do
              ~s|#Floki.HTMLTree[hello world]|
   end
 
-  test "Inspect works with HTMLTree with nested nodes" do
+  test "inspect works with HTMLTree with nested nodes" do
     html_tree =
       %HTMLTree{
         root_nodes_ids: [1],
