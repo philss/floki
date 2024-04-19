@@ -35,13 +35,12 @@ defmodule Floki.RawHTML do
   @no_encoder &Function.identity/1
 
   def raw_html(html_tree, opts) do
-    opts = Keyword.validate!(opts, encode: true, pretty: false)
+    opts = Keyword.validate!(opts, encode: use_default_encoder?(), pretty: false)
 
     encoder =
       case opts[:encode] do
         true -> @encoder
         false -> @no_encoder
-        :error -> default_encoder()
       end
 
     padding =
@@ -196,12 +195,8 @@ defmodule Floki.RawHTML do
     ]
   end
 
-  defp default_encoder do
-    if Application.get_env(:floki, :encode_raw_html, true) do
-      @encoder
-    else
-      @no_encoder
-    end
+  defp use_default_encoder? do
+    Application.get_env(:floki, :encode_raw_html, true)
   end
 
   # helpers
