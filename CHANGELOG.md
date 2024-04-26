@@ -9,11 +9,19 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [0.36.2] - 2024-04-26
 
-- Fix regression to respect config option of `:encode_raw_html`
+### Added
+
+- Implement the `Inspect` protocol for the `Floki.HTMLTree` struct.
+  This struct is currently private. Thank you [@vittoriabitton](https://github.com/vittoriabitton).
 
 ### Fixed
 
-- Fix typespec of `get_by_id/2`.
+- Fix regression to respect config option `:encode` in `Floki.raw_html/2`.
+  Thanks [@Sgoettschkes](https://github.com/Sgoettschkes).
+
+- Make the `Floki.raw_html/2` treat the contents of the `<title>` tag as plain text.
+  The idea is to align with `parse_document/2`.
+  Thank you [@aymanosman](https://github.com/aymanosman).
 
 ## [0.36.1] - 2024-03-18
 
@@ -779,7 +787,7 @@ of the parent element inside HTML.
 - Elixir version requirement from "~> 1.0.0" to ">= 1.0.0".
 
 [unreleased]: https://github.com/philss/floki/compare/v0.36.2...HEAD
-[0.36.1]: https://github.com/philss/floki/compare/v0.36.1...v0.36.2
+[0.36.2]: https://github.com/philss/floki/compare/v0.36.1...v0.36.2
 [0.36.1]: https://github.com/philss/floki/compare/v0.36.0...v0.36.1
 [0.36.0]: https://github.com/philss/floki/compare/v0.35.4...v0.36.0
 [0.35.4]: https://github.com/philss/floki/compare/v0.35.3...v0.35.4
