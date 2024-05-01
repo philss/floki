@@ -61,7 +61,7 @@ defmodule Floki.Entities do
   * less-than sign - < - is replaced by "&lt;".
   * greater-than sign - > - is replaced by "&gt;".
 
-  All other simbols are going to remain the same.
+  All other symbols are going to remain the same.
 
   Optimized IO data implementation from Plug.HTML
   """
