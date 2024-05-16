@@ -137,6 +137,8 @@ defmodule FlokiTest do
           assert overview_section ==
                    [
                      "Overview",
+                     {:comment,
+                      "?xml:namespace prefix = \"o\" ns = \"urn:schemas-microsoft-com:office:office\" /?"},
                      {"o:p", [], []}
                    ]
 
