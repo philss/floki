@@ -6,6 +6,7 @@ defmodule Floki.Finder do
 
   alias Floki.{HTMLTree, Selector}
   alias HTMLTree.HTMLNode
+  alias Selector.PseudoClass
   import Floki, only: [is_html_node: 1]
 
   # Find elements inside a HTML tree.
@@ -56,13 +57,13 @@ defmodule Floki.Finder do
   # - single selector
   # - single child or adjacent sibling combinator, and as the last combinator
   # - no pseudo classes
-  defp traverse_html_tuples?([selector]), do: traverse_html_tuples?(selector)
-  defp traverse_html_tuples?(selectors) when is_list(selectors), do: false
-  defp traverse_html_tuples?(%Selector{pseudo_classes: [_ | _]}), do: false
-  defp traverse_html_tuples?(%Selector{combinator: nil}), do: true
+  defp traverse_html_tuples?([%Selector{} = selector]), do: traverse_html_tuples?(selector)
 
-  defp traverse_html_tuples?(%Selector{combinator: combinator}),
-    do: traverse_html_tuples?(combinator)
+  defp traverse_html_tuples?(%Selector{combinator: nil, pseudo_classes: pseudo_classes}),
+    do: traverse_html_tuples?(pseudo_classes)
+
+  defp traverse_html_tuples?(%Selector{combinator: combinator, pseudo_classes: pseudo_classes}),
+    do: traverse_html_tuples?(pseudo_classes) and traverse_html_tuples?(combinator)
 
   defp traverse_html_tuples?(%Selector.Combinator{match_type: match_type, selector: selector})
        when match_type in [:descendant, :general_sibling],
@@ -75,6 +76,15 @@ defmodule Floki.Finder do
        when match_type in [:child, :adjacent_sibling],
        do: traverse_html_tuples?(selector)
 
+  defp traverse_html_tuples?([%PseudoClass{name: name} | rest])
+       when name in ["checked", "disabled"],
+       do: traverse_html_tuples?(rest)
+
+  defp traverse_html_tuples?([%PseudoClass{name: "not", value: value} | rest]) do
+    Enum.all?(value, &traverse_html_tuples?(&1)) and traverse_html_tuples?(rest)
+  end
+
+  defp traverse_html_tuples?([]), do: true
   defp traverse_html_tuples?(_), do: false
 
   # The stack serves as accumulator when there is another combinator to traverse.

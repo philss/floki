@@ -118,6 +118,14 @@ defmodule Floki.Selector.PseudoClass do
     attribute_is_present?(html_node.attributes, "selected")
   end
 
+  def match_checked?({"input", attributes, _children}) do
+    attribute_is_present?(attributes, "checked")
+  end
+
+  def match_checked?({"option", attributes, _children}) do
+    attribute_is_present?(attributes, "selected")
+  end
+
   def match_checked?(_), do: false
 
   defp attribute_is_present?(attributes, attribute_name) when is_list(attributes) do
@@ -132,6 +140,10 @@ defmodule Floki.Selector.PseudoClass do
 
   def match_disabled?(%{type: type} = html_node) when type in @disableable_html_nodes do
     attribute_is_present?(html_node.attributes, "disabled")
+  end
+
+  def match_disabled?({type, attributes, _children}) when type in @disableable_html_nodes do
+    attribute_is_present?(attributes, "disabled")
   end
 
   def match_disabled?(_html_node), do: false
