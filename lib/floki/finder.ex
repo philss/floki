@@ -9,6 +9,28 @@ defmodule Floki.Finder do
   alias Selector.PseudoClass
   import Floki, only: [is_html_node: 1]
 
+  @spec find_by_id(Floki.html_tree() | Floki.html_node(), String.t()) :: Floki.html_node() | nil
+  def find_by_id(html_tree_as_tuple, id) do
+    html_tree_as_tuple = List.wrap(html_tree_as_tuple)
+    traverse_find_by_id(html_tree_as_tuple, id)
+  end
+
+  defp traverse_find_by_id([{_type, _attributes, children} = html_tuple | rest], id) do
+    if Selector.id_match?(html_tuple, id) do
+      html_tuple
+    else
+      traverse_find_by_id(children, id) || traverse_find_by_id(rest, id)
+    end
+  end
+
+  defp traverse_find_by_id([_ | rest], id) do
+    traverse_find_by_id(rest, id)
+  end
+
+  defp traverse_find_by_id([], _id) do
+    nil
+  end
+
   # Find elements inside a HTML tree.
   # Second argument can be either a selector string, a selector struct or a list of selector structs.
 

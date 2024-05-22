@@ -308,12 +308,7 @@ defmodule Floki do
 
   """
   @spec get_by_id(html_tree() | html_node(), String.t()) :: html_node() | nil
-  def get_by_id(html_tree_as_tuple, id)
-      when is_list(html_tree_as_tuple) or is_html_node(html_tree_as_tuple) do
-    html_tree_as_tuple
-    |> Finder.find(%Floki.Selector{id: id})
-    |> List.first()
-  end
+  defdelegate get_by_id(html_tree_as_tuple, id), to: Finder, as: :find_by_id
 
   @doc """
   Changes the attribute values of the elements matched by `selector`
