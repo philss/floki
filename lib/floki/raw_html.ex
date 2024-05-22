@@ -88,7 +88,7 @@ defmodule Floki.RawHTML do
   defp build_raw_html([{:pi, tag, attrs} | tail], html, encoder, padding, self_closing_tags) do
     build_raw_html(
       tail,
-      [html, leftpad(padding), "<?", tag, " ", tag_attrs(attrs, encoder), "?>"],
+      [html, leftpad(padding), "<?", tag, tag_attrs(attrs, encoder), "?>"],
       encoder,
       padding,
       self_closing_tags
@@ -129,7 +129,7 @@ defmodule Floki.RawHTML do
   end
 
   defp tag_attrs(attr_list, encoder) do
-    Enum.map_intersperse(attr_list, ?\s, &build_attrs(&1, encoder))
+    Enum.map(attr_list, &build_attrs(&1, encoder))
   end
 
   defp tag_with_attrs(type, [], children, padding, _encoder, self_closing_tags),
@@ -140,7 +140,6 @@ defmodule Floki.RawHTML do
       leftpad(padding),
       "<",
       type,
-      ?\s,
       tag_attrs(attrs, encoder) | close_open_tag(type, children, self_closing_tags)
     ]
 
@@ -167,10 +166,10 @@ defmodule Floki.RawHTML do
   end
 
   defp build_attrs({attr, value}, encoder) do
-    [attr, "=\"", encoder.(value) | "\""]
+    [?\s, attr, "=\"", encoder.(value) | "\""]
   end
 
-  defp build_attrs(attr, _encoder), do: attr
+  defp build_attrs(attr, _encoder), do: [?\s, attr]
 
   defp tag_for(type, attrs, children, encoder, padding, self_closing_tags) do
     encoder =

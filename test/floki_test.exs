@@ -552,10 +552,10 @@ defmodule FlokiTest do
     # no guarantee of attribute order from a map
     recombined =
       case Floki.raw_html(parsed) do
-        "<div id=\"content\"><p ><a class=\"bar\" href=\"site\"><span >lol</span><img src=\"foo.png\"/></a></p><br /></div>" ->
+        "<div id=\"content\"><p><a class=\"bar\" href=\"site\"><span>lol</span><img src=\"foo.png\"/></a></p><br/></div>" ->
           true
 
-        "<div id=\"content\"><p ><a href=\"site\" class=\"bar\"><span >lol</span><img src=\"foo.png\"/></a></p><br /></div>" ->
+        "<div id=\"content\"><p><a href=\"site\" class=\"bar\"><span>lol</span><img src=\"foo.png\"/></a></p><br/></div>" ->
           true
 
         _other ->
