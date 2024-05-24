@@ -99,8 +99,8 @@ defmodule Floki.Selector do
 
   defp can_match_combinator?(_node, _combinator), do: true
 
-  defp id_match?(_node, nil), do: true
-  defp id_match?(node, id), do: attribute_value(node, "id") == id
+  def id_match?(_node, nil), do: true
+  def id_match?(node, id), do: attribute_value(node, "id") == id
 
   defp namespace_match?(_node, namespace) when is_wildcard(namespace), do: true
 
