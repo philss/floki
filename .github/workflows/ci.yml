@@ -55,7 +55,7 @@ jobs:
         run: mix deps.unlock --check-unused
 
       - name: Install CMake
-        uses: lukka/get-cmake@v3.26.4
+        uses: lukka/get-cmake@latest
         if: matrix.parser == 'fast_html'
 
       - name: Run test
