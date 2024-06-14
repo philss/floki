@@ -14,12 +14,21 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        elixir: ["1.16", "1.13"]
-        otp: ["26.2", "25.3", "22.3"]
+        elixir: ["1.17", "1.16", "1.13"]
+        otp: ["27.0", "26.2", "25.3", "22.3"]
         parser: [fast_html, html5ever, mochiweb]
         exclude:
+          - elixir: "1.17"
+            otp: "22.3"
+
+          - elixir: "1.17"
+            otp: "25.3"
+
           - elixir: "1.16"
             otp: "22.3"
+
+          - elixir: "1.16"
+            otp: "27.0"
 
           - elixir: "1.13"
             otp: "25.3"
@@ -27,8 +36,11 @@ jobs:
           - elixir: "1.13"
             otp: "26.2"
 
+          - elixir: "1.13"
+            otp: "27.0"
+
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - uses: erlef/setup-beam@v1
         with:
@@ -37,7 +49,7 @@ jobs:
 
       - name: Check format
         run: mix format --check-formatted
-        if: matrix.elixir == '1.16'
+        if: matrix.elixir == '1.17'
 
       - name: Install dependencies
         run: mix deps.get
@@ -46,7 +58,7 @@ jobs:
         run: mix deps.unlock --check-unused
 
       - name: Install CMake
-        uses: lukka/get-cmake@v3.26.4
+        uses: lukka/get-cmake@latest
         if: matrix.parser == 'fast_html'
 
       - name: Run test
