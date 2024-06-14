@@ -27,6 +27,9 @@ jobs:
           - elixir: "1.16"
             otp: "22.3"
 
+          - elixir: "1.16"
+            otp: "27.0"
+
           - elixir: "1.13"
             otp: "25.3"
 
