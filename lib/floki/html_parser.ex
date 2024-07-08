@@ -25,7 +25,7 @@ defmodule Floki.HTMLParser do
   @default_parser Floki.HTMLParser.Mochiweb
 
   @typep result(success) :: {:ok, success} | {:error, String.t()}
-  @typep html :: binary() | iodata()
+  @typep html :: binary()
 
   @callback parse_document(html(), Keyword.t()) :: result(Floki.html_tree())
   @callback parse_fragment(html(), Keyword.t()) :: result(Floki.html_tree())
