@@ -113,8 +113,10 @@ its developers.
 
 You can perform a benchmark by running the following:
 
-    $ sh benchs/extract.sh
-    $ mix run benchs/parse_document.exs
+```sh
+sh benchs/extract.sh
+mix run benchs/parse_document.exs
+```
 
 Extracting the files is needed only once.
 
