@@ -12,3 +12,4 @@ erl_crash.dump
 /benchs/*.html
 /benchs/assets
 /benchs/results
+/cover
