@@ -93,7 +93,7 @@ defmodule Floki.RawHTML do
         {public, system} -> [" PUBLIC \"", public, "\" \"", system | "\""]
       end
 
-    content = [leftpad(padding), "<!DOCTYPE ", type, attr | ">"]
+    content = [leftpad(padding), "<!DOCTYPE ", type, attr, ">"]
     acc = [content | acc]
     build_raw_html(tail, acc, encoder, padding, self_closing_tags)
   end
