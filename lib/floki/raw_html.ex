@@ -46,37 +46,44 @@ defmodule Floki.RawHTML do
 
     padding =
       case opts[:pretty] do
-        true -> %{pad: "", pad_increase: "  ", line_ending: "\n", depth: 0}
+        true -> %{pad: "", pad_increase: "  ", depth: 0}
         _ -> :noop
+      end
+
+    line_ending =
+      if padding == :noop do
+        ""
+        else
+        "\n"
       end
 
     self_closing_tags = self_closing_tags()
 
     html_tree
-    |> build_raw_html([], encoder, padding, self_closing_tags)
+    |> build_raw_html([], encoder, padding, self_closing_tags, line_ending)
     |> Enum.reverse()
     |> IO.iodata_to_binary()
   end
 
-  defp build_raw_html([], acc, _encoder, _padding, _self_closing_tags), do: acc
+  defp build_raw_html([], acc, _encoder, _padding, _self_closing_tags, _line_ending), do: acc
 
-  defp build_raw_html([string | tail], acc, encoder, padding, self_closing_tags)
+  defp build_raw_html([string | tail], acc, encoder, padding, self_closing_tags, line_ending)
        when is_binary(string) do
-    content = leftpad_content(padding, encoder.(string))
+    content = leftpad_content(padding, encoder.(string), line_ending)
     acc = [content | acc]
-    build_raw_html(tail, acc, encoder, padding, self_closing_tags)
+    build_raw_html(tail, acc, encoder, padding, self_closing_tags, line_ending)
   end
 
-  defp build_raw_html([{:comment, comment} | tail], acc, encoder, padding, self_closing_tags) do
+  defp build_raw_html([{:comment, comment} | tail], acc, encoder, padding, self_closing_tags, line_ending) do
     content = [leftpad(padding), "<!--", comment, "-->"]
     acc = [content | acc]
-    build_raw_html(tail, acc, encoder, padding, self_closing_tags)
+    build_raw_html(tail, acc, encoder, padding, self_closing_tags, line_ending)
   end
 
-  defp build_raw_html([{:pi, tag, attrs} | tail], acc, encoder, padding, self_closing_tags) do
+  defp build_raw_html([{:pi, tag, attrs} | tail], acc, encoder, padding, self_closing_tags, line_ending) do
     content = [leftpad(padding), "<?", tag, tag_attrs(attrs, encoder), "?>"]
     acc = [content | acc]
-    build_raw_html(tail, acc, encoder, padding, self_closing_tags)
+    build_raw_html(tail, acc, encoder, padding, self_closing_tags, line_ending)
   end
 
   defp build_raw_html(
@@ -84,7 +91,8 @@ defmodule Floki.RawHTML do
          acc,
          encoder,
          padding,
-         self_closing_tags
+         self_closing_tags,
+         line_ending
        ) do
     attr =
       case {public, system} do
@@ -95,10 +103,10 @@ defmodule Floki.RawHTML do
 
     content = [leftpad(padding), "<!DOCTYPE ", type, attr, ">"]
     acc = [content | acc]
-    build_raw_html(tail, acc, encoder, padding, self_closing_tags)
+    build_raw_html(tail, acc, encoder, padding, self_closing_tags, line_ending)
   end
 
-  defp build_raw_html([{type, attrs, children} | tail], acc, encoder, padding, self_closing_tags) do
+  defp build_raw_html([{type, attrs, children} | tail], acc, encoder, padding, self_closing_tags, line_ending) do
     encoder =
       case type do
         "script" -> @no_encoder
@@ -109,7 +117,7 @@ defmodule Floki.RawHTML do
 
     open_tag_content = [
       tag_with_attrs(type, attrs, children, padding, encoder, self_closing_tags),
-      line_ending(padding)
+      line_ending
     ]
 
     acc = [open_tag_content | acc]
@@ -121,12 +129,12 @@ defmodule Floki.RawHTML do
 
         _ ->
           children = List.wrap(children)
-          build_raw_html(children, acc, encoder, pad_increase(padding), self_closing_tags)
+          build_raw_html(children, acc, encoder, pad_increase(padding), self_closing_tags, line_ending)
       end
 
-    close_tag_content = close_end_tag(type, children, padding, self_closing_tags)
+    close_tag_content = close_end_tag(type, children, padding, self_closing_tags, line_ending)
     acc = [close_tag_content | acc]
-    build_raw_html(tail, acc, encoder, padding, self_closing_tags)
+    build_raw_html(tail, acc, encoder, padding, self_closing_tags, line_ending)
   end
 
   defp tag_attrs(attr_list, encoder) do
@@ -154,16 +162,16 @@ defmodule Floki.RawHTML do
 
   defp close_open_tag(_type, _children, _self_closing_tags), do: ">"
 
-  defp close_end_tag(type, [], padding, self_closing_tags) do
+  defp close_end_tag(type, [], padding, self_closing_tags, line_ending) do
     if type in self_closing_tags do
       []
     else
-      [leftpad(padding), "</", type, ">", line_ending(padding)]
+      [leftpad(padding), "</", type, ">", line_ending]
     end
   end
 
-  defp close_end_tag(type, _children, padding, _self_closing_tags) do
-    [leftpad(padding), "</", type, ">", line_ending(padding)]
+  defp close_end_tag(type, _children, padding, _self_closing_tags, line_ending) do
+    [leftpad(padding), "</", type, ">", line_ending]
   end
 
   defp build_attrs({attr, value}, encoder) do
@@ -180,9 +188,9 @@ defmodule Floki.RawHTML do
   defp leftpad(:noop), do: ""
   defp leftpad(%{pad: pad}), do: pad
 
-  defp leftpad_content(:noop, content), do: content
+  defp leftpad_content(:noop, content, _line_ending), do: content
 
-  defp leftpad_content(padding, content) do
+  defp leftpad_content(padding, content, line_ending) do
     trimmed =
       content
       |> IO.iodata_to_binary()
@@ -191,7 +199,7 @@ defmodule Floki.RawHTML do
     if trimmed == "" do
       ""
     else
-      [leftpad(padding), trimmed, line_ending(padding)]
+      [leftpad(padding), trimmed, line_ending]
     end
   end
 
@@ -201,7 +209,4 @@ defmodule Floki.RawHTML do
     depth = depth + 1
     %{padder | depth: depth, pad: String.duplicate(pad_increase, depth)}
   end
-
-  defp line_ending(:noop), do: ""
-  defp line_ending(%{line_ending: line_ending}), do: line_ending
 end
