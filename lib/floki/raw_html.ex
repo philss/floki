@@ -236,6 +236,12 @@ defmodule Floki.RawHTML do
 
   defp pad_increase(@noop), do: @noop
 
+  for depth <- 0..100 do
+    @current_pad String.duplicate(" ", depth * @pad_increase)
+    @next_pad String.duplicate(" ", depth * @pad_increase + @pad_increase)
+    defp pad_increase(@current_pad), do: @next_pad
+  end
+
   defp pad_increase(pad) do
     String.duplicate(" ", byte_size(pad) + @pad_increase)
   end
