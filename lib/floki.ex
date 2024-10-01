@@ -247,7 +247,7 @@ defmodule Floki do
       \"\"\"
   """
 
-  @spec raw_html(html_tree | binary, keyword) :: binary
+  @spec raw_html(html_tree() | html_node() | binary(), keyword()) :: binary()
 
   defdelegate raw_html(html_tree, options \\ []), to: Floki.RawHTML
 
