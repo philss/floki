@@ -790,19 +790,4 @@ defmodule Floki do
   def filter_out(elements, selector) do
     FilterOut.filter_out(elements, selector)
   end
-
-  @doc """
-  Escapes a string for use as a CSS identifier.
-
-  ## Examples
-
-      iex> Floki.css_escape("hello world")
-      "hello\\\\ world"
-
-      iex> Floki.css_escape("-123")
-      "-\\\\31 23"
-
-  """
-  @spec css_escape(String.t()) :: String.t()
-  def css_escape(value), do: Floki.CSSEscape.escape(value)
 end
