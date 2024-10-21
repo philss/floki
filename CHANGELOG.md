@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased][unreleased]
 
+## [0.36.3] - 2024-10-21
+
+This release contains some performance improvements, thanks to [@ypconstante](https://github.com/ypconstante).
+
+### Fixed
+
+- Stop `Floki.get_by_id/2` traversal on first match. Thanks [@ypconstante](https://github.com/ypconstante).
+
+- Remove extra whitespaces from nodes without attributes on `Floki.raw_html/1`.
+  Thank you [@ypconstante](https://github.com/ypconstante).
+
+- Fix `Floki.raw_html/1` typespecs. Thanks [@davydog187](https://github.com/davydog187).
+
 ## [0.36.2] - 2024-04-26
 
 ### Added
@@ -786,7 +799,8 @@ of the parent element inside HTML.
 
 - Elixir version requirement from "~> 1.0.0" to ">= 1.0.0".
 
-[unreleased]: https://github.com/philss/floki/compare/v0.36.2...HEAD
+[unreleased]: https://github.com/philss/floki/compare/v0.36.3...HEAD
+[0.36.3]: https://github.com/philss/floki/compare/v0.36.2...v0.36.3
 [0.36.2]: https://github.com/philss/floki/compare/v0.36.1...v0.36.2
 [0.36.1]: https://github.com/philss/floki/compare/v0.36.0...v0.36.1
 [0.36.0]: https://github.com/philss/floki/compare/v0.35.4...v0.36.0
