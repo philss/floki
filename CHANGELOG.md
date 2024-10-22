@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased][unreleased]
 
+### Added
+
+- Add `Floki.css_escape/1` - thanks [@SteffenDE](https://github.com/SteffenDE).
+
+### Removed
+
+- Remove support for Elixir 1.13 and OTP 22.
+
 ## [0.36.3] - 2024-10-21
 
 This release contains some performance improvements, thanks to [@ypconstante](https://github.com/ypconstante).
