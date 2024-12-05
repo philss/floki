@@ -443,6 +443,63 @@ defmodule FlokiTest do
 
     tree = document!(html_body("<span data-stuff=\"&quot;'\"></span>"))
     assert Floki.raw_html(tree) == expected_html
+
+    expected_html = ~S"""
+    <html>
+      <head>
+      </head>
+      <body>
+        <div class="canvas">
+          <div class="row-container">
+            <div class="row" style="display: flex;flex-wrap: wrap;width: 100%;">
+              <div class="zone-container" style="flex: 1;">
+                <div class="zone">
+                  <div class="zone-content">
+                    <div class="button-wrapper appcues-actions-right" style="width:100%;text-align:right;font-size:14px;margin-top:25px;margin-bottom:0px;">
+                      <style>
+                        .button-wrapper>[data-step=prev]::before {content: none} .button-wrapper>.appcues-button[data-step=next]::after {content: none}
+                      </style>
+                      <a class="appcues-button-success appcues-button" data-field-id="some_id" id="button-some_id" style="text-align:center;border:undefinedpx solid undefined;padding-top:8px;padding-right:18px;padding-bottom:8px;padding-left:18px;" data-attrs-event="{&quot;event&quot;:&quot;buggy software&quot;,&quot;properties&quot;:{&quot;_builderButtonEvent&quot;:true}}" data-step="next" role="button" tabindex="0">
+                        Next
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </body>
+    </html>
+    """
+
+    tree =
+      document!(
+        html_body(~S"""
+        <div class="canvas">
+          <div class="row-container">
+            <div class="row" style="display: flex;flex-wrap: wrap;width: 100%;">
+              <div class="zone-container" style="flex: 1;">
+                <div class="zone">
+                  <div class="zone-content">
+                    <div class="button-wrapper appcues-actions-right" style="width:100%;text-align:right;font-size:14px;margin-top:25px;margin-bottom:0px;">
+                      <style>
+                        .button-wrapper>[data-step=prev]::before {content: none} .button-wrapper>.appcues-button[data-step=next]::after {content: none}
+                      </style>
+                      <a class="appcues-button-success appcues-button" data-field-id="some_id" id="button-some_id" style="text-align:center;border:undefinedpx solid undefined;padding-top:8px;padding-right:18px;padding-bottom:8px;padding-left:18px;" data-attrs-event="{&quot;event&quot;:&quot;buggy software&quot;,&quot;properties&quot;:{&quot;_builderButtonEvent&quot;:true}}" data-step="next" role="button" tabindex="0">
+                        Next
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        """)
+      )
+
+    assert Floki.raw_html(tree, pretty: true) == expected_html
   end
 
   test "raw_html (with >)" do
