@@ -450,7 +450,7 @@ defmodule FlokiTest do
       </head>
       <body>
         <div>
-          <style>
+          <style data-attrs-test="{&quot;event&quot;:&quot;buggy software&quot;,&quot;properties&quot;:{&quot;_builderButtonEvent&quot;:true}}">
           </style>
           <a data-attrs-event="{&quot;event&quot;:&quot;buggy software&quot;,&quot;properties&quot;:{&quot;_builderButtonEvent&quot;:true}}">
             Next
@@ -464,7 +464,7 @@ defmodule FlokiTest do
       document!(
         html_body(~S"""
         <div>
-          <style>
+          <style data-attrs-test="{&quot;event&quot;:&quot;buggy software&quot;,&quot;properties&quot;:{&quot;_builderButtonEvent&quot;:true}}">
           </style>
           <a data-attrs-event="{&quot;event&quot;:&quot;buggy software&quot;,&quot;properties&quot;:{&quot;_builderButtonEvent&quot;:true}}">
             Next

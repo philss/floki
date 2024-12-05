@@ -133,16 +133,8 @@ defmodule Floki.RawHTML do
          self_closing_tags,
          line_ending
        ) do
-    curr_encoder =
-      case type do
-        "script" -> @no_encoder
-        "style" -> @no_encoder
-        "title" -> @no_encoder
-        _ -> encoder
-      end
-
     open_tag_content = [
-      tag_with_attrs(type, attrs, children, pad, curr_encoder, self_closing_tags),
+      tag_with_attrs(type, attrs, children, pad, encoder, self_closing_tags),
       line_ending
     ]
 
@@ -155,6 +147,14 @@ defmodule Floki.RawHTML do
 
         _ ->
           children = List.wrap(children)
+
+          curr_encoder =
+            case type do
+              "script" -> @no_encoder
+              "style" -> @no_encoder
+              "title" -> @no_encoder
+              _ -> encoder
+            end
 
           build_raw_html(
             children,
