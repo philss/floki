@@ -443,6 +443,37 @@ defmodule FlokiTest do
 
     tree = document!(html_body("<span data-stuff=\"&quot;'\"></span>"))
     assert Floki.raw_html(tree) == expected_html
+
+    expected_html = ~S"""
+    <html>
+      <head>
+      </head>
+      <body>
+        <div>
+          <style data-attrs-test="{&quot;event&quot;:&quot;buggy software&quot;,&quot;properties&quot;:{&quot;_builderButtonEvent&quot;:true}}">
+          </style>
+          <a data-attrs-event="{&quot;event&quot;:&quot;buggy software&quot;,&quot;properties&quot;:{&quot;_builderButtonEvent&quot;:true}}">
+            Next
+          </a>
+        </div>
+      </body>
+    </html>
+    """
+
+    tree =
+      document!(
+        html_body(~S"""
+        <div>
+          <style data-attrs-test="{&quot;event&quot;:&quot;buggy software&quot;,&quot;properties&quot;:{&quot;_builderButtonEvent&quot;:true}}">
+          </style>
+          <a data-attrs-event="{&quot;event&quot;:&quot;buggy software&quot;,&quot;properties&quot;:{&quot;_builderButtonEvent&quot;:true}}">
+            Next
+          </a>
+        </div>
+        """)
+      )
+
+    assert Floki.raw_html(tree, pretty: true) == expected_html
   end
 
   test "raw_html (with >)" do
