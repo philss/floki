@@ -7,9 +7,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased][unreleased]
 
+## [0.37.0] - 2024-12-06
+
 ### Added
 
 - Add `Floki.css_escape/1` - thanks [@SteffenDE](https://github.com/SteffenDE).
+
+### Fixed
+
+- Fix bug propagating identity encoder in `raw_html/2` - thanks [@andyleclair](https://github.com/andyleclair).
 
 ### Removed
 
