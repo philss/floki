@@ -9,17 +9,17 @@ on:
 jobs:
   test:
     runs-on: ubuntu-22.04
-    name: Elixir ${{ matrix.elixir }} / OTP ${{ matrix.otp }} with ${{ matrix.parser }}
+    name: Elixir ${{ matrix.elixir }} / OTP ${{ matrix.otp }} / ${{ matrix.parser }}
 
     strategy:
       fail-fast: false
       matrix:
         elixir: ["1.18", "1.14"]
-        otp: ["27.2", "23.3"]
+        otp: ["27.2", "24.2"]
         parser: [fast_html, html5ever, mochiweb]
         exclude:
           - elixir: "1.18"
-            otp: "23.3"
+            otp: "24.2"
 
           - elixir: "1.14"
             otp: "27.2"
@@ -29,8 +29,8 @@ jobs:
 
       - uses: erlef/setup-beam@v1
         with:
-          otp-version: ${{matrix.otp}}
-          elixir-version: ${{matrix.elixir}}
+          otp-version: ${{ matrix.otp }}
+          elixir-version: ${{ matrix.elixir }}
 
       - name: Check format
         run: mix format --check-formatted
