@@ -2673,7 +2673,10 @@ defmodule Floki.HTML.Tokenizer do
     character_reference_end(html, %{state | buffer: buffer})
   end
 
-  defp character_buffer(%State{charref_state: %CharrefState{candidate: candidate}, buffer: buffer}) do
+  defp character_buffer(%State{
+         charref_state: %CharrefState{candidate: candidate},
+         buffer: buffer
+       }) do
     if candidate do
       Floki.Entities.Codepoints.get(candidate)
     else
