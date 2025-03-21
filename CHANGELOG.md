@@ -813,7 +813,8 @@ of the parent element inside HTML.
 
 - Elixir version requirement from "~> 1.0.0" to ">= 1.0.0".
 
-[unreleased]: https://github.com/philss/floki/compare/v0.36.3...HEAD
+[unreleased]: https://github.com/philss/floki/compare/v0.37.0...HEAD
+[0.37.0]: https://github.com/philss/floki/compare/v0.36.3...v0.37.0
 [0.36.3]: https://github.com/philss/floki/compare/v0.36.2...v0.36.3
 [0.36.2]: https://github.com/philss/floki/compare/v0.36.1...v0.36.2
 [0.36.1]: https://github.com/philss/floki/compare/v0.36.0...v0.36.1
