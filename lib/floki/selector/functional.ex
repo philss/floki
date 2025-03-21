@@ -5,16 +5,15 @@ defmodule Floki.Selector.Functional do
 
   defstruct [:stream, :a, :b]
 
-  @regex ~r/^\s*(?<a>[-+]?[0-9]*[n])\s*(?<b>[+-]\s*[0-9]+)?\s*$/
-
   def parse(expr) when is_list(expr) do
     parse(to_string(expr))
   end
 
   def parse(expr) do
     expr = String.downcase(expr)
+    regex = ~r/^\s*(?<a>[-+]?[0-9]*[n])\s*(?<b>[+-]\s*[0-9]+)?\s*$/
 
-    case Regex.named_captures(@regex, expr) do
+    case Regex.named_captures(regex, expr) do
       nil -> :invalid
       %{"a" => a, "b" => b} -> {:ok, build(a, b)}
     end
