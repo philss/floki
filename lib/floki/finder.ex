@@ -102,7 +102,7 @@ defmodule Floki.Finder do
     Enum.all?(value, &traverse_html_tuples?(&1)) and traverse_html_tuples?(rest)
   end
 
-  defp traverse_html_tuples?([]), do: true
+  defp traverse_html_tuples?([]), do: false
   defp traverse_html_tuples?(_), do: false
 
   defp traverse_html_tree([], _selector, _tree, acc), do: acc
