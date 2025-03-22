@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased][unreleased]
 
+## [0.37.1] - 2025-03-22
+
+### Fixed
+
+- Move regex declaration from module tag to inside function.
+  This is a fix to be compatible with the upcoming OTP 28.
+
 ## [0.37.0] - 2024-12-06
 
 ### Added
@@ -813,7 +820,8 @@ of the parent element inside HTML.
 
 - Elixir version requirement from "~> 1.0.0" to ">= 1.0.0".
 
-[unreleased]: https://github.com/philss/floki/compare/v0.37.0...HEAD
+[unreleased]: https://github.com/philss/floki/compare/v0.37.1...HEAD
+[0.37.1]: https://github.com/philss/floki/compare/v0.37.0...v0.37.1
 [0.37.0]: https://github.com/philss/floki/compare/v0.36.3...v0.37.0
 [0.36.3]: https://github.com/philss/floki/compare/v0.36.2...v0.36.3
 [0.36.2]: https://github.com/philss/floki/compare/v0.36.1...v0.36.2
