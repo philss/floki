@@ -68,8 +68,18 @@ defmodule Floki.Selector.Parser do
   end
 
   defp do_parse([{:pseudo_not, _} | t], selector) do
-    {t, pseudo_not_class} = do_parse_pseudo_not(t, %PseudoClass{name: "not", value: []})
+    {t, pseudo_not_class} =
+      parse_pseudo_with_inner_selector(t, %PseudoClass{name: "not", value: []})
+
     pseudo_classes = Enum.reject([pseudo_not_class | selector.pseudo_classes], &is_nil(&1))
+    do_parse(t, %{selector | pseudo_classes: pseudo_classes})
+  end
+
+  defp do_parse([{:pseudo_has, _} | t], selector) do
+    {t, pseudo_has_class} =
+      parse_pseudo_with_inner_selector(t, %PseudoClass{name: "has", value: []})
+
+    pseudo_classes = Enum.reject([pseudo_has_class | selector.pseudo_classes], &is_nil(&1))
     do_parse(t, %{selector | pseudo_classes: pseudo_classes})
   end
 
@@ -204,66 +214,93 @@ defmodule Floki.Selector.Parser do
     {remaining_tokens, %{combinator | selector: selector}}
   end
 
-  defp do_parse_pseudo_not([], pseudo_class) do
+  defp parse_pseudo_with_inner_selector([], pseudo_class) do
     {[], pseudo_class}
   end
 
-  defp do_parse_pseudo_not([{:close_parentesis, _} | t], pseudo_class) do
+  defp parse_pseudo_with_inner_selector([{:close_parentesis, _} | t], pseudo_class) do
     {t, pseudo_class}
   end
 
-  defp do_parse_pseudo_not([{:space, _} | t], pseudo_class) do
-    do_parse_pseudo_not(t, pseudo_class)
+  defp parse_pseudo_with_inner_selector([{:space, _} | t], pseudo_class) do
+    parse_pseudo_with_inner_selector(t, pseudo_class)
   end
 
   # At this point we want to ignore comma, because it's going to start a new selector.
-  defp do_parse_pseudo_not([{:comma, _} | t], pseudo_class) do
-    do_parse_pseudo_not(t, pseudo_class)
+  defp parse_pseudo_with_inner_selector([{:comma, _} | t], pseudo_class) do
+    parse_pseudo_with_inner_selector(t, pseudo_class)
   end
 
-  defp do_parse_pseudo_not(tokens, pseudo_class) do
-    do_parse_pseudo_not(tokens, %Selector{}, pseudo_class)
+  defp parse_pseudo_with_inner_selector(tokens, pseudo_class) do
+    parse_pseudo_with_inner_selector(tokens, %Selector{}, pseudo_class)
   end
 
-  defp do_parse_pseudo_not([], pseudo_not_selector, pseudo_class) do
-    pseudo_class = update_pseudo_not_value(pseudo_class, pseudo_not_selector)
+  defp parse_pseudo_with_inner_selector([], pseudo_with_inner_selector, pseudo_class) do
+    pseudo_class = update_pseudo_with_inner_selector(pseudo_class, pseudo_with_inner_selector)
     {[], pseudo_class}
   end
 
-  defp do_parse_pseudo_not([{:close_parentesis, _} | t], pseudo_not_selector, pseudo_class) do
-    pseudo_class = update_pseudo_not_value(pseudo_class, pseudo_not_selector)
+  defp parse_pseudo_with_inner_selector(
+         [{:close_parentesis, _} | t],
+         pseudo_with_inner_selector,
+         pseudo_class
+       ) do
+    pseudo_class = update_pseudo_with_inner_selector(pseudo_class, pseudo_with_inner_selector)
 
     {t, pseudo_class}
   end
 
-  defp do_parse_pseudo_not([{:comma, _} | t], pseudo_not_selector, pseudo_class) do
-    pseudo_class = update_pseudo_not_value(pseudo_class, pseudo_not_selector)
-    do_parse_pseudo_not(t, pseudo_class)
+  defp parse_pseudo_with_inner_selector(
+         [{:comma, _} | t],
+         pseudo_with_inner_selector,
+         pseudo_class
+       ) do
+    pseudo_class = update_pseudo_with_inner_selector(pseudo_class, pseudo_with_inner_selector)
+    parse_pseudo_with_inner_selector(t, pseudo_class)
   end
 
-  defp do_parse_pseudo_not([{:space, _} | t], pseudo_not_selector, pseudo_class) do
-    do_parse_pseudo_not(t, pseudo_not_selector, pseudo_class)
+  defp parse_pseudo_with_inner_selector(
+         [{:space, _} | t],
+         pseudo_with_inner_selector,
+         pseudo_class
+       ) do
+    parse_pseudo_with_inner_selector(t, pseudo_with_inner_selector, pseudo_class)
   end
 
-  defp do_parse_pseudo_not([{~c"[", _} | tokens], pseudo_not_selector, pseudo_class) do
+  defp parse_pseudo_with_inner_selector(
+         [{~c"[", _} | tokens],
+         pseudo_with_inner_selector,
+         pseudo_class
+       ) do
     {remaining_tokens, result} = consume_attribute(tokens)
-    selector = %{pseudo_not_selector | attributes: [result | pseudo_not_selector.attributes]}
 
-    pseudo_class = update_pseudo_not_value(pseudo_class, selector)
-    do_parse_pseudo_not(remaining_tokens, pseudo_class)
+    selector = %{
+      pseudo_with_inner_selector
+      | attributes: [result | pseudo_with_inner_selector.attributes]
+    }
+
+    pseudo_class = update_pseudo_with_inner_selector(pseudo_class, selector)
+    parse_pseudo_with_inner_selector(remaining_tokens, pseudo_class)
   end
 
-  defp do_parse_pseudo_not([next_token | t], pseudo_not_selector, pseudo_class) do
-    {pseudo_not_selector, _} = do_parse([next_token], pseudo_not_selector)
-    do_parse_pseudo_not(t, pseudo_not_selector, pseudo_class)
+  defp parse_pseudo_with_inner_selector(
+         [next_token | t],
+         pseudo_with_inner_selector,
+         pseudo_class
+       ) do
+    {pseudo_with_inner_selector, _} = do_parse([next_token], pseudo_with_inner_selector)
+    parse_pseudo_with_inner_selector(t, pseudo_with_inner_selector, pseudo_class)
   end
 
-  defp update_pseudo_not_value(pseudo_class, pseudo_not_selector = %Selector{combinator: nil}) do
-    pseudo_not_value = [pseudo_not_selector | Map.get(pseudo_class, :value, [])]
-    %{pseudo_class | value: pseudo_not_value}
+  defp update_pseudo_with_inner_selector(
+         pseudo_class,
+         pseudo_with_inner_selector = %Selector{combinator: nil}
+       ) do
+    value = [pseudo_with_inner_selector | Map.get(pseudo_class, :value, [])]
+    %{pseudo_class | value: value}
   end
 
-  defp update_pseudo_not_value(_pseudo_class, _pseudo_not_selector) do
+  defp update_pseudo_with_inner_selector(_pseudo_class, _pseudo_with_inner_selector) do
     Logger.debug("Only simple selectors are allowed in :not() pseudo-class. Ignoring.")
     nil
   end
