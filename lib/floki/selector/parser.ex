@@ -300,8 +300,8 @@ defmodule Floki.Selector.Parser do
     %{pseudo_class | value: value}
   end
 
-  defp update_pseudo_with_inner_selector(_pseudo_class, _pseudo_with_inner_selector) do
-    Logger.debug("Only simple selectors are allowed in :not() pseudo-class. Ignoring.")
+  defp update_pseudo_with_inner_selector(%PseudoClass{name: name}, _pseudo_with_inner_selector) do
+    Logger.debug("Only simple selectors are allowed in :#{name}() pseudo-class. Ignoring.")
     nil
   end
 
