@@ -6,6 +6,7 @@ QUOTED = (\"[^"]*\"|\'[^']*\')
 PARENTESIS = \([^)]*\)
 INT = [0-9]+
 NOT = (n|N)(o|O)(t|T)
+HAS = (h|H)(a|A)(s|S)
 ODD = (o|O)(d|D)(d|D)
 EVEN = (e|E)(v|V)(e|E)(n|N)
 PSEUDO_PATT = (\+|-)?({INT})?(n|N)((\+|-){INT})?
@@ -22,6 +23,7 @@ Rules.
 #{IDENTIFIER}                        : {token, {hash, TokenLine, unescape_inside_id_name(tail(TokenChars))}}.
 \.{IDENTIFIER}                       : {token, {class, TokenLine, unescape_inside_class_name(tail(TokenChars))}}.
 \:{NOT}\(                            : {token, {pseudo_not, TokenLine}}.
+\:{HAS}\(                            : {token, {pseudo_has, TokenLine}}.
 \:{IDENTIFIER}                       : {token, {pseudo, TokenLine, tail(TokenChars)}}.
 \({INT}\)                            : {token, {pseudo_class_int, TokenLine, list_to_integer(remove_wrapper(TokenChars))}}.
 \({ODD}\)                            : {token, {pseudo_class_odd, TokenLine}}.

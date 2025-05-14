@@ -390,6 +390,40 @@ defmodule Floki.Selector.ParserTest do
            ]
   end
 
+  test "has pseudo-class - simple class" do
+    assert Parser.parse("a.foo:has(.bar)") == [
+             %Selector{
+               type: "a",
+               classes: ["foo"],
+               pseudo_classes: [%PseudoClass{name: "has", value: [%Selector{classes: ["bar"]}]}]
+             }
+           ]
+  end
+
+  test "has pseudo-class - using fl-contains pseudo class" do
+    assert Parser.parse("a.foo:has(:fl-contains('test'))") == [
+             %Selector{
+               type: "a",
+               classes: ["foo"],
+               pseudo_classes: [
+                 %PseudoClass{
+                   name: "has",
+                   value: [
+                     %Selector{
+                       pseudo_classes: [
+                         %Floki.Selector.PseudoClass{
+                           name: "fl-contains",
+                           value: "test"
+                         }
+                       ]
+                     }
+                   ]
+                 }
+               ]
+             }
+           ]
+  end
+
   test "warn unknown tokens" do
     assert capture_log(log_capturer("a { b")) =~
              ~r/module=Floki\.Selector\.Parser  Unknown token ('{'|~c"{")\. Ignoring/
