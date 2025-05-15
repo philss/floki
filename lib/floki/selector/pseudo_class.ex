@@ -152,6 +152,20 @@ defmodule Floki.Selector.PseudoClass do
     html_node.node_id in tree.root_nodes_ids
   end
 
+  def match_has?(tree, html_node, %__MODULE__{value: value} = pseudo_class) do
+    value
+    |> Enum.all?(fn inner_selector ->
+      html_node.children_nodes_ids
+      |> Enum.any?(fn id ->
+        child = Map.get(tree.nodes, id)
+
+        child |> is_struct(HTMLNode) and
+          (child |> Floki.Selector.match?(inner_selector, tree) or
+             match_has?(tree, child, pseudo_class))
+      end)
+    end)
+  end
+
   defp node_position(ids, %HTMLNode{node_id: node_id}) do
     position = Enum.find_index(ids, fn id -> id == node_id end)
     position + 1
