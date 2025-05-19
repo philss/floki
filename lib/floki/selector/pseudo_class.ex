@@ -153,14 +153,12 @@ defmodule Floki.Selector.PseudoClass do
   end
 
   def match_has?(tree, html_node, %__MODULE__{value: value} = pseudo_class) do
-    value
-    |> Enum.all?(fn inner_selector ->
-      html_node.children_nodes_ids
-      |> Enum.any?(fn id ->
-        child = Map.get(tree.nodes, id)
+    Enum.all?(value, fn inner_selector ->
+     Enum.any?(html_node.children_nodes_ids, fn id ->
+        child = Map.fetch!(tree.nodes, id)
 
-        child |> is_struct(HTMLNode) and
-          (child |> Floki.Selector.match?(inner_selector, tree) or
+        is_struct(child, HTMLNode) and
+          (Floki.Selector.match?(child, inner_selector, tree) or
              match_has?(tree, child, pseudo_class))
       end)
     end)
