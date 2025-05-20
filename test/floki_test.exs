@@ -8,6 +8,8 @@ defmodule FlokiTest do
   alias Floki.HTMLParser.{Html5ever, Mochiweb, FastHtml}
   alias Floki.HTMLTree
 
+  @current_parser Application.compile_env(:floki, :html_parser, Mochiweb)
+
   @plain_text_tags [
     "script",
     "style",
@@ -1598,6 +1600,7 @@ defmodule FlokiTest do
         <input type="checkbox" checked></input>
       </div>
       """
+      |> String.replace(~r/\n|\s{2,}/, "")
       |> html_body()
       |> document!()
 
@@ -1646,11 +1649,17 @@ defmodule FlokiTest do
        ]}
     ])
 
+    checked_value =
+      case @current_parser do
+        Mochiweb -> "checked"
+        _ -> ""
+      end
+
     assert_find(html, "div:has(:checked)", [
       {"div", [],
        [
          {"img", [{"src", "picture.jpg"}], []},
-         {"input", [{"type", "checkbox"}, {"checked", "checked"}], []}
+         {"input", [{"type", "checkbox"}, {"checked", checked_value}], []}
        ]}
     ])
   end
@@ -1668,20 +1677,41 @@ defmodule FlokiTest do
         <p>some data</p>
       </div>
       """
+      |> String.replace(~r/\n|\s{2,}/, "")
       |> html_body()
       |> document!()
 
-    assert_find(html, "div:has(h1, h2)", [])
+    assert_find(html, "div:has(h1):has(h2)", [])
 
-    assert_find(html, "div:has(h1, p)", [
+    assert_find(html, "div:has(h1, h2)", [
       {"div", [],
        [
          {"h1", [], ["Header"]},
+         {"p", [], ["some data"]}
+       ]},
+      {"div", [],
+       [
+         {"h2", [], ["Header 2"]},
+         {"img", [{"src", "https://example.com"}], []},
+         {"p", [], ["some data"]}
+       ]}
+    ])
+
+    assert_find(html, "div:has(h2):has(img):has(p)", [
+      {"div", [],
+       [
+         {"h2", [], ["Header 2"]},
+         {"img", [{"src", "https://example.com"}], []},
          {"p", [], ["some data"]}
        ]}
     ])
 
     assert_find(html, "div:has(h2, img, p)", [
+      {"div", [],
+       [
+         {"h1", [], ["Header"]},
+         {"p", [], ["some data"]}
+       ]},
       {"div", [],
        [
          {"h2", [], ["Header 2"]},
@@ -1705,15 +1735,6 @@ defmodule FlokiTest do
          {"p", [], ["some data"]}
        ]}
     ])
-
-    assert_find(html, "div:has(h2):has(img):has(p)", [
-      {"div", [],
-       [
-         {"h2", [], ["Header 2"]},
-         {"img", [{"src", "https://example.com"}], []},
-         {"p", [], ["some data"]}
-       ]}
-    ])
   end
 
   test "has pseudo-class with table" do
@@ -1722,7 +1743,7 @@ defmodule FlokiTest do
       <table>
         <tbody>
           <tr>
-            <h1>Header</h1>
+            <td><h1>Header</h1></td>
             <td>some data</td>
           </tr>
           <tr>
@@ -1732,7 +1753,7 @@ defmodule FlokiTest do
           <tr>
             <th><label>TEST</label></th>
             <td>fetch me pls</td>
-            <div></div>
+            <td><div>ok</div></td>
           </tr>
           <tr>
             <th><div><label>NESTED</label></div></th>
@@ -1741,6 +1762,7 @@ defmodule FlokiTest do
         </tbody>
       </table>
       """
+      |> String.replace(~r/\n|\s{2,}/, "")
       |> html_body()
       |> document!()
 
@@ -1749,7 +1771,7 @@ defmodule FlokiTest do
        [
          {"th", [], [{"label", [], ["TEST"]}]},
          {"td", [], ["fetch me pls"]},
-         {"div", [], []}
+         {"td", [], [{"div", [], ["ok"]}]}
        ]},
       {"tr", [],
        [
@@ -1766,20 +1788,22 @@ defmodule FlokiTest do
        ]}
     ])
 
-    assert_find(html, "tr:has(h1, td)", [
+    assert_find(html, "tr:has(h1, label)", [
       {"tr", [],
        [
-         {"h1", [], ["Header"]},
+         {"td", [], [{"h1", [], ["Header"]}]},
          {"td", [], ["some data"]}
-       ]}
-    ])
-
-    assert_find(html, "tr:has(*:fl-contains('TEST'))", [
+       ]},
       {"tr", [],
        [
          {"th", [], [{"label", [], ["TEST"]}]},
          {"td", [], ["fetch me pls"]},
-         {"div", [], []}
+         {"td", [], [{"div", [], ["ok"]}]}
+       ]},
+      {"tr", [],
+       [
+         {"th", [], [{"div", [], [{"label", [], ["NESTED"]}]}]},
+         {"td", [], [{"div", [], ["fetch me pls"]}]}
        ]}
     ])
 
@@ -1788,13 +1812,27 @@ defmodule FlokiTest do
        [
          {"th", [], [{"label", [], ["TEST"]}]},
          {"td", [], ["fetch me pls"]},
-         {"div", [], []}
+         {"td", [], [{"div", [], ["ok"]}]}
        ]},
       {"tr", [],
        [
          {"th", [], [{"div", [], [{"label", [], ["NESTED"]}]}]},
          {"td", [], [{"div", [], ["fetch me pls"]}]}
        ]}
+    ])
+
+    assert_find(html, "tr:has(*:fl-contains('TEST'))", [
+      {"tr", [],
+       [
+         {"th", [], [{"label", [], ["TEST"]}]},
+         {"td", [], ["fetch me pls"]},
+         {"td", [], [{"div", [], ["ok"]}]}
+       ]}
+    ])
+
+    assert_find(html, "tr:has(*:fl-contains('TEST')) th ~ td", [
+      {"td", [], ["fetch me pls"]},
+      {"td", [], [{"div", [], ["ok"]}]}
     ])
 
     ## NOTE: this parses incorrectly, parses as:
@@ -1819,6 +1857,21 @@ defmodule FlokiTest do
     #   {"th", [], [{"div", [], [{"label", [], ["NESTED"]}]}]}
     # ])
 
+    ## NOTE: this parses incorrectly, because "only simple selectors are allowed in :has() pseudo-class"
+    # assert_find(html, "tr:has(td + td)", [
+    #   {"tr", [],
+    #    [
+    #      {"td", [], [{"h1", [], ["Header"]}]},
+    #      {"td", [], ["some data"]}
+    #    ]},
+    #   {"tr", [],
+    #    [
+    #      {"th", [], [{"label", [], ["TEST"]}]},
+    #      {"td", [], ["fetch me pls"]},
+    #      {"td", [], [{"div", [], ["ok"]}]}
+    #    ]}
+    # ])
+
     ## NOTE: this parses incorrectly, parses as:
     ##  %PseudoClass{name: "not", value: [%Selector{type: "label", pseudo_classes: [%PseudoClass{name: "has", value: []}]}]}
     ## but would expect to parse as:
@@ -1839,22 +1892,13 @@ defmodule FlokiTest do
         <div>baz</div>
       </div>
       """
+      |> String.replace(~r/\n|\s{2,}/, "")
       |> html_body()
       |> document!()
 
-    # `:has` without any selector matches all HTML nodes.
+    # `:has` without any selector doesn't match any nodes (Enum.any? on an empty array returns false).
     # Firefox ignores this case, warning of a bad selector due to a dangling combinator.
-    assert_find(html, "div:has()", [
-      {"div", [],
-       [
-         {"div", [], [{"div", [], ["foo"]}, {"div", [], ["bar"]}]},
-         {"div", [], ["baz"]}
-       ]},
-      {"div", [], [{"div", [], ["foo"]}, {"div", [], ["bar"]}]},
-      {"div", [], ["foo"]},
-      {"div", [], ["bar"]},
-      {"div", [], ["baz"]}
-    ])
+    assert_find(html, "div:has()", [])
 
     # `:has` with * as the selector matches all HTML nodes with HTML nodes as children.
     # This matches the behaviour of `:has(*)` in Firefox.
