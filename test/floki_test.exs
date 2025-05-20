@@ -1,4 +1,5 @@
 defmodule FlokiTest do
+  @moduledoc false
   use ExUnit.Case, async: true
 
   doctest Floki
@@ -6,6 +7,8 @@ defmodule FlokiTest do
   require Floki
   alias Floki.HTMLParser.{Html5ever, Mochiweb, FastHtml}
   alias Floki.HTMLTree
+
+  @current_parser Application.compile_env(:floki, :html_parser, Mochiweb)
 
   @plain_text_tags [
     "script",
@@ -1574,6 +1577,356 @@ defmodule FlokiTest do
     assert_find(doc, ":root>body>div>div", [
       {"div", [], ["a"]},
       {"div", [], ["b"]}
+    ])
+  end
+
+  test "has pseudo-class simple" do
+    html =
+      """
+      <div>
+        <h1>Header</h1>
+        <p class="foo">some data</p>
+      </div>
+      <div>
+        <h2>Header 2</h2>
+        <img src="https://example.com"></img>
+      </div>
+      <div>
+        <h3>Header 3</h3>
+        <p class="bar">some data</p>
+      </div>
+      <div>
+        <img src="picture.jpg"></img>
+        <input type="checkbox" checked></input>
+      </div>
+      """
+      |> String.replace(~r/\n|\s{2,}/, "")
+      |> html_body()
+      |> document!()
+
+    assert_find(html, "div:has(h1)", [
+      {"div", [],
+       [
+         {"h1", [], ["Header"]},
+         {"p", [{"class", "foo"}], ["some data"]}
+       ]}
+    ])
+
+    assert_find(html, "div:has(h2)", [
+      {"div", [],
+       [
+         {"h2", [], ["Header 2"]},
+         {"img", [{"src", "https://example.com"}], []}
+       ]}
+    ])
+
+    assert_find(html, "div:has(p)", [
+      {"div", [],
+       [
+         {"h1", [], ["Header"]},
+         {"p", [{"class", "foo"}], ["some data"]}
+       ]},
+      {"div", [],
+       [
+         {"h3", [], ["Header 3"]},
+         {"p", [{"class", "bar"}], ["some data"]}
+       ]}
+    ])
+
+    assert_find(html, "div:has(p.foo)", [
+      {"div", [],
+       [
+         {"h1", [], ["Header"]},
+         {"p", [{"class", "foo"}], ["some data"]}
+       ]}
+    ])
+
+    assert_find(html, "div:has(img[src='https://example.com'])", [
+      {"div", [],
+       [
+         {"h2", [], ["Header 2"]},
+         {"img", [{"src", "https://example.com"}], []}
+       ]}
+    ])
+
+    checked_value =
+      case @current_parser do
+        Mochiweb -> "checked"
+        _ -> ""
+      end
+
+    assert_find(html, "div:has(:checked)", [
+      {"div", [],
+       [
+         {"img", [{"src", "picture.jpg"}], []},
+         {"input", [{"type", "checkbox"}, {"checked", checked_value}], []}
+       ]}
+    ])
+  end
+
+  test "has pseudo-class with multiple selectors" do
+    html =
+      """
+      <div>
+        <h1>Header</h1>
+        <p>some data</p>
+      </div>
+      <div>
+        <h2>Header 2</h2>
+        <img src="https://example.com"></img>
+        <p>some data</p>
+      </div>
+      """
+      |> String.replace(~r/\n|\s{2,}/, "")
+      |> html_body()
+      |> document!()
+
+    assert_find(html, "div:has(h1):has(h2)", [])
+
+    assert_find(html, "div:has(h1, h2)", [
+      {"div", [],
+       [
+         {"h1", [], ["Header"]},
+         {"p", [], ["some data"]}
+       ]},
+      {"div", [],
+       [
+         {"h2", [], ["Header 2"]},
+         {"img", [{"src", "https://example.com"}], []},
+         {"p", [], ["some data"]}
+       ]}
+    ])
+
+    assert_find(html, "div:has(h2):has(img):has(p)", [
+      {"div", [],
+       [
+         {"h2", [], ["Header 2"]},
+         {"img", [{"src", "https://example.com"}], []},
+         {"p", [], ["some data"]}
+       ]}
+    ])
+
+    assert_find(html, "div:has(h2, img, p)", [
+      {"div", [],
+       [
+         {"h1", [], ["Header"]},
+         {"p", [], ["some data"]}
+       ]},
+      {"div", [],
+       [
+         {"h2", [], ["Header 2"]},
+         {"img", [{"src", "https://example.com"}], []},
+         {"p", [], ["some data"]}
+       ]}
+    ])
+
+    assert_find(html, "div:has(h1):has(p)", [
+      {"div", [],
+       [
+         {"h1", [], ["Header"]},
+         {"p", [], ["some data"]}
+       ]}
+    ])
+
+    assert_find(html, "div:has(p):has(h1)", [
+      {"div", [],
+       [
+         {"h1", [], ["Header"]},
+         {"p", [], ["some data"]}
+       ]}
+    ])
+  end
+
+  test "has pseudo-class with table" do
+    html =
+      """
+      <table>
+        <tbody>
+          <tr>
+            <td><h1>Header</h1></td>
+            <td>some data</td>
+          </tr>
+          <tr>
+            <th class="empty">No Label</th>
+            <td>some data</td>
+          </tr>
+          <tr>
+            <th><label>TEST</label></th>
+            <td>fetch me pls</td>
+            <td><div>ok</div></td>
+          </tr>
+          <tr>
+            <th><div><label>NESTED</label></div></th>
+            <td><div>fetch me pls</div></td>
+          </tr>
+        </tbody>
+      </table>
+      """
+      |> String.replace(~r/\n|\s{2,}/, "")
+      |> html_body()
+      |> document!()
+
+    assert_find(html, "tr:has(label)", [
+      {"tr", [],
+       [
+         {"th", [], [{"label", [], ["TEST"]}]},
+         {"td", [], ["fetch me pls"]},
+         {"td", [], [{"div", [], ["ok"]}]}
+       ]},
+      {"tr", [],
+       [
+         {"th", [], [{"div", [], [{"label", [], ["NESTED"]}]}]},
+         {"td", [], [{"div", [], ["fetch me pls"]}]}
+       ]}
+    ])
+
+    assert_find(html, "tr:has(th.empty)", [
+      {"tr", [],
+       [
+         {"th", [{"class", "empty"}], ["No Label"]},
+         {"td", [], ["some data"]}
+       ]}
+    ])
+
+    assert_find(html, "tr:has(h1, label)", [
+      {"tr", [],
+       [
+         {"td", [], [{"h1", [], ["Header"]}]},
+         {"td", [], ["some data"]}
+       ]},
+      {"tr", [],
+       [
+         {"th", [], [{"label", [], ["TEST"]}]},
+         {"td", [], ["fetch me pls"]},
+         {"td", [], [{"div", [], ["ok"]}]}
+       ]},
+      {"tr", [],
+       [
+         {"th", [], [{"div", [], [{"label", [], ["NESTED"]}]}]},
+         {"td", [], [{"div", [], ["fetch me pls"]}]}
+       ]}
+    ])
+
+    assert_find(html, "tr:has(label):has(div)", [
+      {"tr", [],
+       [
+         {"th", [], [{"label", [], ["TEST"]}]},
+         {"td", [], ["fetch me pls"]},
+         {"td", [], [{"div", [], ["ok"]}]}
+       ]},
+      {"tr", [],
+       [
+         {"th", [], [{"div", [], [{"label", [], ["NESTED"]}]}]},
+         {"td", [], [{"div", [], ["fetch me pls"]}]}
+       ]}
+    ])
+
+    assert_find(html, "tr:has(*:fl-contains('TEST'))", [
+      {"tr", [],
+       [
+         {"th", [], [{"label", [], ["TEST"]}]},
+         {"td", [], ["fetch me pls"]},
+         {"td", [], [{"div", [], ["ok"]}]}
+       ]}
+    ])
+
+    assert_find(html, "tr:has(*:fl-contains('TEST')) th ~ td", [
+      {"td", [], ["fetch me pls"]},
+      {"td", [], [{"div", [], ["ok"]}]}
+    ])
+
+    ## NOTE: this parses incorrectly, parses as:
+    ##   %PseudoClass{name: "has", value: [%Selector{type: "label", pseudo_classes: [%PseudoClass{name: "has", value: []}]}]}
+    ## but would expect to parse as:
+    ##   %PseudoClass{name: "has", value: [%Selector{type: "div", pseudo_classes: [%PseudoClass{name: "has", value: [%Selector{type: "label"}]}]}]}
+    # assert_find(html, "tr:has(div:has(label))", [
+    #   {"tr", [],
+    #    [
+    #      {"th", [], [{"div", [], [{"label", [], ["NESTED"]}]}]},
+    #      {"td", [], [{"div", [], ["fetch me pls"]}]}
+    #    ]}
+    # ])
+
+    ## NOTE: this does not parse, because "only simple selectors are allowed in :has() pseudo-class"
+    # assert_find(html, "th:has(> label)", [
+    #   {"th", [], [{"label", [], ["TEST"]}]}
+    # ])
+
+    ## NOTE: this does not parse, because "only simple selectors are allowed in :has() pseudo-class"
+    # assert_find(html, "th:has(> div > label)", [
+    #   {"th", [], [{"div", [], [{"label", [], ["NESTED"]}]}]}
+    # ])
+
+    ## NOTE: this parses incorrectly, because "only simple selectors are allowed in :has() pseudo-class"
+    # assert_find(html, "tr:has(td + td)", [
+    #   {"tr", [],
+    #    [
+    #      {"td", [], [{"h1", [], ["Header"]}]},
+    #      {"td", [], ["some data"]}
+    #    ]},
+    #   {"tr", [],
+    #    [
+    #      {"th", [], [{"label", [], ["TEST"]}]},
+    #      {"td", [], ["fetch me pls"]},
+    #      {"td", [], [{"div", [], ["ok"]}]}
+    #    ]}
+    # ])
+
+    ## NOTE: this parses incorrectly, parses as:
+    ##  %PseudoClass{name: "not", value: [%Selector{type: "label", pseudo_classes: [%PseudoClass{name: "has", value: []}]}]}
+    ## but would expect to parse as:
+    ##  %PseudoClass{name: "not", value: [%Selector{type: "*", pseudo_classes: [%PseudoClass{name: "has", value: [%Selector{type: "label"}]}]}]}
+    # assert_find(html, "tr:not(:has(label))", [
+    #   {"tr", [], [{"th", [], ["No Label"]}, {"td", [], ["some data"]}]}
+    # ])
+  end
+
+  test "has pseudo-class edge-cases" do
+    html =
+      """
+      <div>
+        <div>
+          <div>foo</div>
+          <div>bar</div>
+        </div>
+        <div>baz</div>
+      </div>
+      """
+      |> String.replace(~r/\n|\s{2,}/, "")
+      |> html_body()
+      |> document!()
+
+    # `:has` without any selector doesn't match any nodes (Enum.any? on an empty array returns false).
+    # Firefox ignores this case, warning of a bad selector due to a dangling combinator.
+    assert_find(html, "div:has()", [])
+
+    # `:has` with * as the selector matches all HTML nodes with HTML nodes as children.
+    # This matches the behaviour of `:has(*)` in Firefox.
+    assert_find(html, "div:has(*)", [
+      {"div", [],
+       [
+         {"div", [], [{"div", [], ["foo"]}, {"div", [], ["bar"]}]},
+         {"div", [], ["baz"]}
+       ]},
+      {"div", [], [{"div", [], ["foo"]}, {"div", [], ["bar"]}]}
+    ])
+
+    # In this case, both the top-level div and the second-level div match the selector.
+    assert_find(html, "div:has(div:fl-contains('foo'))", [
+      {"div", [],
+       [
+         {"div", [],
+          [
+            {"div", [], ["foo"]},
+            {"div", [], ["bar"]}
+          ]},
+         {"div", [], ["baz"]}
+       ]},
+      {"div", [],
+       [
+         {"div", [], ["foo"]},
+         {"div", [], ["bar"]}
+       ]}
     ])
   end
 
