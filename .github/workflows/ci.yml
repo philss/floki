@@ -15,14 +15,14 @@ jobs:
       fail-fast: false
       matrix:
         elixir: ["1.18", "1.15"]
-        otp: ["28", "24.2"]
+        otp: ["28.0", "24.2"]
         parser: [fast_html, html5ever, mochiweb]
         exclude:
           - elixir: "1.18"
             otp: "24.2"
 
           - elixir: "1.15"
-            otp: "28"
+            otp: "28.0"
 
     steps:
       - uses: actions/checkout@v4
