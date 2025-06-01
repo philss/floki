@@ -251,6 +251,10 @@ defmodule Floki.Selector do
     PseudoClass.match_root?(html_node, tree)
   end
 
+  defp pseudo_class_match?(html_node, pseudo_class = %{name: "has"}, tree) do
+    PseudoClass.match_has?(tree, html_node, pseudo_class)
+  end
+
   defp pseudo_class_match?(_html_node, %{name: unknown_pseudo_class}, _tree) do
     Logger.debug(fn ->
       "Pseudo-class #{inspect(unknown_pseudo_class)} is not implemented. Ignoring."
