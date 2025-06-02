@@ -529,7 +529,8 @@ defmodule Floki do
 
   By default, it will perform a deep search through the HTML tree.
   You can disable deep search with the option `deep` assigned to false.
-  You can include content of script tags with the option `js` assigned to true.
+  You can include content of script or style tags by setting the `:js` or 
+  `:style` flags, respectively, to true.
   You can specify a separator between nodes content.
 
   ## Options
@@ -539,7 +540,10 @@ defmodule Floki do
       or the first level of the HTML document is going to be considered.
       Defaults to `true`.
 
-    * `:js` - A boolean option to control if the contents of script tags
+    * `:js` - A boolean option to control if the contents of `<script>` tags
+      should be considered as text. Defaults to `false`.
+
+    * `:style` - A boolean to control if the contents of `<style>` tags
       should be considered as text. Defaults to `false`.
 
     * `:sep` - A separator string that is added between text nodes.
