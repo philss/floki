@@ -14,15 +14,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        elixir: ["1.18", "1.14"]
-        otp: ["27.2", "24.2"]
+        elixir: ["1.18.4", "1.15"]
+        otp: ["27.3", "24.2"]
         parser: [fast_html, html5ever, mochiweb]
         exclude:
-          - elixir: "1.18"
+          - elixir: "1.18.4"
             otp: "24.2"
 
-          - elixir: "1.14"
-            otp: "27.2"
+          - elixir: "1.15"
+            otp: "27.3"
 
     steps:
       - uses: actions/checkout@v4
@@ -34,7 +34,7 @@ jobs:
 
       - name: Check format
         run: mix format --check-formatted
-        if: matrix.elixir == '1.18'
+        if: matrix.elixir == '1.18.4'
 
       - name: Install dependencies
         run: mix deps.get
