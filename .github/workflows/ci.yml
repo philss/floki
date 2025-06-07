@@ -8,21 +8,21 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     name: Elixir ${{ matrix.elixir }} / OTP ${{ matrix.otp }} / ${{ matrix.parser }}
 
     strategy:
       fail-fast: false
       matrix:
         elixir: ["1.18.4", "1.15"]
-        otp: ["27.3", "24.2"]
+        otp: ["28", "24.3"]
         parser: [fast_html, html5ever, mochiweb]
         exclude:
           - elixir: "1.18.4"
-            otp: "24.2"
+            otp: "24.3"
 
           - elixir: "1.15"
-            otp: "27.3"
+            otp: "28"
 
     steps:
       - uses: actions/checkout@v4
