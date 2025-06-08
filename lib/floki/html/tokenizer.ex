@@ -1212,28 +1212,31 @@ defmodule Floki.HTML.Tokenizer do
     before_attribute_value(html, s)
   end
 
-  defp attribute_name(<<c, html::binary>>, s)
+  defp attribute_name(<<c, html::binary>>, %State{token: token = %StartTag{}} = s)
        when is_upper_letter(c) do
-    [attr | attrs] = s.token.attributes
-    new_attr = %Attribute{attr | name: [attr.name | [c + 32]]}
-    new_token = %StartTag{s.token | attributes: [new_attr | attrs]}
+    [%Attribute{} = attr | attrs] = s.token.attributes
+
+    new_attr = %{attr | name: [attr.name | [c + 32]]}
+    new_token = %{token | attributes: [new_attr | attrs]}
 
     attribute_name(html, %{s | token: new_token})
   end
 
-  defp attribute_name(<<0, html::binary>>, s) do
-    [attr | attrs] = s.token.attributes
-    new_attr = %Attribute{attr | name: [attr.name | [@replacement_char]]}
-    new_token = %StartTag{s.token | attributes: [new_attr | attrs]}
+  defp attribute_name(<<0, html::binary>>, %State{token: %StartTag{} = token} = s) do
+    [%Attribute{} = attr | attrs] = token.attributes
+
+    new_attr = %{attr | name: [attr.name | [@replacement_char]]}
+    new_token = %{token | attributes: [new_attr | attrs]}
 
     attribute_name(html, %{s | token: new_token})
   end
 
-  defp attribute_name(<<c, html::binary>>, s)
+  defp attribute_name(<<c, html::binary>>, %State{token: %StartTag{} = token} = s)
        when c in [?", ?', ?<] do
-    [attr | attrs] = s.token.attributes
-    new_attr = %Attribute{attr | name: [attr.name | [c]]}
-    new_token = %StartTag{s.token | attributes: [new_attr | attrs]}
+    [%Attribute{} = attr | attrs] = token.attributes
+
+    new_attr = %{attr | name: [attr.name | [c]]}
+    new_token = %{token | attributes: [new_attr | attrs]}
 
     attribute_name(html, %{
       s
@@ -1242,11 +1245,13 @@ defmodule Floki.HTML.Tokenizer do
     })
   end
 
-  defp attribute_name(<<c::utf8, html::binary>>, s) do
-    [attr | attrs] = s.token.attributes
-    new_attr = %Attribute{attr | name: [attr.name | [c]]}
+  # NOTE: Attributes on end tags will be ignored.
+  defp attribute_name(<<c::utf8, html::binary>>, %State{token: %token_mod{} = token} = s)
+       when token_mod in [StartTag, EndTag] do
+    [%Attribute{} = attr | attrs] = token.attributes
 
-    # NOTE: token here can be a StartTag or EndTag. Attributes on end tags will be ignored.
+    new_attr = %{attr | name: [attr.name | [c]]}
+
     new_token = %{s.token | attributes: [new_attr | attrs]}
 
     attribute_name(html, %{s | token: new_token})
@@ -1282,9 +1287,9 @@ defmodule Floki.HTML.Tokenizer do
     })
   end
 
-  defp after_attribute_name(html, s) do
+  defp after_attribute_name(html, %State{token: %StartTag{} = token} = s) do
     attribute = %Attribute{name: "", value: ""}
-    new_token = %StartTag{s.token | attributes: [attribute | s.token.attributes]}
+    new_token = %{token | attributes: [attribute | s.token.attributes]}
 
     attribute_name(html, %{s | token: new_token})
   end
@@ -1325,14 +1330,14 @@ defmodule Floki.HTML.Tokenizer do
     character_reference(html, %{s | return_state: :attribute_value_double_quoted})
   end
 
-  defp attribute_value_double_quoted(<<0, html::binary>>, s) do
-    [attr | attrs] = s.token.attributes
-    new_attr = %Attribute{attr | value: [attr.value | [@replacement_char]]}
+  defp attribute_value_double_quoted(<<0, html::binary>>, %State{token: %StartTag{} = token} = s) do
+    [%Attribute{} = attr | attrs] = token.attributes
+    new_attr = %{attr | value: [attr.value | [@replacement_char]]}
 
     attribute_value_double_quoted(html, %{
       s
       | errors: [{:parse_error, nil} | s.errors],
-        token: %StartTag{s.token | attributes: [new_attr | attrs]}
+        token: %{token | attributes: [new_attr | attrs]}
     })
   end
 
@@ -1343,13 +1348,17 @@ defmodule Floki.HTML.Tokenizer do
     })
   end
 
-  defp attribute_value_double_quoted(<<c::utf8, html::binary>>, s) do
-    [attr | attrs] = s.token.attributes
-    new_attr = %Attribute{attr | value: [attr.value | [c]]}
+  defp attribute_value_double_quoted(
+         <<c::utf8, html::binary>>,
+         %State{token: %StartTag{} = token} = s
+       ) do
+    [%Attribute{} = attr | attrs] = token.attributes
+
+    new_attr = %{attr | value: [attr.value | [c]]}
 
     attribute_value_double_quoted(html, %{
       s
-      | token: %StartTag{s.token | attributes: [new_attr | attrs]}
+      | token: %{token | attributes: [new_attr | attrs]}
     })
   end
 
@@ -1363,14 +1372,15 @@ defmodule Floki.HTML.Tokenizer do
     character_reference(html, %{s | return_state: :attribute_value_single_quoted})
   end
 
-  defp attribute_value_single_quoted(<<0, html::binary>>, s) do
-    [attr | attrs] = s.token.attributes
-    new_attr = %Attribute{attr | value: [attr.value | [@replacement_char]]}
+  defp attribute_value_single_quoted(<<0, html::binary>>, %State{token: %StartTag{} = token} = s) do
+    [%Attribute{} = attr | attrs] = token.attributes
+
+    new_attr = %{attr | value: [attr.value | [@replacement_char]]}
 
     attribute_value_single_quoted(html, %{
       s
       | errors: [{:parse_error, nil} | s.errors],
-        token: %StartTag{s.token | attributes: [new_attr | attrs]}
+        token: %{token | attributes: [new_attr | attrs]}
     })
   end
 
@@ -1381,14 +1391,19 @@ defmodule Floki.HTML.Tokenizer do
     })
   end
 
-  defp attribute_value_single_quoted(<<c::utf8, html::binary>>, s) do
-    [attr | attrs] = s.token.attributes
-    new_attr = %Attribute{attr | value: [attr.value | [c]]}
+  # NOTE: Attributes on end tags will be ignored.
+  defp attribute_value_single_quoted(
+         <<c::utf8, html::binary>>,
+         %State{token: %token_mod{} = token} = s
+       )
+       when token_mod in [StartTag, EndTag] do
+    [%Attribute{} = attr | attrs] = token.attributes
 
-    # NOTE: token here can be a StartTag or EndTag. Attributes on end tags will be ignored.
+    new_attr = %{attr | value: [attr.value | [c]]}
+
     attribute_value_single_quoted(html, %{
       s
-      | token: %{s.token | attributes: [new_attr | attrs]}
+      | token: %{token | attributes: [new_attr | attrs]}
     })
   end
 
@@ -1407,8 +1422,8 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defp attribute_value_unquoted(<<0, html::binary>>, s) do
-    [attr | attrs] = s.token.attributes
-    new_attr = %Attribute{attr | value: [attr.value | [@replacement_char]]}
+    [%Attribute{} = attr | attrs] = s.token.attributes
+    new_attr = %{attr | value: [attr.value | [@replacement_char]]}
 
     attribute_value_unquoted(html, %{
       s
@@ -1419,8 +1434,8 @@ defmodule Floki.HTML.Tokenizer do
 
   defp attribute_value_unquoted(<<c, html::binary>>, s)
        when c in [?", ?', ?<, ?=, ?`] do
-    [attr | attrs] = s.token.attributes
-    new_attr = %Attribute{attr | value: [attr.value | [c]]}
+    [%Attribute{} = attr | attrs] = s.token.attributes
+    new_attr = %{attr | value: [attr.value | [c]]}
 
     attribute_value_unquoted(html, %{
       s
@@ -1437,8 +1452,8 @@ defmodule Floki.HTML.Tokenizer do
   end
 
   defp attribute_value_unquoted(<<c::utf8, html::binary>>, s) do
-    [attr | attrs] = s.token.attributes
-    new_attr = %Attribute{attr | value: [attr.value | [c]]}
+    [%Attribute{} = attr | attrs] = s.token.attributes
+    new_attr = %{attr | value: [attr.value | [c]]}
 
     attribute_value_unquoted(html, %{
       s
@@ -1474,8 +1489,8 @@ defmodule Floki.HTML.Tokenizer do
 
   # § tokenizer-self-closing-start-tag-state
 
-  defp self_closing_start_tag(<<?>, html::binary>>, s) do
-    tag = %StartTag{s.token | self_close: true}
+  defp self_closing_start_tag(<<?>, html::binary>>, %State{token: %StartTag{} = token} = s) do
+    tag = %{token | self_close: true}
     data(html, %{s | tokens: [tag | s.tokens], token: nil})
   end
 
@@ -1509,8 +1524,8 @@ defmodule Floki.HTML.Tokenizer do
     bogus_comment(html, %{s | token: comment})
   end
 
-  defp bogus_comment(<<c::utf8, html::binary>>, s) do
-    comment = %Comment{s.token | data: [s.token.data | [c]]}
+  defp bogus_comment(<<c::utf8, html::binary>>, %State{token: %Comment{} = token} = s) do
+    comment = %{token | data: [s.token.data | [c]]}
 
     bogus_comment(html, %{s | token: comment})
   end
@@ -1601,8 +1616,8 @@ defmodule Floki.HTML.Tokenizer do
 
   # § tokenizer-comment-state
 
-  defp comment(<<?<, html::binary>>, s) do
-    new_comment = %Comment{s.token | data: [s.token.data | [@less_than_sign]]}
+  defp comment(<<?<, html::binary>>, %State{token: %Comment{} = token} = s) do
+    new_comment = %{token | data: [s.token.data | [@less_than_sign]]}
 
     comment_less_than_sign(html, %{s | token: new_comment})
   end
@@ -1611,8 +1626,8 @@ defmodule Floki.HTML.Tokenizer do
     comment_end_dash(html, s)
   end
 
-  defp comment(<<0, html::binary>>, s) do
-    new_comment = %Comment{s.token | data: [s.token.data | [@replacement_char]]}
+  defp comment(<<0, html::binary>>, %State{token: %Comment{} = token} = s) do
+    new_comment = %{token | data: [s.token.data | [@replacement_char]]}
 
     comment(html, %{
       s
@@ -1630,8 +1645,8 @@ defmodule Floki.HTML.Tokenizer do
     })
   end
 
-  defp comment(<<c::utf8, html::binary>>, s) do
-    new_token = %Comment{s.token | data: [s.token.data | [c]]}
+  defp comment(<<c::utf8, html::binary>>, %State{token: %Comment{} = token} = s) do
+    new_token = %{token | data: [token.data | [c]]}
 
     comment(
       html,
@@ -1641,14 +1656,14 @@ defmodule Floki.HTML.Tokenizer do
 
   # § tokenizer-comment-less-than-sign-state
 
-  defp comment_less_than_sign(<<?!, html::binary>>, s) do
-    new_comment = %Comment{s.token | data: [s.token.data | [@exclamation_mark]]}
+  defp comment_less_than_sign(<<?!, html::binary>>, %State{token: %Comment{} = token} = s) do
+    new_comment = %{token | data: [token.data | [@exclamation_mark]]}
 
     comment_less_than_sign_bang(html, %{s | token: new_comment})
   end
 
-  defp comment_less_than_sign(<<?<, html::binary>>, s) do
-    new_comment = %Comment{s.token | data: [s.token.data | [@less_than_sign]]}
+  defp comment_less_than_sign(<<?<, html::binary>>, %State{token: %Comment{} = token} = s) do
+    new_comment = %{token | data: [token.data | [@less_than_sign]]}
 
     comment_less_than_sign(html, %{s | token: new_comment})
   end
@@ -1706,8 +1721,8 @@ defmodule Floki.HTML.Tokenizer do
     })
   end
 
-  defp comment_end_dash(html, s) do
-    new_comment = %Comment{s.token | data: [s.token.data | [@hyphen_minus]]}
+  defp comment_end_dash(html, %State{token: %Comment{} = token} = s) do
+    new_comment = %{token | data: [token.data | [@hyphen_minus]]}
 
     comment(html, %{s | token: new_comment})
   end
@@ -1725,8 +1740,8 @@ defmodule Floki.HTML.Tokenizer do
     comment_end_bang(html, s)
   end
 
-  defp comment_end(<<?-, html::binary>>, s) do
-    new_comment = %Comment{s.token | data: [s.token.data | [@hyphen_minus]]}
+  defp comment_end(<<?-, html::binary>>, %State{token: %Comment{} = token} = s) do
+    new_comment = %{token | data: [token.data | [@hyphen_minus]]}
 
     comment_end(html, %{s | token: new_comment})
   end
@@ -1740,16 +1755,16 @@ defmodule Floki.HTML.Tokenizer do
     })
   end
 
-  defp comment_end(html, s) do
-    new_comment = %Comment{s.token | data: [s.token.data | ["--"]]}
+  defp comment_end(html, %State{token: %Comment{} = token} = s) do
+    new_comment = %{token | data: [token.data | ["--"]]}
 
     comment(html, %{s | token: new_comment})
   end
 
   # § tokenizer-comment-end-bang-state
 
-  defp comment_end_bang(<<?-, html::binary>>, s) do
-    new_comment = %Comment{s.token | data: [s.token.data | ["--!"]]}
+  defp comment_end_bang(<<?-, html::binary>>, %State{token: %Comment{} = token} = s) do
+    new_comment = %{token | data: [token.data | ["--!"]]}
 
     comment_end_dash(html, %{s | token: new_comment})
   end
@@ -1772,8 +1787,8 @@ defmodule Floki.HTML.Tokenizer do
     })
   end
 
-  defp comment_end_bang(html, s) do
-    new_comment = %Comment{s.token | data: [s.token.data | ["--!"]]}
+  defp comment_end_bang(html, %State{token: %Comment{} = token} = s) do
+    new_comment = %{token | data: [token.data | ["--!"]]}
 
     comment(html, %{s | token: new_comment})
   end
@@ -1869,17 +1884,18 @@ defmodule Floki.HTML.Tokenizer do
     })
   end
 
-  defp doctype_name(<<c, html::binary>>, s) when is_upper_letter(c) do
-    new_token = %Doctype{
-      s.token
-      | name: [s.token.name | [c + 32]]
+  defp doctype_name(<<c, html::binary>>, %State{token: %Doctype{} = token} = s)
+       when is_upper_letter(c) do
+    new_token = %{
+      token
+      | name: [token.name | [c + 32]]
     }
 
     doctype_name(html, %{s | token: new_token})
   end
 
-  defp doctype_name(<<0, html::binary>>, s) do
-    new_token = %Doctype{s.token | name: [s.token.name | [@replacement_char]]}
+  defp doctype_name(<<0, html::binary>>, %State{token: %Doctype{} = token} = s) do
+    new_token = %{token | name: [token.name | [@replacement_char]]}
 
     doctype_name(html, %{
       s
@@ -1888,8 +1904,8 @@ defmodule Floki.HTML.Tokenizer do
     })
   end
 
-  defp doctype_name("", s) do
-    new_token = %Doctype{s.token | force_quirks: :on}
+  defp doctype_name("", %State{token: %Doctype{} = token} = s) do
+    new_token = %{token | force_quirks: :on}
 
     eof(:doctype_name, %{
       s
@@ -1899,8 +1915,8 @@ defmodule Floki.HTML.Tokenizer do
     })
   end
 
-  defp doctype_name(<<c::utf8, html::binary>>, s) do
-    new_token = %Doctype{s.token | name: [s.token.name | [c]]}
+  defp doctype_name(<<c::utf8, html::binary>>, %State{token: %Doctype{} = token} = s) do
+    new_token = %{token | name: [token.name | [c]]}
 
     doctype_name(html, %{s | token: new_token})
   end
