@@ -1,8 +1,6 @@
 defmodule Floki do
   alias Floki.{Finder, FilterOut, HTMLTree}
 
-  require Logger
-
   @moduledoc """
   Floki is a simple HTML parser that enables search for nodes using CSS selectors.
 
