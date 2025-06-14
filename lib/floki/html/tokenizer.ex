@@ -136,15 +136,15 @@ defmodule Floki.HTML.Tokenizer do
           }
   end
 
-  @lower_ASCII_letters ?a..?z
-  @upper_ASCII_letters ?A..?Z
+  @lower_ascii_letters ?a..?z
+  @upper_ascii_letters ?A..?Z
   @ascii_digits ?0..?9
   @space_chars [?\t, ?\n, ?\f, ?\s]
 
-  defguardp is_lower_letter(c) when c in @lower_ASCII_letters
-  defguardp is_upper_letter(c) when c in @upper_ASCII_letters
+  defguardp is_lower_letter(c) when c in @lower_ascii_letters
+  defguardp is_upper_letter(c) when c in @upper_ascii_letters
   defguardp is_digit(c) when c in @ascii_digits
-  defguardp is_letter(c) when c in @upper_ASCII_letters or c in @lower_ASCII_letters
+  defguardp is_letter(c) when c in @upper_ascii_letters or c in @lower_ascii_letters
   defguardp is_space(c) when c in @space_chars
 
   @less_than_sign ?<
@@ -198,7 +198,7 @@ defmodule Floki.HTML.Tokenizer do
 
   # § tokenizer-rcdata-state: re-entrant
 
-  @spec rcdata(binary(), %State{}) :: %State{}
+  @spec rcdata(binary(), State.t()) :: State.t()
   def rcdata(<<?&, html::binary>>, s) do
     character_reference(html, %{s | return_state: :rcdata})
   end
