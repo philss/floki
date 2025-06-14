@@ -33,7 +33,7 @@ defmodule Floki.Mixfile do
     [
       extras: ["CHANGELOG.md", {:"README.md", [title: "Overview"]}],
       main: "readme",
-      assets: "assets",
+      assets: %{"assets" => "assets"},
       logo: "assets/images/floki-logo.svg",
       source_url: @source_url,
       source_ref: "v#{@version}",

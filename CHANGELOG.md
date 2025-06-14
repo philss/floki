@@ -14,14 +14,25 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - This version adds initial support for the `:has` pseudo-selector.
   It is a great addition that enables finding elements containing
   matching children.
-  Note that combinators such as `>` are not allowed yet.
 
-  Thanks [@bvobart](https://github.com/bvobart) for this feature!
+  Examples for selectors:
+
+  * `"div:has(h1)"`
+  * `"div:has(h1, p, span)"`
+  * `"div:has(p.foo)"`
+  * `"div:has(img[src='https://example.com'])"`
+  * `"tr:has(*:fl-contains('TEST'))"`
+
+  Note that combinators like `">"` are not allowed yet.
+
+  Thank you [@bvobart](https://github.com/bvobart) for this feature!
 
 ### Fixed
 
 - Add `:style` option documentation to `Floki.text/2`.
   Thanks [@s3cur3](https://github.com/s3cur3) for the fix.
+
+- Fix deprecation warnings for upcoming Elixir 1.19.
 
 ### Removed
 

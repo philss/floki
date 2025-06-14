@@ -1,7 +1,14 @@
 defmodule Floki.HTMLParser.Mochiweb do
-  @behaviour Floki.HTMLParser
+  @moduledoc """
+  The default HTML parser engine for Floki.
 
-  @moduledoc false
+  This parser is historically not compliant to the HTML5 specs, but will
+  parse faster and in most of the cases it will produce a valid HTML tree.
+
+  For alternative, please check the `README.md` file.
+  """
+
+  @behaviour Floki.HTMLParser
   @root_node "floki"
 
   @impl true
