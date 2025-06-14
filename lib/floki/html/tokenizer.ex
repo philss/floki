@@ -1164,11 +1164,11 @@ defmodule Floki.HTML.Tokenizer do
     after_attribute_name("", s)
   end
 
-  defp before_attribute_name(<<?=, html::binary>>, s) do
-    new_token = %StartTag{
-      s.token
+  defp before_attribute_name(<<?=, html::binary>>, %State{token: %StartTag{} = token} = s) do
+    new_token = %{
+      token
       | attributes: [
-          %Attribute{name: "=", value: ""} | s.token.attributes
+          %Attribute{name: "=", value: ""} | token.attributes
         ]
     }
 
@@ -1518,8 +1518,8 @@ defmodule Floki.HTML.Tokenizer do
     eof(:bogus_comment, %{s | tokens: [s.emit.(s.token) | s.tokens], token: nil})
   end
 
-  defp bogus_comment(<<0, html::binary>>, s) do
-    comment = %Comment{s.token | data: [s.token.data | [@replacement_char]]}
+  defp bogus_comment(<<0, html::binary>>, %State{token: %Comment{} = token} = s) do
+    comment = %{token | data: [token.data | [@replacement_char]]}
 
     bogus_comment(html, %{s | token: comment})
   end
@@ -1608,8 +1608,8 @@ defmodule Floki.HTML.Tokenizer do
     })
   end
 
-  defp comment_start_dash(html, s) do
-    new_comment = %Comment{s.token | data: [s.token.data | [@hyphen_minus]]}
+  defp comment_start_dash(html, %State{token: %Comment{} = token} = s) do
+    new_comment = %{token | data: [token.data | [@hyphen_minus]]}
 
     comment(html, %{s | token: new_comment})
   end
@@ -1936,8 +1936,8 @@ defmodule Floki.HTML.Tokenizer do
     })
   end
 
-  defp after_doctype_name("", s) do
-    token = %Doctype{s.token | force_quirks: :on}
+  defp after_doctype_name("", %State{token: %Doctype{} = token} = s) do
+    token = %{token | force_quirks: :on}
 
     eof(:after_doctype_name, %{
       s
@@ -1967,8 +1967,8 @@ defmodule Floki.HTML.Tokenizer do
     after_doctype_system_keyword(html, state)
   end
 
-  defp after_doctype_name(html, s) do
-    token = %Doctype{s.token | force_quirks: :on}
+  defp after_doctype_name(html, %State{token: %Doctype{} = token} = s) do
+    token = %{token | force_quirks: :on}
 
     bogus_doctype(html, %{
       s
@@ -1984,8 +1984,8 @@ defmodule Floki.HTML.Tokenizer do
     before_doctype_public_identifier(html, s)
   end
 
-  defp after_doctype_public_keyword(<<?", html::binary>>, s) do
-    doctype = %Doctype{s.token | public_id: ""}
+  defp after_doctype_public_keyword(<<?", html::binary>>, %State{token: %Doctype{} = token} = s) do
+    doctype = %{token | public_id: ""}
 
     doctype_public_identifier_double_quoted(html, %{
       s
@@ -1994,8 +1994,8 @@ defmodule Floki.HTML.Tokenizer do
     })
   end
 
-  defp after_doctype_public_keyword(<<?', html::binary>>, s) do
-    doctype = %Doctype{s.token | public_id: ""}
+  defp after_doctype_public_keyword(<<?', html::binary>>, %State{token: %Doctype{} = token} = s) do
+    doctype = %{token | public_id: ""}
 
     doctype_public_identifier_single_quoted(html, %{
       s
@@ -2004,8 +2004,8 @@ defmodule Floki.HTML.Tokenizer do
     })
   end
 
-  defp after_doctype_public_keyword(<<?>, html::binary>>, s) do
-    doctype = %Doctype{s.token | force_quirks: :on}
+  defp after_doctype_public_keyword(<<?>, html::binary>>, %State{token: %Doctype{} = token} = s) do
+    doctype = %{token | force_quirks: :on}
 
     data(html, %{
       s
@@ -2015,8 +2015,8 @@ defmodule Floki.HTML.Tokenizer do
     })
   end
 
-  defp after_doctype_public_keyword("", s) do
-    doctype = %Doctype{s.token | force_quirks: :on}
+  defp after_doctype_public_keyword("", %State{token: %Doctype{} = token} = s) do
+    doctype = %{token | force_quirks: :on}
 
     eof(:after_doctype_public_keyword, %{
       s
@@ -2026,8 +2026,11 @@ defmodule Floki.HTML.Tokenizer do
     })
   end
 
-  defp after_doctype_public_keyword(<<_c::utf8, html::binary>>, s) do
-    doctype = %Doctype{s.token | force_quirks: :on}
+  defp after_doctype_public_keyword(
+         <<_c::utf8, html::binary>>,
+         %State{token: %Doctype{} = token} = s
+       ) do
+    doctype = %{token | force_quirks: :on}
 
     bogus_doctype(html, %{
       s
@@ -2043,8 +2046,11 @@ defmodule Floki.HTML.Tokenizer do
     before_doctype_public_identifier(html, s)
   end
 
-  defp before_doctype_public_identifier(<<?", html::binary>>, s) do
-    doctype = %Doctype{s.token | public_id: ""}
+  defp before_doctype_public_identifier(
+         <<?", html::binary>>,
+         %State{token: %Doctype{} = token} = s
+       ) do
+    doctype = %{token | public_id: ""}
 
     doctype_public_identifier_double_quoted(html, %{
       s
@@ -2053,8 +2059,11 @@ defmodule Floki.HTML.Tokenizer do
     })
   end
 
-  defp before_doctype_public_identifier(<<?', html::binary>>, s) do
-    doctype = %Doctype{s.token | public_id: ""}
+  defp before_doctype_public_identifier(
+         <<?', html::binary>>,
+         %State{token: %Doctype{} = token} = s
+       ) do
+    doctype = %{token | public_id: ""}
 
     doctype_public_identifier_single_quoted(html, %{
       s
@@ -2063,8 +2072,11 @@ defmodule Floki.HTML.Tokenizer do
     })
   end
 
-  defp before_doctype_public_identifier(<<?>, html::binary>>, s) do
-    doctype = %Doctype{s.token | force_quirks: :on}
+  defp before_doctype_public_identifier(
+         <<?>, html::binary>>,
+         %State{token: %Doctype{} = token} = s
+       ) do
+    doctype = %{token | force_quirks: :on}
 
     data(html, %{
       s
@@ -2074,8 +2086,8 @@ defmodule Floki.HTML.Tokenizer do
     })
   end
 
-  defp before_doctype_public_identifier("", s) do
-    doctype = %Doctype{s.token | force_quirks: :on}
+  defp before_doctype_public_identifier("", %State{token: %Doctype{} = token} = s) do
+    doctype = %{token | force_quirks: :on}
 
     eof(:before_doctype_public_identifier, %{
       s
@@ -2085,8 +2097,11 @@ defmodule Floki.HTML.Tokenizer do
     })
   end
 
-  defp before_doctype_public_identifier(<<_::utf8, html::binary>>, s) do
-    doctype = %Doctype{s.token | force_quirks: :on}
+  defp before_doctype_public_identifier(
+         <<_::utf8, html::binary>>,
+         %State{token: %Doctype{} = token} = s
+       ) do
+    doctype = %{token | force_quirks: :on}
 
     bogus_doctype(html, %{
       s
@@ -2102,8 +2117,11 @@ defmodule Floki.HTML.Tokenizer do
     after_doctype_public_identifier(html, s)
   end
 
-  defp doctype_public_identifier_double_quoted(<<0, html::binary>>, s) do
-    doctype = %Doctype{s.token | public_id: [s.token.public_id | [@replacement_char]]}
+  defp doctype_public_identifier_double_quoted(
+         <<0, html::binary>>,
+         %State{token: %Doctype{} = token} = s
+       ) do
+    doctype = %{token | public_id: [token.public_id | [@replacement_char]]}
 
     doctype_public_identifier_double_quoted(html, %{
       s
@@ -2112,8 +2130,11 @@ defmodule Floki.HTML.Tokenizer do
     })
   end
 
-  defp doctype_public_identifier_double_quoted(<<?>, html::binary>>, s) do
-    doctype = %Doctype{s.token | force_quirks: :on}
+  defp doctype_public_identifier_double_quoted(
+         <<?>, html::binary>>,
+         %State{token: %Doctype{} = token} = s
+       ) do
+    doctype = %{token | force_quirks: :on}
 
     data(html, %{
       s
@@ -2123,8 +2144,8 @@ defmodule Floki.HTML.Tokenizer do
     })
   end
 
-  defp doctype_public_identifier_double_quoted("", s) do
-    doctype = %Doctype{s.token | force_quirks: :on}
+  defp doctype_public_identifier_double_quoted("", %State{token: %Doctype{} = token} = s) do
+    doctype = %{token | force_quirks: :on}
 
     eof(:doctype_public_identifier_double_quoted, %{
       s
@@ -2134,8 +2155,11 @@ defmodule Floki.HTML.Tokenizer do
     })
   end
 
-  defp doctype_public_identifier_double_quoted(<<c::utf8, html::binary>>, s) do
-    doctype = %Doctype{s.token | public_id: [s.token.public_id | [c]]}
+  defp doctype_public_identifier_double_quoted(
+         <<c::utf8, html::binary>>,
+         %State{token: %Doctype{} = token} = s
+       ) do
+    doctype = %{token | public_id: [token.public_id | [c]]}
 
     doctype_public_identifier_double_quoted(html, %{s | token: doctype})
   end
@@ -2146,8 +2170,11 @@ defmodule Floki.HTML.Tokenizer do
     after_doctype_public_identifier(html, s)
   end
 
-  defp doctype_public_identifier_single_quoted(<<0, html::binary>>, s) do
-    doctype = %Doctype{s.token | public_id: [s.token.public_id | [@replacement_char]]}
+  defp doctype_public_identifier_single_quoted(
+         <<0, html::binary>>,
+         %State{token: %Doctype{} = token} = s
+       ) do
+    doctype = %{token | public_id: [s.token.public_id | [@replacement_char]]}
 
     doctype_public_identifier_single_quoted(html, %{
       s
@@ -2156,8 +2183,11 @@ defmodule Floki.HTML.Tokenizer do
     })
   end
 
-  defp doctype_public_identifier_single_quoted(<<?>, html::binary>>, s) do
-    doctype = %Doctype{s.token | force_quirks: :on}
+  defp doctype_public_identifier_single_quoted(
+         <<?>, html::binary>>,
+         %State{token: %Doctype{} = token} = s
+       ) do
+    doctype = %{token | force_quirks: :on}
 
     data(html, %{
       s
@@ -2167,8 +2197,8 @@ defmodule Floki.HTML.Tokenizer do
     })
   end
 
-  defp doctype_public_identifier_single_quoted("", s) do
-    doctype = %Doctype{s.token | force_quirks: :on}
+  defp doctype_public_identifier_single_quoted("", %State{token: %Doctype{} = token} = s) do
+    doctype = %{token | force_quirks: :on}
 
     eof(:doctype_public_identifier_single_quoted, %{
       s
@@ -2178,8 +2208,11 @@ defmodule Floki.HTML.Tokenizer do
     })
   end
 
-  defp doctype_public_identifier_single_quoted(<<c::utf8, html::binary>>, s) do
-    doctype = %Doctype{s.token | public_id: [s.token.public_id | [c]]}
+  defp doctype_public_identifier_single_quoted(
+         <<c::utf8, html::binary>>,
+         %State{token: %Doctype{} = token} = s
+       ) do
+    doctype = %{token | public_id: [s.token.public_id | [c]]}
 
     doctype_public_identifier_single_quoted(html, %{s | token: doctype})
   end
@@ -2194,8 +2227,11 @@ defmodule Floki.HTML.Tokenizer do
     data(html, %{s | token: nil, tokens: [s.emit.(s.token) | s.tokens]})
   end
 
-  defp after_doctype_public_identifier(<<?", html::binary>>, s) do
-    doctype = %Doctype{s.token | system_id: ""}
+  defp after_doctype_public_identifier(
+         <<?", html::binary>>,
+         %State{token: %Doctype{} = token} = s
+       ) do
+    doctype = %{token | system_id: ""}
 
     doctype_system_identifier_double_quoted(html, %{
       s
@@ -2204,8 +2240,11 @@ defmodule Floki.HTML.Tokenizer do
     })
   end
 
-  defp after_doctype_public_identifier(<<?', html::binary>>, s) do
-    doctype = %Doctype{s.token | system_id: ""}
+  defp after_doctype_public_identifier(
+         <<?', html::binary>>,
+         %State{token: %Doctype{} = token} = s
+       ) do
+    doctype = %{token | system_id: ""}
 
     doctype_system_identifier_single_quoted(html, %{
       s
@@ -2214,8 +2253,8 @@ defmodule Floki.HTML.Tokenizer do
     })
   end
 
-  defp after_doctype_public_identifier("", s) do
-    doctype = %Doctype{s.token | force_quirks: :on}
+  defp after_doctype_public_identifier("", %State{token: %Doctype{} = token} = s) do
+    doctype = %{token | force_quirks: :on}
 
     eof(:after_doctype_public_identifier, %{
       s
@@ -2225,8 +2264,11 @@ defmodule Floki.HTML.Tokenizer do
     })
   end
 
-  defp after_doctype_public_identifier(<<_c::utf8, html::binary>>, s) do
-    doctype = %Doctype{s.token | force_quirks: :on}
+  defp after_doctype_public_identifier(
+         <<_c::utf8, html::binary>>,
+         %State{token: %Doctype{} = token} = s
+       ) do
+    doctype = %{token | force_quirks: :on}
 
     bogus_doctype(html, %{
       s
@@ -2245,20 +2287,26 @@ defmodule Floki.HTML.Tokenizer do
     data(html, %{s | token: nil, tokens: [s.emit.(s.token) | s.tokens]})
   end
 
-  defp between_doctype_public_and_system_identifiers(<<?", html::binary>>, s) do
-    doctype = %Doctype{s.token | system_id: ""}
+  defp between_doctype_public_and_system_identifiers(
+         <<?", html::binary>>,
+         %State{token: %Doctype{} = token} = s
+       ) do
+    doctype = %{token | system_id: ""}
 
     doctype_system_identifier_double_quoted(html, %{s | token: doctype})
   end
 
-  defp between_doctype_public_and_system_identifiers(<<?', html::binary>>, s) do
-    doctype = %Doctype{s.token | system_id: ""}
+  defp between_doctype_public_and_system_identifiers(
+         <<?', html::binary>>,
+         %State{token: %Doctype{} = token} = s
+       ) do
+    doctype = %{token | system_id: ""}
 
     doctype_system_identifier_single_quoted(html, %{s | token: doctype})
   end
 
-  defp between_doctype_public_and_system_identifiers("", s) do
-    doctype = %Doctype{s.token | force_quirks: :on}
+  defp between_doctype_public_and_system_identifiers("", %State{token: %Doctype{} = token} = s) do
+    doctype = %{token | force_quirks: :on}
 
     eof(:between_doctype_public_and_system_identifiers, %{
       s
@@ -2268,8 +2316,11 @@ defmodule Floki.HTML.Tokenizer do
     })
   end
 
-  defp between_doctype_public_and_system_identifiers(<<_c::utf8, html::binary>>, s) do
-    doctype = %Doctype{s.token | force_quirks: :on}
+  defp between_doctype_public_and_system_identifiers(
+         <<_c::utf8, html::binary>>,
+         %State{token: %Doctype{} = token} = s
+       ) do
+    doctype = %{token | force_quirks: :on}
 
     bogus_doctype(html, %{
       s
@@ -2284,8 +2335,8 @@ defmodule Floki.HTML.Tokenizer do
     before_doctype_system_identifier(html, s)
   end
 
-  defp after_doctype_system_keyword(<<?", html::binary>>, s) do
-    doctype = %Doctype{s.token | system_id: ""}
+  defp after_doctype_system_keyword(<<?", html::binary>>, %State{token: %Doctype{} = token} = s) do
+    doctype = %{token | system_id: ""}
 
     doctype_system_identifier_double_quoted(html, %{
       s
@@ -2294,8 +2345,8 @@ defmodule Floki.HTML.Tokenizer do
     })
   end
 
-  defp after_doctype_system_keyword(<<?', html::binary>>, s) do
-    doctype = %Doctype{s.token | system_id: ""}
+  defp after_doctype_system_keyword(<<?', html::binary>>, %State{token: %Doctype{} = token} = s) do
+    doctype = %{token | system_id: ""}
 
     doctype_system_identifier_single_quoted(html, %{
       s
@@ -2304,8 +2355,8 @@ defmodule Floki.HTML.Tokenizer do
     })
   end
 
-  defp after_doctype_system_keyword(<<?>, html::binary>>, s) do
-    doctype = %Doctype{s.token | force_quirks: :on}
+  defp after_doctype_system_keyword(<<?>, html::binary>>, %State{token: %Doctype{} = token} = s) do
+    doctype = %{token | force_quirks: :on}
 
     data(html, %{
       s
@@ -2315,8 +2366,8 @@ defmodule Floki.HTML.Tokenizer do
     })
   end
 
-  defp after_doctype_system_keyword("", s) do
-    doctype = %Doctype{s.token | force_quirks: :on}
+  defp after_doctype_system_keyword("", %State{token: %Doctype{} = token} = s) do
+    doctype = %{token | force_quirks: :on}
 
     eof(:after_doctype_system_keyword, %{
       s
@@ -2326,8 +2377,11 @@ defmodule Floki.HTML.Tokenizer do
     })
   end
 
-  defp after_doctype_system_keyword(<<_c::utf8, html::binary>>, s) do
-    doctype = %Doctype{s.token | force_quirks: :on}
+  defp after_doctype_system_keyword(
+         <<_c::utf8, html::binary>>,
+         %State{token: %Doctype{} = token} = s
+       ) do
+    doctype = %{token | force_quirks: :on}
 
     bogus_doctype(html, %{
       s
@@ -2342,8 +2396,11 @@ defmodule Floki.HTML.Tokenizer do
     before_doctype_system_identifier(html, s)
   end
 
-  defp before_doctype_system_identifier(<<?", html::binary>>, s) do
-    doctype = %Doctype{s.token | system_id: ""}
+  defp before_doctype_system_identifier(
+         <<?", html::binary>>,
+         %State{token: %Doctype{} = token} = s
+       ) do
+    doctype = %{token | system_id: ""}
 
     doctype_system_identifier_double_quoted(html, %{
       s
@@ -2352,8 +2409,11 @@ defmodule Floki.HTML.Tokenizer do
     })
   end
 
-  defp before_doctype_system_identifier(<<?', html::binary>>, s) do
-    doctype = %Doctype{s.token | system_id: ""}
+  defp before_doctype_system_identifier(
+         <<?', html::binary>>,
+         %State{token: %Doctype{} = token} = s
+       ) do
+    doctype = %{token | system_id: ""}
 
     doctype_system_identifier_single_quoted(html, %{
       s
@@ -2362,8 +2422,11 @@ defmodule Floki.HTML.Tokenizer do
     })
   end
 
-  defp before_doctype_system_identifier(<<?>, html::binary>>, s) do
-    doctype = %Doctype{s.token | force_quirks: :on}
+  defp before_doctype_system_identifier(
+         <<?>, html::binary>>,
+         %State{token: %Doctype{} = token} = s
+       ) do
+    doctype = %{token | force_quirks: :on}
 
     data(html, %{
       s
@@ -2373,8 +2436,8 @@ defmodule Floki.HTML.Tokenizer do
     })
   end
 
-  defp before_doctype_system_identifier("", s) do
-    doctype = %Doctype{s.token | force_quirks: :on}
+  defp before_doctype_system_identifier("", %State{token: %Doctype{} = token} = s) do
+    doctype = %{token | force_quirks: :on}
 
     eof(:before_doctype_system_identifier, %{
       s
@@ -2384,8 +2447,11 @@ defmodule Floki.HTML.Tokenizer do
     })
   end
 
-  defp before_doctype_system_identifier(<<_::utf8, html::binary>>, s) do
-    doctype = %Doctype{s.token | force_quirks: :on}
+  defp before_doctype_system_identifier(
+         <<_::utf8, html::binary>>,
+         %State{token: %Doctype{} = token} = s
+       ) do
+    doctype = %{token | force_quirks: :on}
 
     bogus_doctype(html, %{
       s
@@ -2401,8 +2467,11 @@ defmodule Floki.HTML.Tokenizer do
     after_doctype_system_identifier(html, s)
   end
 
-  defp doctype_system_identifier_double_quoted(<<0, html::binary>>, s) do
-    doctype = %Doctype{s.token | system_id: [s.token.system_id | [@replacement_char]]}
+  defp doctype_system_identifier_double_quoted(
+         <<0, html::binary>>,
+         %State{token: %Doctype{} = token} = s
+       ) do
+    doctype = %{token | system_id: [token.system_id | [@replacement_char]]}
 
     doctype_system_identifier_double_quoted(html, %{
       s
@@ -2411,8 +2480,11 @@ defmodule Floki.HTML.Tokenizer do
     })
   end
 
-  defp doctype_system_identifier_double_quoted(<<?>, html::binary>>, s) do
-    doctype = %Doctype{s.token | force_quirks: :on}
+  defp doctype_system_identifier_double_quoted(
+         <<?>, html::binary>>,
+         %State{token: %Doctype{} = token} = s
+       ) do
+    doctype = %{token | force_quirks: :on}
 
     data(html, %{
       s
@@ -2422,8 +2494,8 @@ defmodule Floki.HTML.Tokenizer do
     })
   end
 
-  defp doctype_system_identifier_double_quoted("", s) do
-    doctype = %Doctype{s.token | force_quirks: :on}
+  defp doctype_system_identifier_double_quoted("", %State{token: %Doctype{} = token} = s) do
+    doctype = %{token | force_quirks: :on}
 
     eof(:doctype_system_identifier_double_quoted, %{
       s
@@ -2433,8 +2505,11 @@ defmodule Floki.HTML.Tokenizer do
     })
   end
 
-  defp doctype_system_identifier_double_quoted(<<c::utf8, html::binary>>, s) do
-    doctype = %Doctype{s.token | system_id: [s.token.system_id | [c]]}
+  defp doctype_system_identifier_double_quoted(
+         <<c::utf8, html::binary>>,
+         %State{token: %Doctype{} = token} = s
+       ) do
+    doctype = %{token | system_id: [token.system_id | [c]]}
 
     doctype_system_identifier_double_quoted(html, %{s | token: doctype})
   end
@@ -2445,8 +2520,11 @@ defmodule Floki.HTML.Tokenizer do
     after_doctype_system_identifier(html, s)
   end
 
-  defp doctype_system_identifier_single_quoted(<<0, html::binary>>, s) do
-    doctype = %Doctype{s.token | system_id: [s.token.system_id | [@replacement_char]]}
+  defp doctype_system_identifier_single_quoted(
+         <<0, html::binary>>,
+         %State{token: %Doctype{} = token} = s
+       ) do
+    doctype = %{token | system_id: [token.system_id | [@replacement_char]]}
 
     doctype_system_identifier_single_quoted(html, %{
       s
@@ -2455,8 +2533,11 @@ defmodule Floki.HTML.Tokenizer do
     })
   end
 
-  defp doctype_system_identifier_single_quoted(<<?>, html::binary>>, s) do
-    doctype = %Doctype{s.token | force_quirks: :on}
+  defp doctype_system_identifier_single_quoted(
+         <<?>, html::binary>>,
+         %State{token: %Doctype{} = token} = s
+       ) do
+    doctype = %{token | force_quirks: :on}
 
     data(html, %{
       s
@@ -2466,8 +2547,8 @@ defmodule Floki.HTML.Tokenizer do
     })
   end
 
-  defp doctype_system_identifier_single_quoted("", s) do
-    doctype = %Doctype{s.token | force_quirks: :on}
+  defp doctype_system_identifier_single_quoted("", %State{token: %Doctype{} = token} = s) do
+    doctype = %{token | force_quirks: :on}
 
     eof(:doctype_system_identifier_single_quoted, %{
       s
@@ -2477,8 +2558,11 @@ defmodule Floki.HTML.Tokenizer do
     })
   end
 
-  defp doctype_system_identifier_single_quoted(<<c::utf8, html::binary>>, s) do
-    doctype = %Doctype{s.token | system_id: [s.token.system_id | [c]]}
+  defp doctype_system_identifier_single_quoted(
+         <<c::utf8, html::binary>>,
+         %State{token: %Doctype{} = token} = s
+       ) do
+    doctype = %{token | system_id: [token.system_id | [c]]}
 
     doctype_system_identifier_single_quoted(html, %{s | token: doctype})
   end
@@ -2493,8 +2577,8 @@ defmodule Floki.HTML.Tokenizer do
     data(html, %{s | token: nil, tokens: [s.emit.(s.token) | s.tokens]})
   end
 
-  defp after_doctype_system_identifier("", s) do
-    doctype = %Doctype{s.token | force_quirks: :on}
+  defp after_doctype_system_identifier("", %State{token: %Doctype{} = token} = s) do
+    doctype = %{token | force_quirks: :on}
 
     eof(:after_doctype_system_identifier, %{
       s
@@ -2596,7 +2680,7 @@ defmodule Floki.HTML.Tokenizer do
 
     charref_state =
       if candidate != [] do
-        %CharrefState{s.charref_state | candidate: buffer}
+        %{s.charref_state | candidate: buffer}
       else
         s.charref_state
       end
@@ -2616,8 +2700,8 @@ defmodule Floki.HTML.Tokenizer do
     })
   end
 
-  defp seek_charref(html, s) do
-    charref_state = %CharrefState{s.charref_state | done: true}
+  defp seek_charref(html, %State{charref_state: charref_state} = s) do
+    charref_state = %{charref_state | done: true}
 
     seek_charref_end(html, %{s | charref_state: charref_state})
   end
@@ -2815,9 +2899,10 @@ defmodule Floki.HTML.Tokenizer do
   defp character_reference_end(html, s) do
     state =
       if part_of_attr?(s) do
-        [attr | attrs] = s.token.attributes
-        new_attr = %Attribute{attr | value: [attr.value | s.buffer]}
-        new_tag = %StartTag{s.token | attributes: [new_attr | attrs]}
+        [%Attribute{} = attr | attrs] = s.token.attributes
+        new_attr = %{attr | value: [attr.value | s.buffer]}
+        # Start tag here.
+        new_tag = %{s.token | attributes: [new_attr | attrs]}
 
         %{s | token: new_tag}
       else
