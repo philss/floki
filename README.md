@@ -40,7 +40,7 @@ Floki.find(document, "p.headline")
 
 document
 |> Floki.find("p.headline")
-|> Floki.raw_html
+|> Floki.raw_html()
 # => <p class="headline">Floki</p>
 ```
 
@@ -61,7 +61,7 @@ Add Floki to your `mix.exs`:
 ```elixir
 defp deps do
   [
-    {:floki, "~> 0.37.0"}
+    {:floki, "~> 0.38.0"}
   ]
 end
 ```
@@ -72,7 +72,7 @@ If you are running on [Livebook](https://livebook.dev) or a script, you can inst
 
 ```elixir
 Mix.install([
-  {:floki, "~> 0.37.0"}
+  {:floki, "~> 0.38.0"}
 ])
 ```
 
@@ -128,8 +128,8 @@ you don't need to install anything to compile it thanks to [RustlerPrecompiled](
 ```elixir
 defp deps do
   [
-    {:floki, "~> 0.37.0"},
-    {:html5ever, "~> 0.15.0"}
+    {:floki, "~> 0.38.0"},
+    {:html5ever, "~> 0.16.0"}
   ]
 end
 ```
@@ -156,7 +156,7 @@ First, add `fast_html` to your dependencies:
 ```elixir
 defp deps do
   [
-    {:floki, "~> 0.37.0"},
+    {:floki, "~> 0.38.0"},
     {:fast_html, "~> 2.0"}
   ]
 end
@@ -201,7 +201,7 @@ To convert your node tree back to raw HTML (spaces are ignored):
 ```elixir
 document
 |> Floki.find(".example")
-|> Floki.raw_html
+|> Floki.raw_html()
 # =>  <div class="example"></div>
 ```
 
@@ -226,7 +226,7 @@ If you want to get the text from an element, try:
 ```elixir
 document
 |> Floki.find(".headline")
-|> Floki.text
+|> Floki.text()
 
 # => "Floki"
 ```
