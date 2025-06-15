@@ -7,6 +7,53 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased][unreleased]
 
+## [0.38.0] - 2025-06-14
+
+### Added
+
+- This version adds initial support for the `:has` pseudo-selector.
+  It is a great addition that enables finding elements containing
+  matching children.
+
+  Examples for selectors:
+
+  * `"div:has(h1)"`
+  * `"div:has(h1, p, span)"`
+  * `"div:has(p.foo)"`
+  * `"div:has(img[src='https://example.com'])"`
+  * `"tr:has(*:fl-contains('TEST'))"`
+
+  Note that combinators like `">"` are not allowed yet.
+
+  Thank you [@bvobart](https://github.com/bvobart) for this feature!
+
+### Fixed
+
+- Add `:style` option documentation to `Floki.text/2`.
+  Thanks [@s3cur3](https://github.com/s3cur3) for the fix.
+
+- Fix deprecation warnings for upcoming Elixir 1.19.
+
+- Prevent from crashing when selector is an empty string.
+
+### Removed
+
+- Remove support for Elixir 1.14 and OTP 23.
+
+- Remove deprecated functions and function clauses
+  that were accepting strings (binaries).
+
+  Affected functions:
+
+  * `parse/1` - removed function
+  * `map/2` - removed function
+  * `attr/4` - removed clause
+  * `find/2` - removed clause
+  * `text/3` - removed clause
+  * `text/3` - removed clause
+  * `attribute/2` - removed clause
+  * `filter_out/2` - removed clause
+
 ## [0.37.1] - 2025-03-22
 
 ### Fixed
@@ -820,7 +867,8 @@ of the parent element inside HTML.
 
 - Elixir version requirement from "~> 1.0.0" to ">= 1.0.0".
 
-[unreleased]: https://github.com/philss/floki/compare/v0.37.1...HEAD
+[unreleased]: https://github.com/philss/floki/compare/v0.38.0...HEAD
+[0.38.0]: https://github.com/philss/floki/compare/v0.37.1...v0.38.0
 [0.37.1]: https://github.com/philss/floki/compare/v0.37.0...v0.37.1
 [0.37.0]: https://github.com/philss/floki/compare/v0.36.3...v0.37.0
 [0.36.3]: https://github.com/philss/floki/compare/v0.36.2...v0.36.3
