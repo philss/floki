@@ -34,6 +34,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Fix deprecation warnings for upcoming Elixir 1.19.
 
+- Prevent from crashing when selector is an empty string.
+
 ### Removed
 
 - Remove support for Elixir 1.14 and OTP 23.
