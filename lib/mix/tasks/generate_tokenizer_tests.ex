@@ -28,7 +28,7 @@ defmodule Mix.Tasks.GenerateTokenizerTests do
     {:ok, json} = Jason.decode(content)
 
     identity_fun = fn %{"description" => desc} -> desc end
-    revision = File.read!(@html5lib_revision_path)
+    revision = read_revision_or_error!(@html5lib_revision_path)
 
     tests =
       Map.fetch!(json, "tests")
@@ -75,5 +75,15 @@ defmodule Mix.Tasks.GenerateTokenizerTests do
     File.write!(destination_path, contents)
 
     Mix.shell().info("saved in #{destination_path}.")
+  end
+
+  defp read_revision_or_error!(revision_path) do
+    case File.read(revision_path) do
+      {:ok, contents} ->
+        contents
+
+      {:error, :enoent} ->
+        raise "submodule is not initialized. Please run `git submodule update --init --recursive`"
+    end
   end
 end
