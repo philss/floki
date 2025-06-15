@@ -1986,6 +1986,13 @@ defmodule FlokiTest do
              Floki.Finder.find(html_tree, [selector_struct_1, selector_struct_2])
   end
 
+  # Floki.find/2 - Empty case
+
+  test "find with an empty selector" do
+    html = document!(@html)
+    assert Floki.find(html, "") == []
+  end
+
   # Floki.get_by_id/2
 
   test "get_by_id finds element with special characters" do

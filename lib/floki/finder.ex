@@ -42,10 +42,15 @@ defmodule Floki.Finder do
 
   def find(html_tree, selector_as_string) when is_binary(selector_as_string) do
     selectors = Selector.Parser.parse(selector_as_string)
-    find(html_tree, selectors)
+
+    if selectors != [] do
+      find(html_tree, selectors)
+    else
+      []
+    end
   end
 
-  def find(html_tree, selector = %Selector{}) do
+  def find(html_tree, %Selector{} = selector) do
     find(html_tree, [selector])
   end
 
