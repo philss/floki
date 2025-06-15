@@ -431,4 +431,10 @@ defmodule Floki.Selector.ParserTest do
     assert capture_log(log_capturer("a + b@")) =~
              ~r/module=Floki\.Selector\.Parser  Unknown token ('@'|~c"@")\. Ignoring/
   end
+
+  test "empty selector" do
+    tokens = tokenize("")
+
+    assert Parser.parse(tokens) == []
+  end
 end
