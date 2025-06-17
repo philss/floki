@@ -1,4 +1,4 @@
-[![Actions Status](https://github.com/philss/floki/workflows/CI/badge.svg?branch=main)](https://github.com/philss/floki/actions)
+[![Actions Status](https://github.com/philss/floki/actions/workflows/ci.yml/badge.svg)](https://github.com/philss/floki/actions/workflows/ci.yml)
 [![Floki version](https://img.shields.io/hexpm/v/floki.svg)](https://hex.pm/packages/floki)
 [![Hex Docs](https://img.shields.io/badge/hex-docs-lightgreen.svg)](https://hexdocs.pm/floki/)
 [![Hex.pm](https://img.shields.io/hexpm/dt/floki.svg)](https://hex.pm/packages/floki)
