@@ -54,6 +54,28 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   * `attribute/2` - removed clause
   * `filter_out/2` - removed clause
 
+- HTML must be parsed before searching. Functions like `Floki.find/2`,
+  `Floki.attribute/2`, and other HTML manipulation functions **no longer work
+  directly with HTML strings**. The HTML must be parsed first using
+  `Floki.parse_fragment/2` or `Floki.parse_document/2`.
+
+  Before:
+
+  ```elixir
+  html = "<div class='foobar'><p>Hello</p></div>"
+  Floki.find(html, "p")
+  Floki.attribute(html, "div", "class")
+  ```
+
+  After:
+
+  ```elixir
+  html = "<div class='foobar'><p>Hello</p></div>"
+  parsed_html = Floki.parse_fragment!(html)
+  Floki.find(parsed_html, "p")
+  Floki.attribute(parsed_html, "div", "class")
+  ```
+
 ## [0.37.1] - 2025-03-22
 
 ### Fixed
@@ -213,7 +235,7 @@ usage of memory for `find/2`, for example.
 
 ### Fixed
 
-- Fix find of elements by classes that contain colons. This is useful for when 
+- Fix find of elements by classes that contain colons. This is useful for when
   people are trying to find elements that contain Tailwind classes.
   Thanks [@viniciusmuller](https://github.com/viniciusmuller).
 
@@ -251,7 +273,7 @@ usage of memory for `find/2`, for example.
 ### Fixed
 
 - Allow attribute values to not be escaped. This fixes `Floki.raw_html/2` when used with the
-option `encode: false`. Thanks [@juanazam](https://github.com/juanazam). 
+option `encode: false`. Thanks [@juanazam](https://github.com/juanazam).
 - Fix `traverse_and_update/3` spec. Thanks [@WLSF](https://github.com/WLSF).
 
 ### Changed
