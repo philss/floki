@@ -157,9 +157,13 @@ defmodule Floki.Selector do
   end
 
   defp do_classes_matches?(class_attr_value, [class]) do
-    class_attr_value
-    |> String.split([" ", "\t", "\n"], trim: true)
-    |> Enum.member?(class)
+    if String.contains?(class_attr_value, class) do
+      class_attr_value
+      |> String.split([" ", "\t", "\n"], trim: true)
+      |> Enum.member?(class)
+    else
+      false
+    end
   end
 
   defp do_classes_matches?(class_attr_value, classes) do
