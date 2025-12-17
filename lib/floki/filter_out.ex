@@ -31,10 +31,7 @@ defmodule Floki.FilterOut do
   defp filter(_, _), do: true
 
   defp mapper(nodes, selector) when is_list(nodes) do
-    nodes
-    |> Stream.filter(&filter(&1, selector))
-    |> Stream.map(&mapper(&1, selector))
-    |> Enum.to_list()
+    do_mapper(nodes, selector, [])
   end
 
   defp mapper({nodetext, x, y}, selector) do
@@ -42,4 +39,14 @@ defmodule Floki.FilterOut do
   end
 
   defp mapper(nodetext, _), do: nodetext
+
+  defp do_mapper([], _selector, acc), do: Enum.reverse(acc)
+
+  defp do_mapper([head | tail], selector, acc) do
+    if filter(head, selector) do
+      do_mapper(tail, selector, [mapper(head, selector) | acc])
+    else
+      do_mapper(tail, selector, acc)
+    end
+  end
 end
