@@ -112,6 +112,8 @@ defmodule Floki.Finder do
     Enum.all?(value, &traverse_html_tuples?(&1)) and traverse_html_tuples?(rest)
   end
 
+  defp traverse_html_tuples?([]), do: true
+
   defp traverse_html_tuples?(selectors) when is_list(selectors) do
     Enum.all?(selectors, fn
       %Selector{combinator: nil} = selector -> traverse_html_tuples?(selector)
