@@ -59,12 +59,16 @@ defmodule Floki.Selector.AttributeSelector do
 
   def match?(attributes, s = %AttributeSelector{match_type: :includes, flag: "i"}) do
     selector_value = String.downcase(s.value)
+    attribute_value = get_value(s.attribute, attributes)
 
-    s.attribute
-    |> get_value(attributes)
-    # Splits by whitespaces ("a  b c" -> ["a", "b", "c"])
-    |> String.split([" ", "\t", "\n"], trim: true)
-    |> Enum.any?(fn v -> String.downcase(v) == selector_value end)
+    if String.contains?(String.downcase(attribute_value), selector_value) do
+      attribute_value
+      # Splits by whitespaces ("a  b c" -> ["a", "b", "c"])
+      |> String.split([" ", "\t", "\n"], trim: true)
+      |> Enum.any?(fn v -> String.downcase(v) == selector_value end)
+    else
+      false
+    end
   end
 
   def match?(attributes, s = %AttributeSelector{match_type: :dash_match, flag: "i"}) do
@@ -102,9 +106,15 @@ defmodule Floki.Selector.AttributeSelector do
   end
 
   def match?(attributes, s = %AttributeSelector{match_type: :includes, value: value}) do
-    get_value(s.attribute, attributes)
-    |> String.split([" ", "\t", "\n"], trim: true)
-    |> Enum.member?(value)
+    attribute_value = get_value(s.attribute, attributes)
+
+    if String.contains?(attribute_value, value) do
+      attribute_value
+      |> String.split([" ", "\t", "\n"], trim: true)
+      |> Enum.member?(value)
+    else
+      false
+    end
   end
 
   def match?(attributes, s = %AttributeSelector{match_type: :dash_match}) do
@@ -125,17 +135,22 @@ defmodule Floki.Selector.AttributeSelector do
     s.attribute |> get_value(attributes) |> String.contains?(s.value)
   end
 
-  defp get_value(attr_name, attributes) do
-    Enum.find_value(attributes, "", fn
+  defp get_value(attr_name, attributes) when is_list(attributes) do
+    case List.keyfind(attributes, attr_name, 0) do
       {^attr_name, value} -> value
-      _ -> false
-    end)
+      nil -> ""
+    end
   end
 
-  defp attribute_present?(name, attributes) do
-    Enum.any?(attributes, fn
-      {^name, _v} -> true
-      _ -> false
-    end)
+  defp get_value(attr_name, attributes) when is_map(attributes) do
+    Map.get(attributes, attr_name, "")
+  end
+
+  defp attribute_present?(name, attributes) when is_list(attributes) do
+    List.keymember?(attributes, name, 0)
+  end
+
+  defp attribute_present?(name, attributes) when is_map(attributes) do
+    Map.has_key?(attributes, name)
   end
 end
