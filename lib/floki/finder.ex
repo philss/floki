@@ -58,9 +58,14 @@ defmodule Floki.Finder do
       when (is_list(html_tree_as_tuple) or is_html_node(html_tree_as_tuple)) and
              is_list(selectors) do
     if traverse_html_tuples?(selectors) do
-      [selector] = selectors
       html_tree_as_tuple = List.wrap(html_tree_as_tuple)
-      results = traverse_html_tuples(html_tree_as_tuple, selector, [])
+
+      results =
+        case selectors do
+          [selector] -> traverse_html_tuples(html_tree_as_tuple, selector, [])
+          _ -> traverse_html_tuples(html_tree_as_tuple, selectors, [])
+        end
+
       Enum.reverse(results)
     else
       tree = HTMLTree.build(html_tree_as_tuple)
@@ -108,6 +113,14 @@ defmodule Floki.Finder do
   end
 
   defp traverse_html_tuples?([]), do: true
+
+  defp traverse_html_tuples?(selectors) when is_list(selectors) do
+    Enum.all?(selectors, fn
+      %Selector{combinator: nil} = selector -> traverse_html_tuples?(selector)
+      _ -> false
+    end)
+  end
+
   defp traverse_html_tuples?(_), do: false
 
   defp traverse_html_tree([], _selector, _tree, acc), do: acc
@@ -158,6 +171,23 @@ defmodule Floki.Finder do
   # term in the traversal to keep track of this information.
   defp traverse_html_tuples([], _selector, acc) do
     acc
+  end
+
+  defp traverse_html_tuples(
+         [{_type, _attributes, children} = html_tuple | siblings],
+         selectors,
+         acc
+       )
+       when is_list(selectors) do
+    acc =
+      if Enum.any?(selectors, &Selector.match?(html_tuple, &1, nil)) do
+        [html_tuple | acc]
+      else
+        acc
+      end
+
+    acc = traverse_html_tuples(children, selectors, acc)
+    traverse_html_tuples(siblings, selectors, acc)
   end
 
   defp traverse_html_tuples(
