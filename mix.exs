@@ -46,7 +46,7 @@ defmodule Floki.Mixfile do
       {:jason, "~> 1.1", only: [:dev, :test, :docs]},
       {:earmark, "~> 1.2", only: :dev},
       {:ex_doc, "~> 0.38.2", only: :dev, runtime: false},
-      {:benchee, "~> 1.4.0", only: :dev},
+      {:benchee, "~> 1.5.0", only: :dev},
       {:benchee_html, "~> 1.0", only: :dev},
       {:credo, ">= 0.0.0", only: [:dev, :test]},
       {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
