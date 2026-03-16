@@ -126,12 +126,9 @@ defmodule Floki.HTMLTree do
   end
 
   def to_tuple_list(html_tree) do
-    html_tree.root_nodes_ids
-    |> Enum.reverse()
-    |> Enum.map(fn node_id ->
+    Enum.reduce(html_tree.root_nodes_ids, [], fn node_id, acc ->
       root = Map.get(html_tree.nodes, node_id)
-
-      HTMLTree.to_tuple(html_tree, root)
+      [HTMLTree.to_tuple(html_tree, root) | acc]
     end)
   end
 
@@ -140,9 +137,9 @@ defmodule Floki.HTMLTree do
 
   def to_tuple(tree, html_node) do
     children =
-      html_node.children_nodes_ids
-      |> Enum.reverse()
-      |> Enum.map(fn id -> to_tuple(tree, Map.get(tree.nodes, id)) end)
+      Enum.reduce(html_node.children_nodes_ids, [], fn id, acc ->
+        [to_tuple(tree, Map.get(tree.nodes, id)) | acc]
+      end)
 
     {html_node.type, html_node.attributes, children}
   end
