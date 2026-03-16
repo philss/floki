@@ -2,8 +2,6 @@ defmodule Floki.Selector.ParserTest do
   use ExUnit.Case, async: true
   import ExUnit.CaptureLog
 
-  require Logger
-
   alias Floki.Selector
   alias Selector.{Parser, Functional, Combinator, AttributeSelector, PseudoClass}
 
