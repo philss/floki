@@ -368,15 +368,26 @@ defmodule Floki.Finder do
     end)
   end
 
-  # finds all descendant node ids recursively through the tree preserving the order
+  # finds all descendant node ids recursively through the tree
   defp get_descendant_ids(node_id, tree) do
     case get_node(node_id, tree) do
-      %{children_nodes_ids: node_ids} ->
-        reversed_ids = Enum.reverse(node_ids)
-        reversed_ids ++ Enum.flat_map(reversed_ids, &get_descendant_ids(&1, tree))
+      %{children_nodes_ids: children} when children != [] ->
+        do_get_descendant_ids(children, tree, children)
 
       _ ->
         []
+    end
+  end
+
+  defp do_get_descendant_ids([], _tree, acc), do: acc
+
+  defp do_get_descendant_ids([node_id | rest], tree, acc) do
+    case get_node(node_id, tree) do
+      %{children_nodes_ids: children} when children != [] ->
+        do_get_descendant_ids(children ++ rest, tree, children ++ acc)
+
+      _ ->
+        do_get_descendant_ids(rest, tree, acc)
     end
   end
 
