@@ -2241,6 +2241,35 @@ defmodule FlokiTest do
     assert_find(html, "table[summary='license-detail'] td.data-view", expected)
   end
 
+  test "descendant matches are correctly ordered for deeply nested and sibling trees" do
+    html =
+      document!(
+        html_body("""
+        <div id="root">
+          <div id="a">
+            <span class="target" id="a-1"></span>
+            <div id="a-b">
+              <span class="target" id="a-b-1"></span>
+            </div>
+          </div>
+          <div id="b">
+            <span class="target" id="b-1"></span>
+          </div>
+          <span class="target" id="c-1"></span>
+        </div>
+        """)
+      )
+
+    expected = [
+      {"span", [{"class", "target"}, {"id", "a-1"}], []},
+      {"span", [{"class", "target"}, {"id", "a-b-1"}], []},
+      {"span", [{"class", "target"}, {"id", "b-1"}], []},
+      {"span", [{"class", "target"}, {"id", "c-1"}], []}
+    ]
+
+    assert_find(html, "#root .target", expected)
+  end
+
   test "finding doesn't fail when body includes unencoded angles" do
     html_with_wrong_angles_encoding =
       document!(
