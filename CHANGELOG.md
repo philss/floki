@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased][unreleased]
 
+## [0.38.1] - 2026-03-17
+
+### Performance
+
+This version contains major performance improvements to the following functions:
+
+* `Floki.filter_out/2`.
+* `Floki.find/2` - with some improvements to specific selectors, like classes
+  and attribute selectors.
+
+Those functions are not only faster, but are now using less memory. Please check
+the PRs related to this release if you want to better understand the numbers.
+
+* [Speed up do_classes_matches? - #649](https://github.com/philss/floki/pull/649)
+* [Make filter_out faster - #650](https://github.com/philss/floki/pull/650)
+* [Speed up attribute lookup - #651](https://github.com/philss/floki/pull/651)
+* [Enable tuple traversal optimization for multiple selectors - #652](https://github.com/philss/floki/pull/652)
+* [Optimize `HTMLTree.to_tuple` conversion using `Enum.reduce` - #657](https://github.com/philss/floki/pull/657)
+* [Optimize `Finder.get_descendant_ids/2` memory usage and speed - #660](https://github.com/philss/floki/pull/660)
+
+All of the improvements for this version were made by [Barna Kovacs - @preciz](https://github.com/preciz),
+so shout out and thanks to him!
+
+### Fixed
+
+Remove a warning about an unused `require Logger` that pops up when using Elixir v1.20.
+
 ## [0.38.0] - 2025-06-14
 
 ### Added
@@ -889,7 +916,8 @@ of the parent element inside HTML.
 
 - Elixir version requirement from "~> 1.0.0" to ">= 1.0.0".
 
-[unreleased]: https://github.com/philss/floki/compare/v0.38.0...HEAD
+[unreleased]: https://github.com/philss/floki/compare/v0.38.1...HEAD
+[0.38.1]: https://github.com/philss/floki/compare/v0.38.0...v0.38.1
 [0.38.0]: https://github.com/philss/floki/compare/v0.37.1...v0.38.0
 [0.37.1]: https://github.com/philss/floki/compare/v0.37.0...v0.37.1
 [0.37.0]: https://github.com/philss/floki/compare/v0.36.3...v0.37.0
