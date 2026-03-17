@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Performance
 
-This version contains major performance improvements to the following functions:
+This version contains major performance improvements in the following functions:
 
 * `Floki.filter_out/2`.
 * `Floki.find/2` - with some improvements to specific selectors, like classes
@@ -27,7 +27,7 @@ the PRs related to this release if you want to better understand the numbers.
 * [Optimize `HTMLTree.to_tuple` conversion using `Enum.reduce` - #657](https://github.com/philss/floki/pull/657)
 * [Optimize `Finder.get_descendant_ids/2` memory usage and speed - #660](https://github.com/philss/floki/pull/660)
 
-All of the improvements for this version were made by [Barna Kovacs - @preciz](https://github.com/preciz),
+All the improvements in this version were made by [Barna Kovacs - @preciz](https://github.com/preciz),
 so shout out and thanks to him!
 
 ### Fixed
