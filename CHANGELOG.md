@@ -16,6 +16,7 @@ This version contains major performance improvements in the following functions:
 * `Floki.filter_out/2`.
 * `Floki.find/2` - with some improvements to specific selectors, like classes
   and attribute selectors.
+* `Floki.text/2`.
 
 Those functions are not only faster, but are now using less memory. Please check
 the PRs related to this release if you want to better understand the numbers.
@@ -26,6 +27,8 @@ the PRs related to this release if you want to better understand the numbers.
 * [Enable tuple traversal optimization for multiple selectors - #652](https://github.com/philss/floki/pull/652)
 * [Optimize `HTMLTree.to_tuple` conversion using `Enum.reduce` - #657](https://github.com/philss/floki/pull/657)
 * [Optimize `Finder.get_descendant_ids/2` memory usage and speed - #660](https://github.com/philss/floki/pull/660)
+* [Optimize `Finder.get_siblings/2` memory usage and speed - #663](https://github.com/philss/floki/pull/663)
+* [Optimize `FlatText.get/3` memory usage and speed - #664](https://github.com/philss/floki/pull/664)
 
 All the improvements in this version were made by [Barna Kovacs - @preciz](https://github.com/preciz),
 so shout out and thanks to him!
