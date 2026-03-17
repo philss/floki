@@ -84,4 +84,42 @@ defmodule Floki.FlatTextTest do
 
     assert Floki.FlatText.get(nodes, " ") == expected_text
   end
+
+  # --- Edge Cases ---
+
+  test "does not extract text from deeply nested nodes (depth >= 1 for text nodes)" do
+    node = {"div", [], [{"span", [], [{"p", [], ["Should not be here"]}]}]}
+    assert Floki.FlatText.get(node) == ""
+  end
+
+  test "does not extract inputs from deeply nested nodes (depth >= 1 for inputs)" do
+    node = {"div", [], [{"span", [], [{"input", [{"value", "hidden"}], []}]}]}
+    assert Floki.FlatText.get(node, " ", true) == ""
+  end
+
+  test "handles multiple consecutive text nodes at root level" do
+    nodes = ["one", "two", "three"]
+    assert Floki.FlatText.get(nodes) == "onetwothree"
+    assert Floki.FlatText.get(nodes, "-") == "one-two-three"
+  end
+
+  test "handles multiple consecutive text nodes inside a node" do
+    node = {"div", [], ["one", "two", "three"]}
+    assert Floki.FlatText.get(node) == "onetwothree"
+    assert Floki.FlatText.get(node, "-") == "one-two-three"
+  end
+
+  test "ignores comments and doctypes" do
+    nodes = [
+      {:comment, "this is a comment"},
+      "text",
+      {:doctype, "html", "", ""}
+    ]
+    assert Floki.FlatText.get(nodes) == "text"
+  end
+
+  test "empty nodes return blank string" do
+    assert Floki.FlatText.get([]) == ""
+    assert Floki.FlatText.get({"div", [], []}) == ""
+  end
 end
