@@ -21,14 +21,15 @@ This version contains major performance improvements in the following functions:
 Those functions are not only faster, but are now using less memory. Please check
 the PRs related to this release if you want to better understand the numbers.
 
-* [Speed up do_classes_matches? - #649](https://github.com/philss/floki/pull/649)
-* [Make filter_out faster - #650](https://github.com/philss/floki/pull/650)
+* [Speed up `do_classes_matches?` - #649](https://github.com/philss/floki/pull/649)
+* [Make `filter_out` faster - #650](https://github.com/philss/floki/pull/650)
 * [Speed up attribute lookup - #651](https://github.com/philss/floki/pull/651)
 * [Enable tuple traversal optimization for multiple selectors - #652](https://github.com/philss/floki/pull/652)
 * [Optimize `HTMLTree.to_tuple` conversion using `Enum.reduce` - #657](https://github.com/philss/floki/pull/657)
 * [Optimize `Finder.get_descendant_ids/2` memory usage and speed - #660](https://github.com/philss/floki/pull/660)
 * [Optimize `Finder.get_siblings/2` memory usage and speed - #663](https://github.com/philss/floki/pull/663)
 * [Optimize `FlatText.get/3` memory usage and speed - #664](https://github.com/philss/floki/pull/664)
+* [Optimize class matching in `Floki.Selector` - #665](https://github.com/philss/floki/pull/665)
 
 All the improvements in this version were made by [Barna Kovacs - @preciz](https://github.com/preciz),
 so shout out and thanks to him!
