@@ -28,6 +28,7 @@ defmodule Floki.FlatText do
   end
 
   defp text_from_nodes([], acc, _, _, _), do: acc
+
   defp text_from_nodes([node | rest], acc, depth, sep, include_inputs?) do
     acc = text_from_node(node, acc, depth, sep, include_inputs?)
     text_from_nodes(rest, acc, depth, sep, include_inputs?)

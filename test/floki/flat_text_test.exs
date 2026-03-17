@@ -115,6 +115,7 @@ defmodule Floki.FlatTextTest do
       "text",
       {:doctype, "html", "", ""}
     ]
+
     assert Floki.FlatText.get(nodes) == "text"
   end
 
