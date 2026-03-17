@@ -1,4 +1,5 @@
 defmodule Mix.Tasks.GenerateEntities do
+  @moduledoc false
   @shortdoc "Generate the entities module"
 
   @json_entities_path "priv/entities.json"

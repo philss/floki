@@ -1,15 +1,14 @@
 defmodule Mix.Tasks.GenerateTokenizerTests do
-  @moduledoc """
-  It generates tests based on test files from WHATWG.
-
-  This task will take a look at tokenizer test files
-  that are located in "./test/html5lib-tests/tokenizer"
-  and generate modules to run those tests.
-
-  This is necessary every time the specs of HTML change,
-  so we can keep up to date and also we can keep track
-  of what changed.
-  """
+  @moduledoc false
+  # It generates tests based on test files from WHATWG.
+  #
+  # This task will take a look at tokenizer test files
+  # that are located in "./test/html5lib-tests/tokenizer"
+  # and generate modules to run those tests.
+  #
+  # This is necessary every time the specs of HTML change,
+  # so we can keep up to date and also we can keep track
+  # of what changed.
 
   @shortdoc "Generate tokenizer tests based on specs."
 
