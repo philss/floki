@@ -341,32 +341,32 @@ defmodule Floki.Finder do
     Map.get(tree.nodes, id)
   end
 
-  defp get_sibling_ids_from([], _html_node), do: []
-
-  defp get_sibling_ids_from(ids, html_node) do
-    ids
-    |> Enum.reverse()
-    |> Enum.drop_while(fn id -> id != html_node.node_id end)
-    |> tl()
-  end
-
   defp get_siblings(html_node, tree) do
     parent = get_node(html_node.parent_node_id, tree)
 
     ids =
       if parent do
-        get_sibling_ids_from(parent.children_nodes_ids, html_node)
+        parent.children_nodes_ids
       else
-        get_sibling_ids_from(Enum.reverse(tree.root_nodes_ids), html_node)
+        tree.root_nodes_ids
       end
 
-    Enum.filter(ids, fn id ->
-      case get_node(id, tree) do
-        %HTMLNode{} -> true
-        _ -> false
-      end
-    end)
+    get_sibling_nodes(ids, html_node.node_id, tree, [])
   end
+
+  defp get_sibling_nodes([id | _], id, _tree, acc), do: acc
+
+  defp get_sibling_nodes([id | rest], target_id, tree, acc) do
+    acc =
+      case get_node(id, tree) do
+        %HTMLNode{} -> [id | acc]
+        _ -> acc
+      end
+
+    get_sibling_nodes(rest, target_id, tree, acc)
+  end
+
+  defp get_sibling_nodes([], _target_id, _tree, _acc), do: []
 
   # finds all descendant node ids recursively through the tree preserving the order
   defp get_descendant_ids(node_id, tree) do
