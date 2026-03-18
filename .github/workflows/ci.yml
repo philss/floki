@@ -14,18 +14,18 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        elixir: ["1.18.4", "1.15"]
-        otp: ["27.3", "24.2"]
+        elixir: ["1.19", "1.16"]
+        otp: ["28.4", "24.2"]
         parser: [fast_html, html5ever, mochiweb]
         exclude:
-          - elixir: "1.18.4"
+          - elixir: "1.19"
             otp: "24.2"
 
-          - elixir: "1.15"
-            otp: "27.3"
+          - elixir: "1.16"
+            otp: "28.4"
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - uses: erlef/setup-beam@v1
         with:
