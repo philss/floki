@@ -34,7 +34,7 @@ jobs:
 
       - name: Check format
         run: mix format --check-formatted
-        if: matrix.elixir == '1.18.4'
+        if: matrix.elixir == '1.19'
 
       - name: Install dependencies
         run: mix deps.get
