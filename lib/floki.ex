@@ -488,7 +488,7 @@ defmodule Floki do
       should be considered as text. Defaults to `false`.
 
     * `:style` - A boolean to control if the contents of `<style>` tags
-      should be considered as text. Defaults to `false`.
+      should be considered as text. Defaults to `true`.
 
     * `:sep` - A separator string that is added between text nodes.
       Defaults to `""`.
