@@ -19,10 +19,11 @@ defmodule Floki.DeepText do
   defp get_text(text, [], _sep, _) when is_binary(text), do: text
   defp get_text(text, acc, sep, _) when is_binary(text), do: [acc, sep, text]
 
-  defp get_text(nodes, acc, sep, include_inputs?) when is_list(nodes) do
-    Enum.reduce(nodes, acc, fn child, istr ->
-      get_text(child, istr, sep, include_inputs?)
-    end)
+  defp get_text([], acc, _sep, _), do: acc
+
+  defp get_text([child | rest], acc, sep, include_inputs?) do
+    acc = get_text(child, acc, sep, include_inputs?)
+    get_text(rest, acc, sep, include_inputs?)
   end
 
   defp get_text({:comment, _}, acc, _, _), do: acc
