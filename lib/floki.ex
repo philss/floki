@@ -230,7 +230,7 @@ defmodule Floki do
   defdelegate raw_html(html_tree, options \\ []), to: Floki.RawHTML
 
   @doc """
-  Find elements inside an HTML tree or string.
+  Find elements inside an HTML tree.
 
   ## Examples
 
