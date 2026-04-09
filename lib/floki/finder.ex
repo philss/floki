@@ -372,7 +372,7 @@ defmodule Floki.Finder do
   defp get_descendant_ids(node_id, tree) do
     case get_node(node_id, tree) do
       %{children_nodes_ids: children} when children != [] ->
-        do_get_descendant_ids(Enum.reverse(children), tree, [])
+        do_get_descendant_ids(children, tree, [])
         |> Enum.reverse()
 
       _ ->
@@ -383,18 +383,16 @@ defmodule Floki.Finder do
   defp do_get_descendant_ids([], _tree, acc), do: acc
 
   defp do_get_descendant_ids([node_id | rest], tree, acc) do
+    acc = do_get_descendant_ids(rest, tree, acc)
     acc = [node_id | acc]
 
-    acc =
-      case get_node(node_id, tree) do
-        %{children_nodes_ids: children} when children != [] ->
-          do_get_descendant_ids(Enum.reverse(children), tree, acc)
+    case get_node(node_id, tree) do
+      %{children_nodes_ids: children} when children != [] ->
+        do_get_descendant_ids(children, tree, acc)
 
-        _ ->
-          acc
-      end
-
-    do_get_descendant_ids(rest, tree, acc)
+      _ ->
+        acc
+    end
   end
 
   @spec map(Floki.html_tree() | Floki.html_node(), function()) ::
