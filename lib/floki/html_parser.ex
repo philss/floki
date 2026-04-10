@@ -10,7 +10,7 @@ defmodule Floki.HTMLParser do
 
   Or:
 
-      use Mix.Config
+      import Config
       config :floki, :html_parser, Floki.HTMLParser.Mochiweb
 
   The default parser is Mochiweb, which comes with Floki.
