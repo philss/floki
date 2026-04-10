@@ -497,9 +497,6 @@ defmodule Floki do
       values should be included in the resultant string.
       Defaults to `false`.
 
-    * `:html_parser` - The module of the backend that is responsible for parsing
-      the HTML string. By default it is set to `Floki.HTMLParser.Mochiweb`.
-
   ## Examples
 
       iex> Floki.text({"div", [], [{"span", [], ["hello"]}, " world"]})
