@@ -76,8 +76,8 @@ defmodule Floki.Finder do
 
   def find(%HTMLTree{} = tree, selectors) when is_list(selectors) do
     Enum.flat_map(selectors, fn s -> traverse_html_tree(tree.node_ids, s, tree, []) end)
+    |> Enum.uniq_by(& &1.node_id)
     |> Enum.sort_by(& &1.node_id)
-    |> Enum.uniq()
   end
 
   # some selectors can be applied with the raw html tree tuples instead of
