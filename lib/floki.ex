@@ -611,7 +611,7 @@ defmodule Floki do
       ["e.corp"]
   """
 
-  @spec attribute(binary | html_tree | html_node, binary, binary) :: list
+  @spec attribute(html_tree | html_node, binary, binary) :: list
 
   def attribute(html, selector, attribute_name) do
     html
