@@ -126,22 +126,22 @@ defmodule Floki.HTMLTree do
   end
 
   def to_tuple_list(html_tree) do
-    Enum.reduce(html_tree.root_nodes_ids, [], fn node_id, acc ->
-      root = Map.get(html_tree.nodes, node_id)
-      [HTMLTree.to_tuple(html_tree, root) | acc]
-    end)
+    do_to_tuple_list(html_tree.root_nodes_ids, html_tree, [])
   end
 
   def to_tuple(_tree, %Text{content: text}), do: text
   def to_tuple(_tree, %Comment{content: comment}), do: {:comment, comment}
 
   def to_tuple(tree, html_node) do
-    children =
-      Enum.reduce(html_node.children_nodes_ids, [], fn id, acc ->
-        [to_tuple(tree, Map.get(tree.nodes, id)) | acc]
-      end)
-
+    children = do_to_tuple_list(html_node.children_nodes_ids, tree, [])
     {html_node.type, html_node.attributes, children}
+  end
+
+  defp do_to_tuple_list([], _tree, acc), do: acc
+
+  defp do_to_tuple_list([node_id | rest], tree, acc) do
+    node = Map.get(tree.nodes, node_id)
+    do_to_tuple_list(rest, tree, [to_tuple(tree, node) | acc])
   end
 
   defp do_delete(tree, [], []), do: tree
