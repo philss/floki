@@ -108,7 +108,7 @@ defmodule Floki.Selector do
     namespace_size = byte_size(namespace)
 
     case type_maybe_with_namespace(node) do
-      <<^namespace::binary-size(namespace_size), ":", _::binary>> -> true
+      <<^namespace::binary-size(^namespace_size), ":", _::binary>> -> true
       _ -> false
     end
   end
@@ -125,7 +125,7 @@ defmodule Floki.Selector do
 
         Kernel.match?(
           <<
-            _ns::binary-size(expected_namespace_size),
+            _ns::binary-size(^expected_namespace_size),
             ":",
             ^type::binary
           >>,
