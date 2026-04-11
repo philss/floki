@@ -168,9 +168,7 @@ defmodule Floki.Selector do
 
   defp do_classes_matches?(class_attr_value, classes) do
     if Enum.all?(classes, &String.contains?(class_attr_value, &1)) do
-      min_size = Enum.reduce(classes, -1, fn item, acc -> acc + 1 + bit_size(item) end)
-      can_match? = bit_size(class_attr_value) >= min_size
-      can_match? && classes -- String.split(class_attr_value, [" ", "\t", "\n"], trim: true) == []
+      classes -- String.split(class_attr_value, [" ", "\t", "\n"], trim: true) == []
     else
       false
     end
