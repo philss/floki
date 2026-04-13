@@ -17,19 +17,17 @@ defmodule Floki.TextExtractor do
   ]
 
   def extract_input_value(attrs) do
-    {"type", t} = Enum.find(attrs, {"type", "text"}, &match?({"type", _}, &1))
-
-    if t in @allowed_input_types do
-      extract_value(attrs)
-    else
-      ""
-    end
+    if get_type(attrs) in @allowed_input_types, do: get_value(attrs), else: ""
   end
 
-  defp extract_value(attrs) do
-    Enum.find_value(attrs, "", fn
-      {"value", v} -> v
-      _ -> nil
-    end)
-  end
+  defp get_type(%{"type" => t}), do: t
+  defp get_type(attrs) when is_map(attrs), do: "text"
+  defp get_type([{"type", t} | _]), do: t
+  defp get_type([_ | rest]), do: get_type(rest)
+  defp get_type([]), do: "text"
+
+  defp get_value(attrs) when is_map(attrs), do: Map.get(attrs, "value", "")
+  defp get_value([{"value", v} | _]), do: v
+  defp get_value([_ | rest]), do: get_value(rest)
+  defp get_value([]), do: ""
 end
