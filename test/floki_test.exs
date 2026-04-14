@@ -656,6 +656,13 @@ defmodule FlokiTest do
     ])
   end
 
+  test "find elements with duplicate classes in selector" do
+    html = document!(html_body("<div class=\"button\"></div>"))
+    assert_find(html, ".button.button", [
+      {"div", [{"class", "button"}], []}
+    ])
+  end
+
   test "find elements with anormal class spacing" do
     html =
       document!(

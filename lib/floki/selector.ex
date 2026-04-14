@@ -168,7 +168,8 @@ defmodule Floki.Selector do
 
   defp do_classes_matches?(class_attr_value, classes) do
     if Enum.all?(classes, &String.contains?(class_attr_value, &1)) do
-      classes -- String.split(class_attr_value, [" ", "\t", "\n"], trim: true) == []
+      class_list = String.split(class_attr_value, [" ", "\t", "\n"], trim: true)
+      Enum.all?(classes, &(&1 in class_list))
     else
       false
     end
