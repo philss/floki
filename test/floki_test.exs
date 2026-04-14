@@ -658,6 +658,7 @@ defmodule FlokiTest do
 
   test "find elements with duplicate classes in selector" do
     html = document!(html_body("<div class=\"button\"></div>"))
+
     assert_find(html, ".button.button", [
       {"div", [{"class", "button"}], []}
     ])
