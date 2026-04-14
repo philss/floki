@@ -2794,16 +2794,6 @@ defmodule Floki.HTML.Tokenizer do
     String.replace_prefix(buffer, candidate, "") <> html
   end
 
-  defp charref_html_after_buffer(
-         html,
-         s = %State{
-           charref_state: %CharrefState{candidate: candidate}
-         }
-       )
-       when is_binary(candidate) do
-    String.replace_prefix(IO.chardata_to_string(s.buffer), candidate, "") <> html
-  end
-
   defp charref_html_after_buffer(html, _), do: html
 
   # § tokenizer-numeric-character-reference-state
