@@ -641,36 +641,19 @@ defmodule Floki do
   end
 
   defp attribute_values(elements, attr_name) do
-    values =
-      Enum.reduce(
-        elements,
-        [],
-        fn
-          {_, attributes, _}, acc ->
-            case attribute_match?(attributes, attr_name) do
-              {_attr_name, value} ->
-                [value | acc]
-
-              _ ->
-                acc
-            end
-
-          _, acc ->
-            acc
-        end
-      )
-
-    Enum.reverse(values)
+    for {_, attributes, _} <- elements,
+        value = get_attribute_value(attributes, attr_name),
+        not is_nil(value),
+        do: value
   end
 
-  defp attribute_match?(attributes, attribute_name) do
-    Enum.find(
-      attributes,
-      fn {attr_name, _} ->
-        attr_name == attribute_name
-      end
-    )
+  defp get_attribute_value(attributes, attr_name) when is_map(attributes) do
+    Map.get(attributes, attr_name)
   end
+
+  defp get_attribute_value([{attr_name, value} | _], attr_name), do: value
+  defp get_attribute_value([_ | rest], attr_name), do: get_attribute_value(rest, attr_name)
+  defp get_attribute_value([], _attr_name), do: nil
 
   defp clean_html_tree(html_tree, :js, true), do: html_tree
   defp clean_html_tree(html_tree, :js, _), do: filter_out(html_tree, "script")
