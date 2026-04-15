@@ -74,37 +74,13 @@ defmodule Floki.HTMLTree do
         root_id = IDSeeder.seed(node_ids)
         root_node = %Text{content: text, node_id: root_id}
 
-        root_nodes_ids = [root_id | root_nodes_ids]
-        node_ids = [root_id | node_ids]
-
-        {node_ids, nodes} =
-          build_tree(
-            node_ids,
-            nodes,
-            [],
-            root_node,
-            []
-          )
-
-        {root_nodes_ids, node_ids, nodes}
+        {[root_id | root_nodes_ids], [root_id | node_ids], [{root_id, root_node} | nodes]}
 
       {:comment, comment}, {root_nodes_ids, node_ids, nodes} ->
         root_id = IDSeeder.seed(node_ids)
         root_node = %Comment{content: comment, node_id: root_id}
 
-        root_nodes_ids = [root_id | root_nodes_ids]
-        node_ids = [root_id | node_ids]
-
-        {node_ids, nodes} =
-          build_tree(
-            node_ids,
-            nodes,
-            [],
-            root_node,
-            []
-          )
-
-        {root_nodes_ids, node_ids, nodes}
+        {[root_id | root_nodes_ids], [root_id | node_ids], [{root_id, root_node} | nodes]}
 
       _, state ->
         state
