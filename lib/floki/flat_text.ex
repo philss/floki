@@ -48,6 +48,7 @@ defmodule Floki.FlatText do
   end
 
   defp text_from_node(text, [], _, _sep, _) when is_binary(text), do: text
+  defp text_from_node(text, acc, _, "", _) when is_binary(text), do: [acc, text]
   defp text_from_node(text, acc, _, sep, _) when is_binary(text), do: [acc, sep, text]
   defp text_from_node(_, acc, _, _, _), do: acc
 end
