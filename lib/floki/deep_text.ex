@@ -17,6 +17,7 @@ defmodule Floki.DeepText do
   end
 
   defp get_text(text, [], _sep, _) when is_binary(text), do: text
+  defp get_text(text, acc, "", _) when is_binary(text), do: [acc, text]
   defp get_text(text, acc, sep, _) when is_binary(text), do: [acc, sep, text]
 
   defp get_text([], acc, _sep, _), do: acc
