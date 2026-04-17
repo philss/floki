@@ -120,17 +120,13 @@ defmodule Floki.Selector do
       ^type ->
         true
 
-      type_maybe_with_namespace when byte_size(type_maybe_with_namespace) > byte_size(type) ->
-        expected_namespace_size = byte_size(type_maybe_with_namespace) - byte_size(type) - 1
+      type_maybe when is_binary(type_maybe) ->
+        type_size = byte_size(type)
+        node_size = byte_size(type_maybe)
 
-        Kernel.match?(
-          <<
-            _ns::binary-size(^expected_namespace_size),
-            ":",
-            ^type::binary
-          >>,
-          type_maybe_with_namespace
-        )
+        node_size > type_size and
+          binary_part(type_maybe, node_size - type_size - 1, 1) == ":" and
+          binary_part(type_maybe, node_size - type_size, type_size) == type
 
       _ ->
         false
