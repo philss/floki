@@ -98,7 +98,13 @@ defmodule Floki.HTMLTree do
   def build(_), do: %HTMLTree{}
 
   def delete_node(tree, html_node) do
-    do_delete(tree, [html_node], [])
+    {new_tree, deleted_ids} = do_delete(tree, [html_node], [], [])
+
+    %{
+      new_tree
+      | node_ids: new_tree.node_ids -- deleted_ids,
+        root_nodes_ids: new_tree.root_nodes_ids -- deleted_ids
+    }
   end
 
   def to_tuple_list(html_tree) do
@@ -120,32 +126,25 @@ defmodule Floki.HTMLTree do
     do_to_tuple_list(rest, tree, [to_tuple(tree, node) | acc])
   end
 
-  defp do_delete(tree, [], []), do: tree
+  defp do_delete(tree, [], [], deleted_ids), do: {tree, deleted_ids}
 
-  defp do_delete(tree, [html_node | t], stack_ids) do
+  defp do_delete(tree, [html_node | t], stack_ids, deleted_ids) do
     new_tree_nodes = delete_node_from_nodes(tree.nodes, html_node)
 
     ids_for_stack = get_ids_for_delete_stack(html_node)
 
     do_delete(
-      %{
-        tree
-        | nodes: new_tree_nodes,
-          node_ids: List.delete(tree.node_ids, html_node.node_id),
-          root_nodes_ids: List.delete(tree.root_nodes_ids, html_node.node_id)
-      },
+      %{tree | nodes: new_tree_nodes},
       t,
-      ids_for_stack ++ stack_ids
+      ids_for_stack ++ stack_ids,
+      [html_node.node_id | deleted_ids]
     )
   end
 
-  defp do_delete(tree, [], stack_ids) do
-    html_nodes =
-      tree.nodes
-      |> Map.take(stack_ids)
-      |> Map.values()
+  defp do_delete(tree, [], stack_ids, deleted_ids) do
+    html_nodes = for id <- stack_ids, node = tree.nodes[id], do: node
 
-    do_delete(tree, html_nodes, [])
+    do_delete(tree, html_nodes, [], deleted_ids)
   end
 
   defp delete_node_from_nodes(nodes, html_node) do
@@ -253,18 +252,26 @@ defmodule Floki.HTMLTree do
   end
 
   def patch_nodes(html_tree, operation_with_nodes) do
-    Enum.reduce(operation_with_nodes, html_tree, fn node_with_op, tree ->
-      case node_with_op do
-        {:update, node} ->
-          put_in(tree.nodes[node.node_id], node)
+    {final_tree, deleted_ids} =
+      Enum.reduce(operation_with_nodes, {html_tree, []}, fn node_with_op, {tree, del_ids} ->
+        case node_with_op do
+          {:update, node} ->
+            {%{tree | nodes: Map.put(tree.nodes, node.node_id, node)}, del_ids}
 
-        {:delete, node} ->
-          delete_node(tree, node)
+          {:delete, node} ->
+            {new_tree, ids} = do_delete(tree, [node], [], [])
+            {new_tree, ids ++ del_ids}
 
-        {:no_op, _node} ->
-          tree
-      end
-    end)
+          {:no_op, _node} ->
+            {tree, del_ids}
+        end
+      end)
+
+    %{
+      final_tree
+      | node_ids: final_tree.node_ids -- deleted_ids,
+        root_nodes_ids: final_tree.root_nodes_ids -- deleted_ids
+    }
   end
 
   # Enables using functions from `Enum` and `Stream` modules
