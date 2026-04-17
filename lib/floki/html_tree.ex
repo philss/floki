@@ -140,10 +140,7 @@ defmodule Floki.HTMLTree do
   end
 
   defp do_delete(tree, [], stack_ids) do
-    html_nodes =
-      tree.nodes
-      |> Map.take(stack_ids)
-      |> Map.values()
+    html_nodes = for id <- stack_ids, node = tree.nodes[id], do: node
 
     do_delete(tree, html_nodes, [])
   end
@@ -256,7 +253,7 @@ defmodule Floki.HTMLTree do
     Enum.reduce(operation_with_nodes, html_tree, fn node_with_op, tree ->
       case node_with_op do
         {:update, node} ->
-          put_in(tree.nodes[node.node_id], node)
+          %{tree | nodes: Map.put(tree.nodes, node.node_id, node)}
 
         {:delete, node} ->
           delete_node(tree, node)
