@@ -128,13 +128,13 @@ defmodule Floki.Selector.PseudoClass do
 
   def match_checked?(_), do: false
 
-  defp attribute_is_present?(attributes, attribute_name) when is_list(attributes) do
-    match?({^attribute_name, _}, List.keyfind(attributes, attribute_name, 0))
-  end
+  defp attribute_is_present?([{attr_name, _} | _], attr_name), do: true
+  defp attribute_is_present?([_ | rest], attr_name), do: attribute_is_present?(rest, attr_name)
 
-  defp attribute_is_present?(attributes, attribute_name) when is_map(attributes) do
-    not is_nil(attributes[attribute_name])
-  end
+  defp attribute_is_present?(attrs, attr_name) when is_map(attrs),
+    do: not is_nil(attrs[attr_name])
+
+  defp attribute_is_present?(_, _), do: false
 
   @disableable_html_nodes ~w[button input select option textarea]
 
