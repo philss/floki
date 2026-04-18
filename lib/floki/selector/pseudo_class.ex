@@ -111,39 +111,36 @@ defmodule Floki.Selector.PseudoClass do
   end
 
   def match_checked?(%{type: "input"} = html_node) do
-    attribute_is_present?(html_node.attributes, "checked")
+    attribute_present?(html_node.attributes, "checked")
   end
 
   def match_checked?(%{type: "option"} = html_node) do
-    attribute_is_present?(html_node.attributes, "selected")
+    attribute_present?(html_node.attributes, "selected")
   end
 
   def match_checked?({"input", attributes, _children}) do
-    attribute_is_present?(attributes, "checked")
+    attribute_present?(attributes, "checked")
   end
 
   def match_checked?({"option", attributes, _children}) do
-    attribute_is_present?(attributes, "selected")
+    attribute_present?(attributes, "selected")
   end
 
   def match_checked?(_), do: false
 
-  defp attribute_is_present?([{attr_name, _} | _], attr_name), do: true
-  defp attribute_is_present?([_ | rest], attr_name), do: attribute_is_present?(rest, attr_name)
-
-  defp attribute_is_present?(attrs, attr_name) when is_map(attrs),
-    do: not is_nil(attrs[attr_name])
-
-  defp attribute_is_present?(_, _), do: false
+  defp attribute_present?([{attr_name, _} | _], attr_name), do: true
+  defp attribute_present?([_ | rest], attr_name), do: attribute_present?(rest, attr_name)
+  defp attribute_present?(attrs, attr_name) when is_map(attrs), do: Map.has_key?(attrs, attr_name)
+  defp attribute_present?(_, _), do: false
 
   @disableable_html_nodes ~w[button input select option textarea]
 
   def match_disabled?(%{type: type} = html_node) when type in @disableable_html_nodes do
-    attribute_is_present?(html_node.attributes, "disabled")
+    attribute_present?(html_node.attributes, "disabled")
   end
 
   def match_disabled?({type, attributes, _children}) when type in @disableable_html_nodes do
-    attribute_is_present?(attributes, "disabled")
+    attribute_present?(attributes, "disabled")
   end
 
   def match_disabled?(_html_node), do: false
