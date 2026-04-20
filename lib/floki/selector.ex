@@ -283,11 +283,8 @@ defmodule Floki.Selector do
   defp attributes(%HTMLNode{type: :pi}), do: []
   defp attributes(%HTMLNode{attributes: attributes}), do: attributes
 
-  defp get_attribute_value(attributes, attribute_name) when is_list(attributes) do
-    :proplists.get_value(attribute_name, attributes, nil)
-  end
-
-  defp get_attribute_value(attributes, attribute_name) when is_map(attributes) do
-    Map.get(attributes, attribute_name)
-  end
+  defp get_attribute_value([{attr_name, value} | _], attr_name), do: value
+  defp get_attribute_value([_ | rest], attr_name), do: get_attribute_value(rest, attr_name)
+  defp get_attribute_value(attrs, attr_name) when is_map(attrs), do: Map.get(attrs, attr_name)
+  defp get_attribute_value(_, _), do: nil
 end
