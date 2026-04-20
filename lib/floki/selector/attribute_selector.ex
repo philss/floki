@@ -59,13 +59,13 @@ defmodule Floki.Selector.AttributeSelector do
 
   def match?(attributes, s = %AttributeSelector{match_type: :includes, flag: "i"}) do
     selector_value = String.downcase(s.value)
-    attribute_value = get_value(s.attribute, attributes)
+    attribute_value = String.downcase(get_value(s.attribute, attributes))
 
-    if String.contains?(String.downcase(attribute_value), selector_value) do
+    if String.contains?(attribute_value, selector_value) do
       attribute_value
       # Splits by whitespaces ("a  b c" -> ["a", "b", "c"])
       |> String.split([" ", "\t", "\n"], trim: true)
-      |> Enum.any?(fn v -> String.downcase(v) == selector_value end)
+      |> Enum.member?(selector_value)
     else
       false
     end
