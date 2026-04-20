@@ -15,11 +15,11 @@ jobs:
       fail-fast: false
       matrix:
         elixir: ["1.19", "1.16"]
-        otp: ["28.4", "24.2"]
+        otp: ["28.4", "25.3"]
         parser: [fast_html, html5ever, mochiweb]
         exclude:
           - elixir: "1.19"
-            otp: "24.2"
+            otp: "25.3"
 
           - elixir: "1.16"
             otp: "28.4"
