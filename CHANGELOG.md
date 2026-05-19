@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased][unreleased]
 
+## [0.38.2] - 2026-05-18
+
+### Performance
+
+This is another juicy patch version with performance improvements made by [@preciz](https://github.com/preciz).
+
+* [Optimize multiple selectors deduping - #667](https://github.com/philss/floki/pull/667)
+* [Optimize DeepText by using plain recursion - #668](https://github.com/philss/floki/pull/668)
+* [Optimize get_descendant_ids by removing Enum.reverse calls - #669](https://github.com/philss/floki/pull/669)
+* [Optimize HTMLTree.to_tuple_list/1 using tail recursion - #670](https://github.com/philss/floki/pull/670)
+* [Optimize Floki.TextExtractor by removing Enum iterations - #675](https://github.com/philss/floki/pull/675)
+* [Simplify class attribute matching - #677](https://github.com/philss/floki/pull/677)
+* [Refactor attribute_values to use for comprehension with pattern matching - #679](https://github.com/philss/floki/pull/679)
+* [Optimize CSS class matching to avoid list subtraction - #680](https://github.com/philss/floki/pull/680)
+* [Optimize iodata by avoiding empty separators in DeepText and FlatText - #682](https://github.com/philss/floki/pull/682)
+* [Simplify HTMLTree.build/1 by avoiding redundant build_tree calls - #683](https://github.com/philss/floki/pull/683)
+* [Optimize Floki.text/2 by extracting text in a single pass - #684](https://github.com/philss/floki/pull/684)
+* [Optimize HTMLTree updates and deletions - #687](https://github.com/philss/floki/pull/687)
+* [Refactor attribute retrieval functions for a 1.2-1.5x speedup - #689](https://github.com/philss/floki/pull/689)
+* [Optimize case-insensitive attribute includes match - #690](https://github.com/philss/floki/pull/690)
+* [Optimize selector traversal - #611](https://github.com/philss/floki/pull/691)
+
+Please check the pull requests to see the improvements.
+
+### Fixed
+
+- Fix compiler warnings for the upcoming Elixir v1.20.
+- Fix typespecs of `Floki.attribute/3`.
+- Fix documentation for some functions.
+
 ## [0.38.1] - 2026-03-17
 
 ### Performance
@@ -920,7 +950,8 @@ of the parent element inside HTML.
 
 - Elixir version requirement from "~> 1.0.0" to ">= 1.0.0".
 
-[unreleased]: https://github.com/philss/floki/compare/v0.38.1...HEAD
+[unreleased]: https://github.com/philss/floki/compare/v0.38.2...HEAD
+[0.38.2]: https://github.com/philss/floki/compare/v0.38.1...v0.38.2
 [0.38.1]: https://github.com/philss/floki/compare/v0.38.0...v0.38.1
 [0.38.0]: https://github.com/philss/floki/compare/v0.37.1...v0.38.0
 [0.37.1]: https://github.com/philss/floki/compare/v0.37.0...v0.37.1
