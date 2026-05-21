@@ -106,4 +106,10 @@ defmodule Floki.DeepTextTest do
 
     assert Floki.DeepText.get(nodes) == "foo\nbaz"
   end
+
+  test "HTML that contains a processing instruction (<?xml ... ?>)" do
+    nodes = [{:pi, "", [{"indica", "indica"}]}, "foo"]
+
+    assert Floki.DeepText.get(nodes) == "foo"
+  end
 end

@@ -123,4 +123,10 @@ defmodule Floki.FlatTextTest do
     assert Floki.FlatText.get([]) == ""
     assert Floki.FlatText.get({"div", [], []}) == ""
   end
+
+  test "HTML that contains a processing instruction (<?xml ... ?>)" do
+    nodes = [{:pi, "", [{"indica", "indica"}]}, "foo"]
+
+    assert Floki.FlatText.get(nodes) == "foo"
+  end
 end

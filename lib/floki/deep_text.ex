@@ -43,6 +43,7 @@ defmodule Floki.DeepText do
 
   defp get_text({"script", _, _}, acc, _, _, false, _), do: acc
   defp get_text({"style", _, _}, acc, _, _, _, false), do: acc
+  defp get_text({:pi, _, _}, acc, _, _, _, _), do: acc
 
   defp get_text({"input", attrs, _}, acc, _, true, _, _) do
     [acc, Floki.TextExtractor.extract_input_value(attrs)]
