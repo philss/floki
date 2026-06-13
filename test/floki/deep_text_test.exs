@@ -112,4 +112,10 @@ defmodule Floki.DeepTextTest do
 
     assert Floki.DeepText.get(nodes) == "foo"
   end
+
+  test "HTML that contains a doctype (<!doctype html>)" do
+    nodes = [{:doctype, "html", "", ""}, "foo"]
+
+    assert Floki.DeepText.get(nodes) == "foo"
+  end
 end
