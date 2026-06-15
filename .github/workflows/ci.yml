@@ -8,17 +8,17 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     name: Elixir ${{ matrix.elixir }} / OTP ${{ matrix.otp }} / ${{ matrix.parser }}
 
     strategy:
       fail-fast: false
       matrix:
-        elixir: ["1.19", "1.16"]
+        elixir: ["1.20", "1.16"]
         otp: ["29", "25.3"]
         parser: [fast_html, html5ever, mochiweb]
         exclude:
-          - elixir: "1.19"
+          - elixir: "1.20"
             otp: "25.3"
 
           - elixir: "1.16"
@@ -34,7 +34,7 @@ jobs:
 
       - name: Check format
         run: mix format --check-formatted
-        if: matrix.elixir == '1.19'
+        if: matrix.elixir == '1.20'
 
       - name: Install dependencies
         run: mix deps.get
