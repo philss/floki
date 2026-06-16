@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased][unreleased]
 
+## [0.38.4] - 2026-06-15
+
+### Fixed
+
+- Fix a regression with `Floki.text/2` when a document contains a DOCTYPE tag.
+  It did not appear for most of the users because the "mochiweb" parser (default)
+  does not produce such tag.
+
+  This is similar to the fix from `v0.38.3`.
+
+  Thanks [@foxbenjaminfox](https://github.com/foxbenjaminfox).
+
+### Fixed
+
 ## [0.38.3] - 2026-05-21
 
 ### Fixed
@@ -957,7 +971,8 @@ of the parent element inside HTML.
 
 - Elixir version requirement from "~> 1.0.0" to ">= 1.0.0".
 
-[unreleased]: https://github.com/philss/floki/compare/v0.38.3...HEAD
+[unreleased]: https://github.com/philss/floki/compare/v0.38.4...HEAD
+[0.38.4]: https://github.com/philss/floki/compare/v0.38.3...v0.38.4
 [0.38.3]: https://github.com/philss/floki/compare/v0.38.2...v0.38.3
 [0.38.2]: https://github.com/philss/floki/compare/v0.38.1...v0.38.2
 [0.38.1]: https://github.com/philss/floki/compare/v0.38.0...v0.38.1
