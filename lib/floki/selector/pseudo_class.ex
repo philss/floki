@@ -98,8 +98,14 @@ defmodule Floki.Selector.PseudoClass do
       "odd" ->
         rem(relative_position, 2) == 1
 
-      %Functional{stream: s} ->
-        relative_position in s
+      %Functional{a: 0, b: b} ->
+        relative_position == b
+
+      %Functional{a: a, b: b} when a > 0 ->
+        relative_position >= b and rem(relative_position - b, a) == 0
+
+      %Functional{a: a, b: b} when a < 0 ->
+        relative_position <= b and rem(relative_position - b, a) == 0
 
       expression ->
         Logger.debug(fn ->
