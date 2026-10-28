@@ -2500,6 +2500,30 @@ defmodule FlokiTest do
            ]
   end
 
+  @tag only_parser: Mochiweb
+  test "parses unbalanced end tags in linear time with mochiweb" do
+    # Regression test for quadratic-time (O(open_depth x end_tags)) parsing of
+    # unmatched end tags. A deep stack of never-closed start tags followed by
+    # many non-matching end tags must stay linear: each stray end tag has to be
+    # rejected without scanning the whole open-element stack.
+    nested = fn n -> Enum.reduce(1..n, [], fn _, acc -> [{"div", [], acc}] end) end
+
+    # Correctness: the non-matching end tags are dropped, leaving nested <div>s.
+    # This is exactly the tree the parser produced before the optimization.
+    html = String.duplicate("<div>", 50) <> String.duplicate("</x>", 50)
+    assert Floki.parse_fragment!(html) == nested.(50)
+
+    # Performance: an input that was quadratic before must now finish quickly.
+    # Before the fix this took many seconds and grew ~4x per input doubling.
+    big = String.duplicate("<div>", 40_000) <> String.duplicate("</x>", 40_000)
+    {microseconds, parsed} = :timer.tc(fn -> Floki.parse_fragment!(big) end)
+
+    assert parsed == nested.(40_000)
+
+    assert microseconds < 5_000_000,
+           "parsing #{byte_size(big)} bytes took #{div(microseconds, 1000)}ms, expected < 5000ms"
+  end
+
   defp html_body(body) do
     ["<html><head></head><body>", body, "</body></html>"]
   end

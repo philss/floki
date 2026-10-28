@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased][unreleased]
 
+### Fixed
+
+- Fix quadratic-time parsing of unbalanced tags in the built-in "mochiweb"
+  parser. For every end tag the parser scanned the entire stack of open
+  elements, so malformed input with a deep stack of never-closed tags followed
+  by many non-matching end tags took `O(open_depth x end_tags)` time. The parser
+  now tracks the names of open elements and rejects a non-matching end tag
+  without scanning the stack, making parsing linear again. The resulting parse
+  tree is unchanged.
+
 ## [0.38.4] - 2026-06-15
 
 ### Fixed
