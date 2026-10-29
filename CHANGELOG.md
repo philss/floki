@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased][unreleased]
 
+## [0.38.5] - 2026-10-29
+
 ### Fixed
 
 - Fix quadratic-time parsing of unbalanced tags in the built-in "mochiweb"
@@ -16,6 +18,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   now tracks the names of open elements and rejects a non-matching end tag
   without scanning the stack, making parsing linear again. The resulting parse
   tree is unchanged.
+
+- Optimize functional selector matching.
+  Instead of generating `an+b` values until one matches, solve the formula directly
+  with bounds and a remainder check. This turns each match from a stream scan into
+  `O(1)` arithmetic.
 
 ## [0.38.4] - 2026-06-15
 
@@ -981,7 +988,8 @@ of the parent element inside HTML.
 
 - Elixir version requirement from "~> 1.0.0" to ">= 1.0.0".
 
-[unreleased]: https://github.com/philss/floki/compare/v0.38.4...HEAD
+[unreleased]: https://github.com/philss/floki/compare/v0.38.5...HEAD
+[0.38.5]: https://github.com/philss/floki/compare/v0.38.4...v0.38.5
 [0.38.4]: https://github.com/philss/floki/compare/v0.38.3...v0.38.4
 [0.38.3]: https://github.com/philss/floki/compare/v0.38.2...v0.38.3
 [0.38.2]: https://github.com/philss/floki/compare/v0.38.1...v0.38.2
