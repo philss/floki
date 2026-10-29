@@ -44,7 +44,6 @@ defmodule Floki.Mixfile do
   defp deps do
     [
       {:jason, "~> 1.1", only: [:dev, :test, :docs]},
-      {:earmark, "~> 1.2", only: :dev},
       {:ex_doc, "~> 0.40", only: :dev, runtime: false},
       {:benchee, "~> 1.5.0", only: :dev},
       {:benchee_html, "~> 1.0", only: :dev},
