@@ -257,7 +257,7 @@ Here you find all the [CSS selectors](https://www.w3.org/TR/selectors/#selectors
 | E:checked             | An E element (checkbox, radio, or option) that is checked                                                                 |
 | E:disabled            | An E element (button, input, select, textarea, or option) that is disabled                                                |
 | E.warning             | an E element whose class is "warning"                                                                                     |
-| E#myid                | an E element with ID equal to "myid" (for ids containing periods, use `#my\\.id` or `[id="my.id"]`)                       |
+| E#myid                | an E element with ID equal to "myid" (escape `.`, `/` or `:` like `#my\\.id`, or use `[id="my.id"]` for any id)           |
 | E:not(s)              | an E element that does not match simple selector s                                                                        |
 | E:has(s)              | an E element that has a child element that matches simple selector s                                                      |
 | E:has(s1, s2)         | an E element that has a child element matching simple selector s1 OR s2                                                   |

@@ -66,6 +66,59 @@ defmodule Floki.Selector.ParserTest do
            ]
   end
 
+  test "id containing slashes" do
+    tokens = tokenize("#hello\\/there.big")
+
+    assert Parser.parse(tokens) == [
+             %Selector{id: "hello/there", classes: ["big"]}
+           ]
+  end
+
+  test "id containing multiple and mixed escapes" do
+    assert Parser.parse(tokenize("#a\\/b\\/c")) == [%Selector{id: "a/b/c"}]
+    assert Parser.parse(tokenize("#a\\.b\\/c")) == [%Selector{id: "a.b/c"}]
+  end
+
+  test "id containing colons" do
+    assert Parser.parse(tokenize("#a\\:b")) == [%Selector{id: "a:b"}]
+  end
+
+  test "id containing slashes after a combinator" do
+    assert Parser.parse(tokenize("div > #a\\/b")) == [
+             %Selector{
+               type: "div",
+               combinator: %Selector.Combinator{
+                 match_type: :child,
+                 selector: %Selector{id: "a/b"}
+               }
+             }
+           ]
+  end
+
+  test "id containing slashes inside :not" do
+    assert Parser.parse("a:not(#a\\/b)") == [
+             %Selector{
+               type: "a",
+               pseudo_classes: [
+                 %Selector.PseudoClass{name: "not", value: [%Selector{id: "a/b"}]}
+               ]
+             }
+           ]
+  end
+
+  test "id selectors with a slash or a period" do
+    assert Parser.parse(tokenize("#text")) == [%Selector{id: "text"}]
+
+    assert capture_log(fn -> Parser.parse(tokenize("#hello/there")) end) =~
+             ~r/module=Floki\.Selector\.Parser  Unknown token ('\/'|~c"\/")\. Ignoring/
+
+    assert Parser.parse(tokenize("#hello.there")) == [
+             %Selector{id: "hello", classes: ["there"]}
+           ]
+
+    assert Parser.parse(tokenize("#hello\\.there")) == [%Selector{id: "hello.there"}]
+  end
+
   test "class with attributes" do
     tokens =
       tokenize("""

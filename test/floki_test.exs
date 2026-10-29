@@ -773,6 +773,29 @@ defmodule FlokiTest do
     ])
   end
 
+  test "find element by id containing a slash" do
+    html = document!(html_body(~s(<p id="hello/there">hi</p>)))
+
+    assert_find(html, "#hello\\/there", [
+      {"p", [{"id", "hello/there"}], ["hi"]}
+    ])
+  end
+
+  test "find element by id containing a colon" do
+    html = document!(html_body(~s(<p id="a:b">yo</p>)))
+
+    assert_find(html, "#a\\:b", [
+      {"p", [{"id", "a:b"}], ["yo"]}
+    ])
+  end
+
+  @tag :capture_log
+  test "does not find element by id containing an unescaped slash" do
+    html = document!(html_body(~s(<p id="hello/there">hi</p>)))
+
+    assert Floki.find(html, "#hello/there") == []
+  end
+
   @tag only_parser: Mochiweb
   test "find element by id when tree has attributes as maps" do
     assert_find(document!(@html_with_img, attributes_as_maps: true), "#logo", [
