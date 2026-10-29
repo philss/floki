@@ -117,7 +117,8 @@ parse(Input, Opts) ->
 parse_tokens(Tokens, Opts) when is_list(Tokens) andalso is_list(Opts) ->
     %% Skip over doctype, processing instructions
     [{start_tag, Tag, Attrs, false} | Rest] = find_document(Tokens, normal),
-    {Tree, _} = tree(Rest, [norm({Tag, Attrs}, Opts)], Opts),
+    Root = norm({Tag, Attrs}, Opts),
+    {Tree, _} = tree(Rest, [Root], open_names_push(name_of(Root), open_names_new()), Opts),
     Tree.
 
 find_document(Tokens = [{start_tag, _Tag, _Attrs, false} | _Rest], Mode) ->
@@ -226,32 +227,33 @@ tree_data([{data, Data, Whitespace} | Rest], AllWhitespace, Acc) ->
 tree_data(Rest, AllWhitespace, Acc) ->
     {iolist_to_binary(lists:reverse(Acc)), AllWhitespace, Rest}.
 
-tree([], Stack, _Opts) ->
+tree([], Stack, _Names, _Opts) ->
     {destack(Stack), []};
-tree([{end_tag, Tag} | Rest], Stack, Opts) ->
-    case destack(norm(Tag, Opts), Stack) of
-        S when is_list(S) ->
-            tree(Rest, S, Opts);
-        Result ->
+tree([{end_tag, Tag} | Rest], Stack, Names, Opts) ->
+    case destack(norm(Tag, Opts), Stack, Names) of
+        {S, Names1} when is_list(S) ->
+            tree(Rest, S, Names1, Opts);
+        {Result, _Names1} ->
             {Result, []}
     end;
-tree([{start_tag, Tag, Attrs, true} | Rest], S, Opts) ->
-    tree(Rest, append_stack_child(norm({Tag, Attrs}, Opts), S), Opts);
-tree([{start_tag, Tag, Attrs, false} | Rest], S, Opts) ->
-    tree(Rest, stack(norm({Tag, Attrs}, Opts), S), Opts);
-tree([T = {pi, _Tag, _Attrs} | Rest], S, Opts) ->
-    tree(Rest, append_stack_child(T, S), Opts);
-tree([T = {comment, _Comment} | Rest], S, Opts) ->
-    tree(Rest, append_stack_child(T, S), Opts);
-tree(L = [{data, _Data, _Whitespace} | _], S, Opts) ->
+tree([{start_tag, Tag, Attrs, true} | Rest], S, Names, Opts) ->
+    tree(Rest, append_stack_child(norm({Tag, Attrs}, Opts), S), Names, Opts);
+tree([{start_tag, Tag, Attrs, false} | Rest], S, Names, Opts) ->
+    {S1, Names1} = stack(norm({Tag, Attrs}, Opts), S, Names),
+    tree(Rest, S1, Names1, Opts);
+tree([T = {pi, _Tag, _Attrs} | Rest], S, Names, Opts) ->
+    tree(Rest, append_stack_child(T, S), Names, Opts);
+tree([T = {comment, _Comment} | Rest], S, Names, Opts) ->
+    tree(Rest, append_stack_child(T, S), Names, Opts);
+tree(L = [{data, _Data, _Whitespace} | _], S, Names, Opts) ->
     case tree_data(L, true, []) of
         {_, true, Rest} ->
-            tree(Rest, S, Opts);
+            tree(Rest, S, Names, Opts);
         {Data, false, Rest} ->
-            tree(Rest, append_stack_child(Data, S), Opts)
+            tree(Rest, append_stack_child(Data, S), Names, Opts)
     end;
-tree([{doctype, _} | Rest], Stack, Opts) ->
-    tree(Rest, Stack, Opts).
+tree([{doctype, _} | Rest], Stack, Names, Opts) ->
+    tree(Rest, Stack, Names, Opts).
 
 norm({Tag, Attrs}, Opts) ->
     Attrs0 = [{norm(K, Opts), iolist_to_binary(V)} || {K, V} <- Attrs],
@@ -270,20 +272,101 @@ norm(Tag, _Opts) when is_binary(Tag) ->
 norm(Tag, _Opts) ->
     list_to_binary(string:to_lower(Tag)).
 
-stack(T1 = {TN, _, _}, Stack = [{TN, _, _} | _Rest]) when
+stack(T1 = {TN, _, _}, Stack = [{TN, _, _} | _Rest], Names) when
     TN =:= <<"li">> orelse TN =:= <<"option">>
 ->
-    [T1 | destack(TN, Stack)];
-stack(T1 = {TN0, _, _}, Stack = [{TN1, _, _} | _Rest]) when
+    {S1, Names1} = destack(TN, Stack, Names),
+    {[T1 | S1], open_names_push(TN, Names1)};
+stack(T1 = {TN0, _, _}, Stack = [{TN1, _, _} | _Rest], Names) when
     (TN0 =:= <<"dd">> orelse TN0 =:= <<"dt">>) andalso
         (TN1 =:= <<"dd">> orelse TN1 =:= <<"dt">>)
 ->
-    [T1 | destack(TN1, Stack)];
-stack(T1, Stack) ->
-    [T1 | Stack].
+    {S1, Names1} = destack(TN1, Stack, Names),
+    {[T1 | S1], open_names_push(TN0, Names1)};
+stack(T1 = {TN, _, _}, Stack, Names) ->
+    {[T1 | Stack], open_names_push(TN, Names)}.
 
 append_stack_child(StartTag, [{Name, Attrs, Acc} | Stack]) ->
     [{Name, Attrs, [StartTag | Acc]} | Stack].
+
+%% @doc Names-aware wrapper around destack/2.
+%%
+%% `Names` is a multiset (`#{TagName => Count}`) of the tag names of the frames
+%% currently on the top level of `Stack`. It lets us answer "is there an open
+%% element with this name?" in O(1) instead of scanning the whole stack on every
+%% end tag. This is what keeps parsing of malformed input (many non-matching end
+%% tags against a deep stack) linear instead of quadratic.
+%%
+%% The parse tree produced is identical to the one produced by destack/2 alone:
+%% when a matching open element exists we delegate to destack/2 unchanged; when
+%% none exists we reproduce destack/2's "no match" result directly. Returns
+%% `{StackOrTree, Names}`.
+destack(<<"br">>, Stack, Names) ->
+    %% Mirrors destack(<<"br">>, Stack) -> Stack. No frame opened or closed.
+    {Stack, Names};
+destack(TagName, Stack, Names) when is_list(Stack) ->
+    case open_names_member(TagName, Names) of
+        false ->
+            %% No open element on the stack has this name, so destack/2 would scan
+            %% the whole stack, find nothing, and take its `{_, []}` branch. We
+            %% reproduce that branch's result without the scan.
+            case is_singleton(TagName) of
+                true ->
+                    %% Rare recovery path (e.g. a </link> with a matching open tag
+                    %% nested in the top frame's children). destack/2 only ever
+                    %% restructures the children of the top frame here, so the set
+                    %% of top-level frame names is unchanged.
+                    {destack(TagName, Stack), Names};
+                false ->
+                    %% The common malformed case: a stray end tag with no matching
+                    %% open element. destack/2 returns the stack unchanged.
+                    {Stack, Names}
+            end;
+        true ->
+            %% A matching open element exists: let the reference implementation do
+            %% the exact tree transformation, then update the multiset from the
+            %% frames it unfurled (everything at or above the first match).
+            Result = destack(TagName, Stack),
+            case is_list(Result) of
+                true ->
+                    F = fun
+                        ({T, _, _}) when T =:= TagName -> false;
+                        (_) -> true
+                    end,
+                    {Pre, _Suf} = lists:splitwith(F, Stack),
+                    Removed = [name_of(Frame) || Frame <- Pre] ++ [TagName],
+                    {Result, open_names_remove(Removed, Names)};
+                false ->
+                    %% The whole stack was unfurled into a single completed node.
+                    {Result, open_names_new()}
+            end
+    end.
+
+%% --- open-frame name multiset -------------------------------------------------
+
+name_of(Frame) -> element(1, Frame).
+
+open_names_new() -> #{}.
+
+open_names_member(Name, Names) -> is_map_key(Name, Names).
+
+open_names_push(Name, Names) ->
+    case Names of
+        #{Name := Count} -> Names#{Name := Count + 1};
+        _ -> Names#{Name => 1}
+    end.
+
+open_names_remove([], Names) ->
+    Names;
+open_names_remove([Name | Rest], Names) ->
+    open_names_remove(Rest, open_names_pop(Name, Names)).
+
+open_names_pop(Name, Names) ->
+    case Names of
+        #{Name := 1} -> maps:remove(Name, Names);
+        #{Name := Count} -> Names#{Name := Count - 1};
+        _ -> Names
+    end.
 
 destack(<<"br">>, Stack) ->
     %% This is an ugly hack to make dumb_br_test() pass,
