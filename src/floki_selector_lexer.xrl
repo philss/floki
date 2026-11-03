@@ -1,7 +1,9 @@
 Definitions.
 
 ESCAPED = \\[:.]
+ID_ESCAPED = \\[:./]
 IDENTIFIER = [-A-Za-z0-9_]+(({ESCAPED})?[-A-Za-z0-9_]+)*
+ID_IDENTIFIER = [-A-Za-z0-9_]+(({ID_ESCAPED})?[-A-Za-z0-9_]+)*
 QUOTED = (\"[^"]*\"|\'[^']*\')
 PARENTESIS = \([^)]*\)
 INT = [0-9]+
@@ -20,7 +22,7 @@ Rules.
 {QUOTED}                             : {token, {quoted, TokenLine, remove_wrapper(TokenChars)}}.
 {ATTRIBUTE_IDENTIFIER}               : {token, {attribute_identifier, TokenLine, TokenChars}}.
 {SYMBOL}                             : {token, {TokenChars, TokenLine}}.
-#{IDENTIFIER}                        : {token, {hash, TokenLine, unescape_inside_id_name(tail(TokenChars))}}.
+#{ID_IDENTIFIER}                     : {token, {hash, TokenLine, unescape_inside_id_name(tail(TokenChars))}}.
 \.{IDENTIFIER}                       : {token, {class, TokenLine, unescape_inside_class_name(tail(TokenChars))}}.
 \:{NOT}\(                            : {token, {pseudo_not, TokenLine}}.
 \:{HAS}\(                            : {token, {pseudo_has, TokenLine}}.
@@ -57,5 +59,6 @@ tail([_|T]) ->
 unescape_inside_class_name(Chars) ->
   lists:flatten(string:replace(Chars, "\\:", ":", all)).
 
-unescape_inside_id_name(Chars) ->
-  lists:flatten(string:replace(Chars, "\\.", ".", all)).
+unescape_inside_id_name([$\\, C | T]) -> [C | unescape_inside_id_name(T)];
+unescape_inside_id_name([C | T]) -> [C | unescape_inside_id_name(T)];
+unescape_inside_id_name([]) -> [].
