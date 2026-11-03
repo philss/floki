@@ -2501,6 +2501,45 @@ defmodule FlokiTest do
   end
 
   @tag only_parser: Mochiweb
+  test "closes an open paragraph before a new paragraph with mochiweb" do
+    expected = {:ok, [{"p", [], ["p1"]}, {"p", [], ["p2"]}]}
+
+    assert Floki.parse_document("<p>p1<p>p2") == expected
+    assert Floki.parse_document("<p>p1</p><p>p2</p>") == expected
+    assert Floki.parse_fragment("<p>p1<p>p2") == expected
+
+    assert Floki.parse_document("<div><p>p1<p>p2<p>p3") ==
+             {:ok, [{"div", [], [{"p", [], ["p1"]}, {"p", [], ["p2"]}, {"p", [], ["p3"]}]}]}
+
+    assert Floki.parse_document("<div><p>a<em>b<p>c</div>") ==
+             {:ok, [{"div", [], [{"p", [], ["a", {"em", [], ["b"]}]}, {"p", [], ["c"]}]}]}
+  end
+
+  @tag only_parser: Mochiweb
+  test "preserves normalized paragraph attributes with mochiweb" do
+    for maps? <- [false, true] do
+      first_attrs = if maps?, do: %{"id" => "first"}, else: [{"id", "first"}]
+      second_attrs = if maps?, do: %{"id" => "second"}, else: [{"id", "second"}]
+
+      assert Floki.parse_document(~s(<P ID="first">a<p Id="second">b),
+               attributes_as_maps: maps?
+             ) == {:ok, [{"p", first_attrs, ["a"]}, {"p", second_attrs, ["b"]}]}
+    end
+  end
+
+  @tag only_parser: Mochiweb
+  test "only closes paragraphs in button scope with mochiweb" do
+    for boundary <- ~w(applet caption html table td th marquee object template button) do
+      assert Floki.parse_document("<p>outer<#{boundary}><p>inner<p>next") ==
+               {:ok,
+                [
+                  {"p", [],
+                   ["outer", {boundary, [], [{"p", [], ["inner"]}, {"p", [], ["next"]}]}]}
+                ]}
+    end
+  end
+
+  @tag only_parser: Mochiweb
   test "parses unbalanced end tags in linear time with mochiweb" do
     # Regression test for quadratic-time (O(open_depth x end_tags)) parsing of
     # unmatched end tags. A deep stack of never-closed start tags followed by

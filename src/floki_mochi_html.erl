@@ -272,6 +272,14 @@ norm(Tag, _Opts) when is_binary(Tag) ->
 norm(Tag, _Opts) ->
     list_to_binary(string:to_lower(Tag)).
 
+stack(T1 = {<<"p">>, _, _}, Stack, Names) ->
+    case open_names_member(<<"p">>, Names) andalso p_in_button_scope(Stack) of
+        true ->
+            {S1, Names1} = destack(<<"p">>, Stack, Names),
+            {[T1 | S1], open_names_push(<<"p">>, Names1)};
+        false ->
+            {[T1 | Stack], open_names_push(<<"p">>, Names)}
+    end;
 stack(T1 = {TN, _, _}, Stack = [{TN, _, _} | _Rest], Names) when
     TN =:= <<"li">> orelse TN =:= <<"option">>
 ->
@@ -285,6 +293,20 @@ stack(T1 = {TN0, _, _}, Stack = [{TN1, _, _} | _Rest], Names) when
     {[T1 | S1], open_names_push(TN0, Names1)};
 stack(T1 = {TN, _, _}, Stack, Names) ->
     {[T1 | Stack], open_names_push(TN, Names)}.
+
+p_in_button_scope([{<<"p">>, _, _} | _]) ->
+    true;
+p_in_button_scope([{TN, _, _} | _]) when
+    TN =:= <<"applet">> orelse TN =:= <<"caption">> orelse TN =:= <<"html">> orelse
+        TN =:= <<"table">> orelse TN =:= <<"td">> orelse TN =:= <<"th">> orelse
+        TN =:= <<"marquee">> orelse TN =:= <<"object">> orelse TN =:= <<"template">> orelse
+        TN =:= <<"button">>
+->
+    false;
+p_in_button_scope([_ | Rest]) ->
+    p_in_button_scope(Rest);
+p_in_button_scope([]) ->
+    false.
 
 append_stack_child(StartTag, [{Name, Attrs, Acc} | Stack]) ->
     [{Name, Attrs, [StartTag | Acc]} | Stack].
