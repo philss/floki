@@ -201,7 +201,7 @@ tokenize(B, S = #decoder{offset = O}) ->
             S3 = find_qgt(B, S2),
             {{pi, Tag, Attrs}, S3};
         <<_:O/binary, "&", _/binary>> ->
-            tokenize_charref(B, ?INC_COL(S));
+            tokenize_text_charref(B, ?INC_COL(S));
         <<_:O/binary, "</", _/binary>> ->
             {Tag, S1} = tokenize_literal(B, ?ADV_COL(S, 2)),
             {S2, _} = find_gt(B, S1),
@@ -641,6 +641,44 @@ tokenize_charref(Bin, S = #decoder{offset = O}) ->
         throw:invalid_charref ->
             {{data, <<"&">>, false}, S}
     end.
+
+%% In text, the HTML spec allows a legacy subset of named character references
+%% (like `&nbsp` or `&amp`) to omit the trailing semicolon. When the regular
+%% lookup fails, try the longest alphanumeric prefix that is such a reference.
+tokenize_text_charref(Bin, S = #decoder{offset = O}) ->
+    case tokenize_charref(Bin, S) of
+        {{data, <<"&">>, false}, S} = Failed ->
+            case legacy_charref(Bin, O) of
+                {ok, Data, Len} ->
+                    {{data, Data, false}, ?ADV_COL(S, Len)};
+                error ->
+                    Failed
+            end;
+        Result ->
+            Result
+    end.
+
+legacy_charref(Bin, Start) ->
+    <<_:Start/binary, Rest/binary>> = Bin,
+    legacy_charref_prefix(alnum_prefix_len(Rest, 0), Rest).
+
+legacy_charref_prefix(Len, _Rest) when Len < 2 ->
+    error;
+legacy_charref_prefix(Len, Rest) ->
+    <<Name:Len/binary, _/binary>> = Rest,
+    case 'Elixir.Floki.Entities':decode(<<$&, Name/binary>>) of
+        {ok, <<_/utf8>> = Data} ->
+            {ok, Data, Len};
+        _ ->
+            legacy_charref_prefix(Len - 1, Rest)
+    end.
+
+alnum_prefix_len(<<C, Rest/binary>>, N) when
+    ?IS_LETTER(C) orelse (C >= $0 andalso C =< $9)
+->
+    alnum_prefix_len(Rest, N + 1);
+alnum_prefix_len(_, N) ->
+    N.
 
 tokeninize_charref_surrogate_pair(Bin, S = #decoder{offset = O}, C1) ->
     case Bin of
