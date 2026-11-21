@@ -9,10 +9,10 @@ NOT = (n|N)(o|O)(t|T)
 HAS = (h|H)(a|A)(s|S)
 ODD = (o|O)(d|D)(d|D)
 EVEN = (e|E)(v|V)(e|E)(n|N)
-PSEUDO_PATT = (\+|-)?({INT})?(n|N)((\+|-){INT})?
+W = [\s\t\r\n\f]
+PSEUDO_PATT = (\+|-)?({INT})?(n|N)({W}*(\+|-){W}*{INT})?
 SYMBOL = [\[\]*]
 ATTRIBUTE_IDENTIFIER = \s[is]\]
-W = [\s\t\r\n\f]
 
 Rules.
 
@@ -25,10 +25,10 @@ Rules.
 \:{NOT}\(                            : {token, {pseudo_not, TokenLine}}.
 \:{HAS}\(                            : {token, {pseudo_has, TokenLine}}.
 \:{IDENTIFIER}                       : {token, {pseudo, TokenLine, tail(TokenChars)}}.
-\({INT}\)                            : {token, {pseudo_class_int, TokenLine, list_to_integer(remove_wrapper(TokenChars))}}.
-\({ODD}\)                            : {token, {pseudo_class_odd, TokenLine}}.
-\({EVEN}\)                           : {token, {pseudo_class_even, TokenLine}}.
-\({PSEUDO_PATT}\)                    : {token, {pseudo_class_pattern, TokenLine, remove_wrapper(TokenChars)}}.
+\({W}*(\+|-)?{INT}{W}*\)               : {token, {pseudo_class_int, TokenLine, list_to_integer(string:trim(remove_wrapper(TokenChars)))}}.
+\({W}*{ODD}{W}*\)                    : {token, {pseudo_class_odd, TokenLine}}.
+\({W}*{EVEN}{W}*\)                   : {token, {pseudo_class_even, TokenLine}}.
+\({W}*{PSEUDO_PATT}{W}*\)            : {token, {pseudo_class_pattern, TokenLine, remove_wrapper(TokenChars)}}.
 \({QUOTED}\)                         : {token, {pseudo_class_quoted, TokenLine, remove_wrapper(remove_wrapper(TokenChars))}}.
 {W}*\)                               : {token, {close_parentesis, TokenLine}}.
 ~=                                   : {token, {includes, TokenLine}}.

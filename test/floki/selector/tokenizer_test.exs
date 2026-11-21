@@ -94,6 +94,26 @@ defmodule Floki.Selector.TokenizerTest do
              {:pseudo_class_pattern, 1, ~c"-n+6"}
            ]
 
+    assert Tokenizer.tokenize(":nth-child( 3 )") == [
+             {:pseudo, 1, ~c"nth-child"},
+             {:pseudo_class_int, 1, 3}
+           ]
+
+    assert Tokenizer.tokenize(":nth-child(+3)") == [
+             {:pseudo, 1, ~c"nth-child"},
+             {:pseudo_class_int, 1, 3}
+           ]
+
+    assert Tokenizer.tokenize(":nth-child( odd )") == [
+             {:pseudo, 1, ~c"nth-child"},
+             {:pseudo_class_odd, 1}
+           ]
+
+    assert Tokenizer.tokenize(":nth-child(2n + 1)") == [
+             {:pseudo, 1, ~c"nth-child"},
+             {:pseudo_class_pattern, 1, ~c"2n + 1"}
+           ]
+
     assert Tokenizer.tokenize(":fl-contains('foo')") == [
              {:pseudo, 1, ~c"fl-contains"},
              {:pseudo_class_quoted, 1, ~c"foo"}
