@@ -1169,6 +1169,43 @@ defmodule FlokiTest do
     ])
   end
 
+  test "get elements by nth-child with whitespace and a leading plus sign" do
+    html = """
+    <html>
+    <body>
+      <a href="/a">1</a>
+      <a href="/b">2</a>
+      <a href="/c">3</a>
+      <a href="/d">4</a>
+      <a href="/e">5</a>
+    </html>
+    """
+
+    odd = [
+      {"a", [{"href", "/a"}], ["1"]},
+      {"a", [{"href", "/c"}], ["3"]},
+      {"a", [{"href", "/e"}], ["5"]}
+    ]
+
+    assert_find(document!(html), "a:nth-child(2n + 1)", odd)
+    assert_find(document!(html), "a:nth-child( 2n+1 )", odd)
+    assert_find(document!(html), "a:nth-child(2n- 1)", odd)
+    assert_find(document!(html), "a:nth-child( odd )", odd)
+
+    assert_find(document!(html), "a:nth-child(-n + 2)", [
+      {"a", [{"href", "/a"}], ["1"]},
+      {"a", [{"href", "/b"}], ["2"]}
+    ])
+
+    assert_find(document!(html), "a:nth-child( 3 )", [{"a", [{"href", "/c"}], ["3"]}])
+    assert_find(document!(html), "a:nth-child(+3)", [{"a", [{"href", "/c"}], ["3"]}])
+
+    assert_find(document!(html), "a:nth-child(+n+4)", [
+      {"a", [{"href", "/d"}], ["4"]},
+      {"a", [{"href", "/e"}], ["5"]}
+    ])
+  end
+
   @tag except_parser: Html5ever
   test "get root elements by nth-child and first-child pseudo-classes" do
     tree = Floki.parse_fragment!("<p>A</p><p>B</p>")

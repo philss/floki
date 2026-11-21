@@ -39,6 +39,7 @@ defmodule Floki.Selector.Functional do
     |> String.trim("n")
     |> case do
       "-" -> -1
+      "+" -> 1
       "" -> 1
       n -> String.to_integer(n)
     end
