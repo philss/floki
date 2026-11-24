@@ -2563,6 +2563,79 @@ defmodule FlokiTest do
            "parsing #{byte_size(big)} bytes took #{div(microseconds, 1000)}ms, expected < 5000ms"
   end
 
+  @tag only_parser: Mochiweb
+  test "does not leak synthetic root tag on unclosed tags or constructs with mochiweb" do
+    html = "<div>hello <h1>world</h1><script>alert('wat');</div>"
+
+    expected =
+      {:ok,
+       [{"div", [], ["hello ", {"h1", [], ["world"]}, {"script", [], ["alert('wat');</div>"]}]}]}
+
+    assert Floki.parse_document(html) == expected
+    assert Floki.parse_fragment(html) == expected
+
+    for tag <- ["style", "title", "textarea"] do
+      assert Floki.parse_document("<#{tag}>unclosed content") ==
+               {:ok, [{tag, [], ["unclosed content"]}]}
+    end
+
+    assert Floki.parse_document("<!-- unclosed comment") ==
+             {:ok, [{:comment, " unclosed comment"}]}
+
+    assert Floki.parse_document(~s(<div title="unclosed)) == {:ok, []}
+
+    assert Floki.parse_document("<!doctype") == {:ok, []}
+    assert Floki.parse_document("<!DOCTYPE") == {:ok, []}
+    assert Floki.parse_document("<div>hi</div><!doctype") == {:ok, [{"div", [], ["hi"]}]}
+
+    assert Floki.parse_document("<link>hello</link") == {:ok, [{"link", [], []}, "hello"]}
+    assert Floki.parse_document("<link>hello</link>") == {:ok, [{"link", [], ["hello"]}]}
+
+    assert Floki.parse_document(~s(<?xml version="1.0)) ==
+             {:ok, [{:pi, "xml", [{"version", "1.0"}]}]}
+
+    assert Floki.parse_document("<?xml version=") ==
+             {:ok, [{:pi, "xml", [{"version", ""}]}]}
+
+    assert Floki.parse_document("<?xml version= ") ==
+             {:ok, [{:pi, "xml", [{"version", ""}]}]}
+  end
+
+  @tag only_parser: Mochiweb
+  test "parses multi-root snippets and top-level nodes without synthetic wrapper with mochiweb" do
+    assert Floki.parse_document("<span>Click</span><button>Here</button>") ==
+             {:ok, [{"span", [], ["Click"]}, {"button", [], ["Here"]}]}
+
+    assert Floki.parse_document("") == {:ok, []}
+    assert Floki.parse_document("plain text") == {:ok, ["plain text"]}
+
+    assert Floki.parse_document(~s(<!-- top --><?xml version="1.0"?><p>ok</p>)) ==
+             {:ok,
+              [
+                {:comment, " top "},
+                {:pi, "xml", [{"version", "1.0"}]},
+                {"p", [], ["ok"]}
+              ]}
+
+    assert Floki.parse_document("<!doctype html><div>hello</div>") ==
+             {:ok, [{"div", [], ["hello"]}]}
+
+    assert Floki.parse_document(~s(<span class="a">1</span><span class="b">2</span>),
+             attributes_as_maps: true
+           ) == {:ok, [{"span", %{"class" => "a"}, ["1"]}, {"span", %{"class" => "b"}, ["2"]}]}
+  end
+
+  @tag only_parser: Mochiweb
+  test "handles literal floki and root tags without closing document root with mochiweb" do
+    for tag <- ["floki", "root"] do
+      assert Floki.parse_document("<span>a</span></#{tag}><span>b</span>") ==
+               {:ok, [{"span", [], ["a"]}, {"span", [], ["b"]}]}
+
+      assert Floki.parse_document("<#{tag}>hello</#{tag}>") ==
+               {:ok, [{tag, [], ["hello"]}]}
+    end
+  end
+
   defp html_body(body) do
     ["<html><head></head><body>", body, "</body></html>"]
   end

@@ -9,14 +9,10 @@ defmodule Floki.HTMLParser.Mochiweb do
   """
 
   @behaviour Floki.HTMLParser
-  @root_node "floki"
 
   @impl true
   def parse_document(html, args) do
-    html = ["<#{@root_node}>", html, "</#{@root_node}>"]
-    {@root_node, _, parsed} = :floki_mochi_html.parse(html, args)
-
-    {:ok, parsed}
+    {:ok, :floki_mochi_html.parse_document(html, args)}
   end
 
   # NOTE: mochi_html cannot make a distinction of a fragment and document.

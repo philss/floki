@@ -23,7 +23,8 @@
 -module(floki_mochi_html).
 -export([
     tokens/1,
-    parse/2
+    parse/2,
+    parse_document/2
 ]).
 -ifdef(TEST).
 -export([destack/1, destack/2, is_singleton/1]).
@@ -112,6 +113,16 @@
 parse(Input, Opts) ->
     parse_tokens(tokens(Input), Opts).
 
+%% @spec parse_document(string() | binary(), list()) -> [html_node() | string()]
+%% @doc tokenize and then transform the token stream into a list of HTML nodes.
+%%
+%% Uses a non-binary atom sentinel (`root`) at the bottom of the stack with an
+%% empty open-names multiset so user end tags (which `norm/2` always produces
+%% as binaries) can never prematurely close the document root.
+parse_document(Input, Opts) when is_list(Opts) ->
+    {{root, [], Children}, _} = tree(tokens(Input), [{root, [], []}], open_names_new(), Opts),
+    Children.
+
 %% @spec parse_tokens([html_token()]) -> html_node()
 %% @doc Transform the output of tokens(Doc) into a HTML tree.
 parse_tokens(Tokens, Opts) when is_list(Tokens) andalso is_list(Opts) ->
@@ -147,22 +158,26 @@ tokens(B, S = #decoder{offset = O}, Acc) ->
         <<_:O/binary>> ->
             lists:reverse(Acc);
         _ ->
-            {Tag, S1} = tokenize(B, S),
-            case parse_flag(Tag) of
-                script ->
-                    {Tag2, S2} = tokenize_script(B, S1),
-                    tokens(B, S2, [Tag2, Tag | Acc]);
-                style ->
-                    {Tag2, S2} = tokenize_style(B, S1),
-                    tokens(B, S2, [Tag2, Tag | Acc]);
-                title ->
-                    {Tag2, S2} = tokenize_title(B, S1),
-                    tokens(B, S2, [Tag2, Tag | Acc]);
-                textarea ->
-                    {Tag2, S2} = tokenize_textarea(B, S1),
-                    tokens(B, S2, [Tag2, Tag | Acc]);
-                none ->
-                    tokens(B, S1, [Tag | Acc])
+            case tokenize(B, S) of
+                {eof, _S1} ->
+                    lists:reverse(Acc);
+                {Tag, S1} ->
+                    case parse_flag(Tag) of
+                        script ->
+                            {Tag2, S2} = tokenize_script(B, S1),
+                            tokens(B, S2, [Tag2, Tag | Acc]);
+                        style ->
+                            {Tag2, S2} = tokenize_style(B, S1),
+                            tokens(B, S2, [Tag2, Tag | Acc]);
+                        title ->
+                            {Tag2, S2} = tokenize_title(B, S1),
+                            tokens(B, S2, [Tag2, Tag | Acc]);
+                        textarea ->
+                            {Tag2, S2} = tokenize_textarea(B, S1),
+                            tokens(B, S2, [Tag2, Tag | Acc]);
+                        none ->
+                            tokens(B, S1, [Tag | Acc])
+                    end
             end
     end.
 
@@ -187,9 +202,9 @@ tokenize(B, S = #decoder{offset = O}) ->
         <<_:O/binary, "<!--", _/binary>> ->
             tokenize_comment(B, ?ADV_COL(S, 4));
         <<_:O/binary, "<!doctype", _/binary>> ->
-            tokenize_doctype(B, ?ADV_COL(S, 10));
+            tokenize_doctype(B, ?ADV_COL(S, 9));
         <<_:O/binary, "<!DOCTYPE", _/binary>> ->
-            tokenize_doctype(B, ?ADV_COL(S, 10));
+            tokenize_doctype(B, ?ADV_COL(S, 9));
         <<_:O/binary, "<![CDATA[", _/binary>> ->
             tokenize_cdata(B, ?ADV_COL(S, 9));
         <<_:O/binary, "<?php", _/binary>> ->
@@ -204,8 +219,16 @@ tokenize(B, S = #decoder{offset = O}) ->
             tokenize_charref(B, ?INC_COL(S));
         <<_:O/binary, "</", _/binary>> ->
             {Tag, S1} = tokenize_literal(B, ?ADV_COL(S, 2)),
-            {S2, _} = find_gt(B, S1),
-            {{end_tag, Tag}, S2};
+            case find_gt(B, S1) of
+                {S2, _, true} ->
+                    {{end_tag, Tag}, S2};
+                {S2, _, false} ->
+                    %% Incomplete end tag at EOF (eof-in-tag): discard instead of
+                    %% emitting an end_tag token.
+                    {eof, S2}
+            end;
+        <<_:O/binary, "<">> ->
+            {{data, <<"<">>, false}, ?INC_COL(S)};
         <<_:O/binary, "<", C, _/binary>> when
             ?IS_WHITESPACE(C); not ?IS_LETTER(C)
         ->
@@ -215,9 +238,15 @@ tokenize(B, S = #decoder{offset = O}) ->
         <<_:O/binary, "<", _/binary>> ->
             {Tag, S1} = tokenize_literal(B, ?INC_COL(S)),
             {Attrs, S2} = tokenize_attributes(B, S1),
-            {S3, HasSlash} = find_gt(B, S2),
-            Singleton = HasSlash orelse is_singleton(Tag),
-            {{start_tag, Tag, Attrs, Singleton}, S3};
+            case find_gt(B, S2) of
+                {S3, HasSlash, true} ->
+                    Singleton = HasSlash orelse is_singleton(Tag),
+                    {{start_tag, Tag, Attrs, Singleton}, S3};
+                {S3, _HasSlash, false} ->
+                    %% Incomplete start tag at EOF (eof-in-tag): discard instead of
+                    %% emitting a start_tag token.
+                    {eof, S3}
+            end;
         _ ->
             tokenize_data(B, S)
     end.
@@ -505,7 +534,7 @@ tokenize_attr_value(Attr, B, S) ->
 tokenize_quoted_or_unquoted_attr_value(B, S = #decoder{offset = O}) ->
     case B of
         <<_:O/binary>> ->
-            {[], S};
+            {<<>>, S};
         <<_:O/binary, Q, _/binary>> when
             Q =:= ?QUOTE orelse
                 Q =:= ?SQUOTE
@@ -619,11 +648,11 @@ find_gt(Bin, S = #decoder{offset = O}, HasSlash) ->
         <<_:O/binary, $/, _/binary>> ->
             find_gt(Bin, ?INC_COL(S), true);
         <<_:O/binary, $>, _/binary>> ->
-            {?INC_COL(S), HasSlash};
+            {?INC_COL(S), HasSlash, true};
         <<_:O/binary, C, _/binary>> ->
             find_gt(Bin, ?INC_CHAR(S, C), HasSlash);
         _ ->
-            {S, HasSlash}
+            {S, HasSlash, false}
     end.
 
 tokenize_charref(Bin, S = #decoder{offset = O}) ->
