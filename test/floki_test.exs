@@ -292,6 +292,7 @@ defmodule FlokiTest do
     assert Floki.raw_html(parsed) == IO.chardata_to_string(span_with_entities)
   end
 
+  @tag only_parser: Mochiweb
   test "parse_fragment!/1 decodes legacy named character references without a semicolon in text" do
     assert Floki.parse_fragment!("<p>a&nbsp-b &amp c &copy1 &ampx &notit; &lt</p>") ==
              [{"p", [], ["a\u00A0-b & c ©1 &x ¬it; <"]}]
